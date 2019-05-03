@@ -8,17 +8,6 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     const PAYMENTSTATUSPAID = 12;
 
     /**
-     * Add template dir prior dispatching views.
-     */
-    public function preDispatch()
-    {
-        /** @var \Shopware\Components\Plugin $plugin */
-        $plugin = $this->get('kernel')->getPlugins()['BilliePayment'];
-
-        $this->get('template')->addTemplateDir($plugin->getPath() . '/Resources/views/');
-    }
-
-    /**
      * Index action method.
      *
      * Forwards to the correct action.

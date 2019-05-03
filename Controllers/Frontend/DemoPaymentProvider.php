@@ -6,17 +6,6 @@
 class Shopware_Controllers_Frontend_DemoPaymentProvider extends Enlight_Controller_Action
 {
     /**
-     * Add template dir prior dispatching views.
-     */
-    public function preDispatch()
-    {
-        /** @var \Shopware\Components\Plugin $plugin */
-        $plugin = $this->get('kernel')->getPlugins()['BilliePayment'];
-
-        $this->get('template')->addTemplateDir($plugin->getPath() . '/Resources/views/');
-    }
-
-    /**
      * Show Pay Action -> either "pay" with the provider or cancel it.
      */
     public function payAction()
