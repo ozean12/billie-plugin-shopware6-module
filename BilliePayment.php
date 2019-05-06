@@ -7,6 +7,8 @@ use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
 use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
+use Doctrine\ORM\Tools\SchemaTool;
+use BilliePayment\Models\Api;
 
 /**
  * Main Plugin Class with plugin options.
@@ -35,6 +37,16 @@ class BilliePayment extends Plugin
                 . '</div>'
         ];
         $installer->createOrUpdate($context->getPlugin(), $options);
+
+        /** @var ModelManager $entityManager */
+        $entityManager = $this->container->get('models');
+        $tool          = new SchemaTool($entityManager);
+ 
+        $classMetaData = [
+            $entityManager->getClassMetadata(Api::class)
+        ];
+ 
+        $tool->createSchema($classMetaData);
     }
 
     /**
@@ -44,6 +56,16 @@ class BilliePayment extends Plugin
     {
         // Set to inactive on uninstall to not mess with previous orders!
         $this->setActiveFlag($context->getPlugin()->getPayments(), false);
+
+        /** @var ModelManager $entityManager */
+        $entityManager = $this->container->get('models');
+        $tool          = new SchemaTool($entityManager);
+ 
+        $classMetaData = [
+            $entityManager->getClassMetadata(Api::class)
+        ];
+ 
+        $tool->dropSchema($classMetaData);
     }
 
     /**
