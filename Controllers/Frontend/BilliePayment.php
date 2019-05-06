@@ -66,13 +66,23 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             $basket = $this->loadBasketFromSignature($signature);
             $this->verifyBasketSignature($signature, $basket);
         } catch (\Exception $e) {
-            // @TODO: do error handling like redirecting to error page!
-            throw $e;
+            // TODO: do error handling like redirecting to error page!
+            $this->forward('cancel');
         }
         
         // Check response status and save order when everything went fine.
         switch ($response->status) {
             case 'accepted':
+                // TODO: Call API Endpoint to create order -> POST /v1/order
+                // TODO: get infos from $user, $basket and from plugin config
+                // var_dump($response, $user, $basket);die;
+                // Shopware()->Container()->get('pluginlogger')->info('POST /v1/order');
+
+                // TODO: Check for actual api error
+                // Shopware()->Session()->apiErrorMessages = ['Example: Something went wrong. Please try again'];
+                // $this->redirect(['controller' => 'checkout', 'action' => 'confirm']);
+                // break;
+             
                 $this->saveOrder(
                     $response->transactionId,
                     $response->token,

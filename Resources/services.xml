@@ -9,6 +9,10 @@
             <argument type="service" id="template"/>
             <tag name="shopware.event_subscriber"/>
         </service>
+        <!-- Register Checkout subscriber -->
+        <service id="billie_payment.subscriber.checkout" class="BilliePayment\Subscriber\Checkout">
+            <tag name="shopware.event_subscriber"/>
+        </service>
         <!-- Example Payment Service -->
         <service id="billie_payment.payment_service"
                  class="BilliePayment\Components\BilliePayment\PaymentService">
