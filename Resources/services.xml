@@ -13,6 +13,10 @@
         <service id="billie_payment.subscriber.checkout" class="BilliePayment\Subscriber\Checkout">
             <tag name="shopware.event_subscriber"/>
         </service>
+        <!-- Check Status Order subscriber -->
+        <service id="billie_payment.subscriber.order" class="BilliePayment\Subscriber\Order">
+            <tag name="shopware.event_subscriber" />
+        </service>
         <!-- Example Payment Service -->
         <service id="billie_payment.payment_service"
                  class="BilliePayment\Components\BilliePayment\PaymentService">

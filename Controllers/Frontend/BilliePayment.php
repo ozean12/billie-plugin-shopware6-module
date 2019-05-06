@@ -3,6 +3,7 @@
 use BilliePayment\Components\BilliePayment\PaymentResponse;
 use BilliePayment\Components\BilliePayment\PaymentService;
 
+
 class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_Frontend_Payment
 {
     const PAYMENTSTATUSPAID = 12;
