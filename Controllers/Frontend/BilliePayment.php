@@ -75,14 +75,16 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             case 'accepted':
                 // TODO: Call API Endpoint to create order -> POST /v1/order
                 // TODO: get infos from $user, $basket and from plugin config
-                // var_dump($response, $user, $basket);die;
+                // TODO: Update API order status to either 'declined' or 'created' depending on api return state
+                // var_dump($response, $user, $basket, $billing);die;
                 // Shopware()->Container()->get('pluginlogger')->info('POST /v1/order');
+                Shopware()->Session()->apiOrderState = 'created';
 
                 // TODO: Check for actual api error
                 // Shopware()->Session()->apiErrorMessages = ['Example: Something went wrong. Please try again'];
                 // $this->redirect(['controller' => 'checkout', 'action' => 'confirm']);
                 // break;
-             
+
                 $this->saveOrder(
                     $response->transactionId,
                     $response->token,

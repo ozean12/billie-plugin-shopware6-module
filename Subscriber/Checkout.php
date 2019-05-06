@@ -3,6 +3,8 @@
 namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
+use BilliePayment\Models\Api;
+use Shopware\Models\Order\Order;
 
 /**
  * Subscriber to assign api messages to the checkout view
@@ -15,10 +17,34 @@ class Checkout implements SubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Action_PreDispatch_Frontend_Checkout' => 'onFrontendCheckout'
+            'Enlight_Controller_Action_PreDispatch_Frontend_Checkout' => 'onFrontendCheckout',
+            'Shopware_Modules_Order_SaveOrder_ProcessDetails'         => 'onSaveOrder'
         ];
     }
 
+    /**
+     * Save API State information after order is created.
+     *
+     * @param \Enlight_Event_EventArgs $args
+     * @return void
+     */
+    public function onSaveOrder(\Enlight_Event_EventArgs $args)
+    {
+        /** @var \Shopware\Components\Model\ModelManager $entityManager */
+        $models = Shopware()->Container()->get('models');
+        $order  = $models->getRepository(Order::class);
+
+        // Save api state for order
+        $api = new Api;
+        $api->setState(Shopware()->Session()->apiOrderState);
+        $api->setOrder($order->find($args['orderId']));
+        $models->persist($api);
+        $models->flush($api);
+
+        // Clear api responses
+        Shopware()->Session()->apiOrderState = null;
+    }
+    
     /**
      * Add API Messages to the Checkout View.
      *
@@ -44,6 +70,7 @@ class Checkout implements SubscriberInterface
         if (isset($errors) && !empty($errors)) {
             $logger->error('Error on POST /v1/order: ' . json_encode($errors));
             $view->assign('apiErrorMessages', $errors);
+            $session->apiErrorMessages = null;
         }
     }
 }
