@@ -71,28 +71,48 @@ class Order implements SubscriberInterface
         /** @var Shopware_Controllers_Backend_Order $controller */
         $controller = $args->getSubject();
         $request    = $controller->Request();
-
-        if ($request->getActionName() !== 'save') {
+        
+        // Batch Process orders.
+        if ($request->getActionName() == 'batchProcess') {
             $params = $request->getParams();
 
-            switch ($params['status']) {
-                // Order is canceled.
-                case self::ORDER_CANCELED:
-                    // TODO: run POST /v1/order/{order_1}/cancel
-                    // TODO: print possible error message
-                    $this->updateState($params['id'], 'canceled');
-                    exit('{"success": false, "message": "Dies ist eine Fehlernachricht"}');
-                    break;
-
-                // Order is shipped
-                case self::ORDER_SHIPPED:
-                    // TODO: run POST /v1/order/{order_id}/ship
-                    // TODO: Flag billie state as 'shipped' (or declined based on api response)
-                    $this->updateState($params['id'], 'shipped');
-                    break;
-                default:
-                    break;
+            foreach ($params['orders'] as $order) {
+                $this->processOrder($order);
             }
+        }
+
+        // Process Single Order.
+        if ($request->getActionName() == 'save') {
+            $this->processOrder($request->getParams());
+        }
+    }
+
+    /**
+     * Process an order and call the respective api endpoints.
+     *
+     * @param array $order
+     * @return void
+     */
+    protected function processOrder($order)
+    {
+        switch ($order['status']) {
+            // Order is canceled.
+            case self::ORDER_CANCELED:
+                // TODO: run POST /v1/order/{order_1}/cancel
+                // TODO: print possible error message
+                $this->updateState($order['id'], 'canceled');
+                // exit('{"success": false, "message": "Dies ist eine Fehlernachricht"}');
+                break;
+
+            // Order is shipped
+            case self::ORDER_SHIPPED:
+                // TODO: run POST /v1/order/{order_id}/ship
+                // TODO: Flag billie state as 'shipped' (or declined based on api response)
+                $this->updateState($order['id'], 'shipped');
+                break;
+
+            default:
+                break;
         }
     }
 
@@ -107,7 +127,7 @@ class Order implements SubscriberInterface
     {
         $models = Shopware()->Container()->get('models');
         $api    = $models->getRepository(Api::class);
-        $entry  = $api->find($order);
+        $entry  = $api->findOneBy(['order' => $order]);
         
         if ($entry) {
             $entry->setState($state);
