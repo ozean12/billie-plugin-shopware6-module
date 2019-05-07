@@ -29,7 +29,6 @@ class Order implements SubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'Shopware_CronJob_CheckOrderStatus'                          => 'onCheckOrderStatus',
             'Enlight_Controller_Action_PostDispatchSecure_Backend_Order' => 'onSaveOrder',
             'Enlight_Controller_Action_PreDispatch_Backend_Order'        => 'onBeforeSaveOrder'
         ];
