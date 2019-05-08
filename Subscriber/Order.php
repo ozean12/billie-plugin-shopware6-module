@@ -70,19 +70,30 @@ class Order implements SubscriberInterface
         /** @var Shopware_Controllers_Backend_Order $controller */
         $controller = $args->getSubject();
         $request    = $controller->Request();
-        
-        // Batch Process orders.
-        if ($request->getActionName() == 'batchProcess') {
-            $params = $request->getParams();
+        $view       = $controller->View();
 
-            foreach ($params['orders'] as $order) {
-                $this->processOrder($order);
-            }
-        }
+        switch ($request->getActionName()) {
+            // Batch Process orders.
+            case 'batchProcess':
+                $params = $request->getParams();
 
-        // Process Single Order.
-        if ($request->getActionName() == 'save') {
-            $this->processOrder($request->getParams());
+                foreach ($params['orders'] as $order) {
+                    $this->processOrder($order);
+                }
+                break;
+
+            // Process Single Order.
+            case 'save':
+                $this->processOrder($request->getParams());
+                // $args->stop();
+                break;
+
+            // Extend order details overview.
+            case 'load':
+                $view->extendsTemplate('backend/billie_payment/view/detail/overview.js');
+                break;
+            default:
+                break;
         }
     }
 
@@ -100,6 +111,7 @@ class Order implements SubscriberInterface
                 // TODO: run POST /v1/order/{order_1}/cancel
                 // TODO: print possible error message
                 $this->updateState($order['id'], 'canceled');
+                // $view->assign(['success' => false, 'message' => 'Dies ist eine Fehlernachricht']);
                 // exit('{"success": false, "message": "Dies ist eine Fehlernachricht"}');
                 break;
 
