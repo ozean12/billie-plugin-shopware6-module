@@ -7,6 +7,7 @@ use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
 use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
+use Shopware\Components\Model\ModelManager;
 use Doctrine\ORM\Tools\SchemaTool;
 use BilliePayment\Models\Api;
 
@@ -38,15 +39,18 @@ class BilliePayment extends Plugin
         ];
         $installer->createOrUpdate($context->getPlugin(), $options);
 
-        /** @var ModelManager $entityManager */
-        $entityManager = $this->container->get('models');
-        $tool          = new SchemaTool($entityManager);
- 
-        $classMetaData = [
-            $entityManager->getClassMetadata(Api::class)
-        ];
- 
-        $tool->createSchema($classMetaData);
+        $this->createDatabase();
+
+        // Attributes
+        $service = $this->container->get('shopware_attribute.crud_service');
+        $service->update('s_order_attributes', 'ordermod', 'float', [
+            'label' => 'Test label',
+            'displayInBackend' => true,
+        ]);
+        
+        $metaDataCache  = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
+        $metaDataCache ->deleteAll();
+        Shopware()->Models()->generateAttributeModels(array('s_order_attributes'));
     }
 
     /**
@@ -57,15 +61,9 @@ class BilliePayment extends Plugin
         // Set to inactive on uninstall to not mess with previous orders!
         $this->setActiveFlag($context->getPlugin()->getPayments(), false);
 
-        /** @var ModelManager $entityManager */
-        $entityManager = $this->container->get('models');
-        $tool          = new SchemaTool($entityManager);
- 
-        $classMetaData = [
-            $entityManager->getClassMetadata(Api::class)
-        ];
- 
-        $tool->dropSchema($classMetaData);
+        if (!$context->keepUserData()) {
+            $this->removeDatabase();
+        }
     }
 
     /**
@@ -96,5 +94,62 @@ class BilliePayment extends Plugin
             $payment->setActive($active);
         }
         $models->flush();
+    }
+
+    /**
+     * Create the database tables.
+     *
+     * @return void
+     */
+    private function createDatabase()
+    {
+        $models  = $this->container->get('models');
+        $tool    = new SchemaTool($models);
+        $classes = $this->getClasses($models);
+
+        $tool->updateSchema($classes, true); // make sure to use the save mode
+    }
+
+    /**
+     * Remove the database tables.
+     *
+     * @return void
+     */
+    private function removeDatabase()
+    {
+        $models  = $this->container->get('models');
+        $tool    = new SchemaTool($models);
+        $classes = $this->getClasses($models);
+
+        $tool->dropSchema($classes);
+    }
+
+     /**
+     * @param ModelManager $modelManager
+     * @return array
+     */
+    private function getClasses(ModelManager $modelManager)
+    {
+        return [
+            $modelManager->getClassMetadata(Api::class)
+        ];
+    }
+
+      /**
+     * @return array
+     */
+    public static function getSubscribedEvents()
+    {
+        return [
+            'Enlight_Controller_Dispatcher_ControllerPath_Backend_BillieOverview' => 'onGetBackendController'
+        ];
+    }
+
+    /**
+     * @return string
+     */
+    public function onGetBackendController()
+    {
+        return __DIR__ . '/Controllers/Backend/BillieOverview.php';
     }
 }
