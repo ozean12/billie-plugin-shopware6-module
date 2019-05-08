@@ -67,6 +67,19 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     }
 
     /**
+     * Full Cancelation of an order on billie site.
+     *
+     * @return void
+     */
+    public function cancelOrderAction()
+    {
+        // TODO: run POST /v1/order/{order_1}/cancel
+        $order  = $this->Request()->getParam('order_id');
+        $this->Front()->Plugins()->Json()->setRenderer();
+        $this->View()->assign(['success' => true, 'title' => 'Erfolgreich', 'data' => 'Cancelation Response']);
+    }
+
+    /**
      * Whitelisted CSRF actions
      *
      * @return array

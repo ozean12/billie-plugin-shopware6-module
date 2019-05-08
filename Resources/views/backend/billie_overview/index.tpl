@@ -10,6 +10,13 @@
             >
             Confirm Payment
         </button>
+        <button
+            class="btn btn-primary cancel-order"
+            data-order_id="{$order_id}"
+            data-action="{url controller="BillieOverview" action="cancelOrder" __csrf_token=$csrfToken}"
+            >
+            Cancel Order
+        </button>
     </div>
 
     <form class="form-horizontal">
@@ -97,6 +104,10 @@
             confirm_payment: {
                 title: "{s name=billiepayment/snippets/confirm_payment/title}Zahlungsbetrag{/s}",
                 desc: "{s name=billiepayment/snippets/confirm_payment/description}Bitte geben Sie Zahlungsbetrag an.{/s}",
+            },
+            cancel_order: {
+                title: "{s name=billiepayment/snippets/cancel_order/title}Bestellung abbrechen{/s}",
+                desc: "{s name=billiepayment/snippets/cancel_order/description}Sind Sie sicher, dass Sie die Bestellung über Billie.io abbrechen möchten?{/s}",
             }
         };
     </script>
