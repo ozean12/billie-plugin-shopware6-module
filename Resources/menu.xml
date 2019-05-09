@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.5/engine/Shopware/Components/Plugin/schema/menu.xsd"
+>
+    <entries>
+        <entry>
+            <name>Billie.io Overview</name>
+            <label lang="en">Billie.io Overview</label>
+            <label lang="de">Billie.io Übersicht</label>
+            <controller>BillieOverview</controller>
+            <action>index</action>
+            <class>sprite-application-block</class>
+            <parent identifiedBy="controller">Order</parent>
+            <onclick>Shopware.ModuleManager.createSimplifiedModule("BillieOverview", { "title": "Billie.io Übersicht" })</onclick>
+        </entry>
+    </entries>
+</menu>
