@@ -3,7 +3,6 @@
 use BilliePayment\Components\BilliePayment\PaymentResponse;
 use BilliePayment\Components\BilliePayment\PaymentService;
 
-
 class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_Frontend_Payment
 {
     const PAYMENTSTATUSPAID = 12;
@@ -17,30 +16,12 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     {
         // Check if the payment method is selected, otherwise return to default controller.
         if ('billie_payment_after_delivery' === $this->getPaymentShortName()) {
-            return $this->redirect(['action' => 'direct', 'forceSecure' => true]);
+            return $this->redirect($this->getReturnUrl());
         }
         
         return $this->redirect(['controller' => 'checkout']);
     }
 
-    /**
-     * iFrame gateway so the customer does not leave the shop store front.
-     */
-    public function gatewayAction()
-    {
-        $providerUrl = $this->getProviderUrl();
-        $this->View()->assign('gatewayUrl', $providerUrl . $this->getUrlParameters());
-    }
-
-    /**
-     * direct forewarding
-    */
-    public function directAction()
-    {
-        $providerUrl = $this->getProviderUrl();
-        $this->redirect($providerUrl . $this->getUrlParameters());
-    }
-    
     /**
      * Complete the order if everything is valid.
      */
@@ -50,18 +31,18 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $service = $this->container->get('billie_payment.payment_service');
         $user    = $this->getUser();
         $billing = $user['billingaddress'];
+        
         /** @var PaymentResponse $response */
         $response  = $service->createPaymentResponse($this->Request());
         $signature = $response->signature;
         $token     = $service->createPaymentToken($this->getAmount(), $billing['customernumber']);
-        
+
         // If token is invalid, cancel action!
         if (!$service->isValidToken($response, $token)) {
             $this->forward('cancel');
-
             return;
         }
-
+        
         // Loads basked and verifies if it's still the same.
         try {
             $basket = $this->loadBasketFromSignature($signature);
@@ -107,39 +88,26 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     }
     
     /**
-     * Generate the url parameters for the action.
+     * Generate the url for the return action.
      *
      * @return string
      */
-    private function getUrlParameters()
+    private function getReturnUrl()
     {
         /** @var PaymentService $service */
         $service = $this->container->get('billie_payment.payment_service');
         $router  = $this->Front()->Router();
         $user    = $this->getUser();
         $billing = $user['billingaddress'];
+        $url     = $router->assemble(['action' => 'return', 'forceSecure' => true]);
 
         $parameter = [
-            'amount'    => $this->getAmount(),
-            'currency'  => $this->getCurrencyShortName(),
-            'firstName' => $billing['firstname'],
-            'lastName'  => $billing['lastname'],
-            'returnUrl' => $router->assemble(['action' => 'return', 'forceSecure' => true]),
-            'cancelUrl' => $router->assemble(['action' => 'cancel', 'forceSecure' => true]),
-            'signature' => $this->persistBasket(), // signature based on basket and customerID
-            'token'     => $service->createPaymentToken($this->getAmount(), $billing['customernumber'])
+            'status'        => 'accepted',
+            'token'         => $service->createPaymentToken($this->getAmount(), $billing['customernumber']),
+            'signature'     => $this->persistBasket(),
+            'transactionId' => random_int(0, 1000)
         ];
 
-        return '?' . http_build_query($parameter);
-    }
-
-    /**
-     * Returns the URL of the payment provider. This has to be replaced with the real payment provider URL.
-     *
-     * @return string
-     */
-    protected function getProviderUrl()
-    {
-        return $this->Front()->Router()->assemble(['controller' => 'DemoPaymentProvider', 'action' => 'pay']);
+        return $url . '?' . http_build_query($parameter);
     }
 }
