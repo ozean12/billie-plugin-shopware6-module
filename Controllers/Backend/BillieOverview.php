@@ -97,26 +97,36 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function orderAction()
     {
-        $order = $this->Request()->getParam('order_id');
-
         // TODO: Retrieve Order (GET /v1/order/{order_id})
+        $order = $this->Request()->getParam('order_id');
         $this->getLogger()->info(sprintf('GET /v1/order/%s', $order));
+
+        // Load order entry
+        $models = $this->getEnityManager();
+        $repo   = $models->getRepository(\Shopware\Models\Order\Order::class);
+        $entry  = $repo->find($order);
+        
+        if (!$entry) {
+            $this->forward('index');
+        }
+
+        // TODO: Update order details in database with new ones from billie
 
         // Test data for now
         $data = [
-            'state' => 'canceled',
-            'order_id' => $order,
+            'state' => $entry->getAttribute()->getBillieState(),
+            'order_id' => $entry->getId(),
             'bank_account' => [
-                'iban' => '12345678910',
-                'bic'  => '12345678910'
+                'iban' => $entry->getAttribute()->getBillieIban(),
+                'bic'  => $entry->getAttribute()->getBillieBic()
             ],
             'debtor_company' => [
-                'name' => 'John Doe',
-                'address_house_number' => '42',
-                'address_house_street' => 'XYZ',
-                'address_house_city' => 'ABCDE',
-                'address_house_postal_code' => '12345',
-                'address_house_country' => 'USA',
+                'name' => $entry->getBilling()->getFirstname() . ' ' . $entry->getBilling()->getLastname(),
+                'address_house_number' => $entry->getBilling()->getZipCode(),
+                'address_house_street' => $entry->getBilling()->getStreet(),
+                'address_house_city' => $entry->getBilling()->getCity(),
+                'address_house_postal_code' => $entry->getBilling()->getZipCode(),
+                'address_house_country' => $entry->getBilling()->getCountry()->getName(),
             ]
         ];
 
