@@ -51,7 +51,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
 
         // Load Orders
         $builder = $this->getQueryBuilder();
-        $builder->select(['orders'])
+        $builder->select(['orders, attribute'])
             ->from(\Shopware\Models\Order\Order::class, 'orders')
             ->leftJoin('orders.attribute', 'attribute')
             ->leftJoin('orders.payment', 'payment')
@@ -66,13 +66,22 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $query = $builder->getQuery();
         $query->setHydrationMode(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
         $paginator = $this->getEnityManager()->createPaginator($query);
-
+        
         $this->View()->assign([
-            'orders'     => $paginator->getIterator()->getArrayCopy(),
-            'total'      => $paginator->count(),
-            'totalPages' => ceil($paginator->count()/$perPage),
-            'page'       => $page,
-            'perPage'    => $perPage
+            'orders'        => $paginator->getIterator()->getArrayCopy(),
+            'total'         => $paginator->count(),
+            'totalPages'    => ceil($paginator->count()/$perPage),
+            'page'          => $page,
+            'perPage'       => $perPage,
+            'statusClasses' =>  [
+                'created'  => 'info',
+                'declined' => 'danger',
+                'shipped'  => 'success',
+                'paid_out' => 'success',
+                'late'     => 'warning',
+                'complete' => 'success',
+                'canceled' => 'danger',
+            ]
         ]);
     }
 
@@ -152,7 +161,6 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     private function getQueryBuilder()
     {
-
         if ($this->queryBuilder === null) {
             $this->queryBuilder = $this->getEnityManager()->createQueryBuilder();
         }
