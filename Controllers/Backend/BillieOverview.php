@@ -10,6 +10,11 @@ use Shopware\Components\CSRFWhitelistAware;
 class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Action implements CSRFWhitelistAware
 {
     /**
+     * @var OrderRepository
+     */
+    protected $orderRepository = null;
+
+    /**
      * Assign CSRF-Token to view.
      *
      * @return void
@@ -18,6 +23,43 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     {
         $csrfToken = $this->container->get('BackendSession')->offsetGet('X-CSRF-Token');
         $this->View()->assign([ 'csrfToken' => $csrfToken ]);
+    }
+
+    /**
+     * Internal helper function to get access to the order repository.
+     *
+     * @return OrderRepository
+     */
+    private function getOrderRepository()
+    {
+        if ($this->orderRepository === null) {
+            $this->orderRepository = $this->getModelManager()->getRepository('Shopware\Models\Order\Order');
+        }
+
+        return $this->orderRepository;
+    }
+
+    /**
+     * Index action displays list with orders paid with billie.io
+     *
+     * @return void
+     */
+    public function indexAction()
+    {
+        // Query Params
+        $filter   = [
+            ['property' => 'payment.name', 'value' => 'billie_payment_after_delivery']
+        ];
+        $sort    = [['property' => 'orders.orderTime', 'direction' => 'DESC']];
+        $page    = intval($this->Request()->getParam('page', 1));
+        $perPage = 25;
+
+        // Load Orders
+        $query  = $this->getOrderRepository()->getOrdersQuery($filter, $sort, ($page - 1) * $perPage, $perPage);
+        $total  = $this->getModelManager()->getQueryCount($query);
+        $orders = $query->getArrayResult();
+
+        $this->View()->assign(['orders' => $orders, 'total' => $total, 'totalPages' => ceil($total/$perPage), 'page' => $page, 'perPage' => $perPage]);
     }
 
     /**
