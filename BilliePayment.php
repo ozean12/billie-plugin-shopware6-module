@@ -8,8 +8,6 @@ use Shopware\Components\Plugin\Context\DeactivateContext;
 use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
 use Shopware\Components\Model\ModelManager;
-use Doctrine\ORM\Tools\SchemaTool;
-use BilliePayment\Models\Api;
 
 /**
  * Main Plugin Class with plugin options.
@@ -40,17 +38,6 @@ class BilliePayment extends Plugin
         $installer->createOrUpdate($context->getPlugin(), $options);
 
         $this->createDatabase();
-
-        // Attributes
-        $service = $this->container->get('shopware_attribute.crud_service');
-        $service->update('s_order_attributes', 'ordermod', 'float', [
-            'label' => 'Test label',
-            'displayInBackend' => true,
-        ]);
-        
-        $metaDataCache  = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
-        $metaDataCache ->deleteAll();
-        Shopware()->Models()->generateAttributeModels(array('s_order_attributes'));
     }
 
     /**
@@ -97,17 +84,20 @@ class BilliePayment extends Plugin
     }
 
     /**
-     * Create the database tables.
+     * Create the database tables/columns.
      *
      * @return void
      */
     private function createDatabase()
     {
-        $models  = $this->container->get('models');
-        $tool    = new SchemaTool($models);
-        $classes = $this->getClasses($models);
-
-        $tool->updateSchema($classes, true); // make sure to use the save mode
+        $service = $this->container->get('shopware_attribute.crud_service');
+        $service->update('s_order_attributes', 'billie_state', 'string');
+        $service->update('s_order_attributes', 'billie_iban', 'string');
+        $service->update('s_order_attributes', 'billie_bic', 'string');
+        
+        $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
+        $metaDataCache->deleteAll();
+        Shopware()->Models()->generateAttributeModels(array('s_order_attributes'));
     }
 
     /**
@@ -117,11 +107,10 @@ class BilliePayment extends Plugin
      */
     private function removeDatabase()
     {
-        $models  = $this->container->get('models');
-        $tool    = new SchemaTool($models);
-        $classes = $this->getClasses($models);
-
-        $tool->dropSchema($classes);
+        $service = $this->container->get('shopware_attribute.crud_service');
+        $service->delete('s_order_attributes', 'billie_state');
+        $service->delete('s_order_attributes', 'billie_iban');
+        $service->delete('s_order_attributes', 'billie_bic');
     }
 
      /**

@@ -3,7 +3,6 @@
 namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
-use BilliePayment\Models\Api;
 use Shopware\Models\Order\Order;
 
 /**
@@ -32,14 +31,15 @@ class Checkout implements SubscriberInterface
     {
         /** @var \Shopware\Components\Model\ModelManager $entityManager */
         $models = Shopware()->Container()->get('models');
-        $order  = $models->getRepository(Order::class);
+        $repo   = $models->getRepository(Order::class);
 
         // Save api state for order
-        $api = new Api;
-        $api->setState(Shopware()->Session()->apiOrderState);
-        $api->setOrder($order->find($args['orderId']));
-        $models->persist($api);
-        $models->flush($api);
+        $order = $repo->find($args['orderId']);
+        $attr  = $order->getAttribute();
+        $attr->setBillieState(Shopware()->Session()->apiOrderState);
+
+        $models->persist($attr);
+        $models->flush($attr);
 
         // Clear api responses
         Shopware()->Session()->apiOrderState = null;

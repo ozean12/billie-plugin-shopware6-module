@@ -3,7 +3,6 @@
 namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
-use BilliePayment\Models\Api;
 
 /**
  * Order Cronjob to check order status.
@@ -136,13 +135,16 @@ class Order implements SubscriberInterface
      */
     protected function updateState($order, $state)
     {
+        // Save api state for order
         $models = Shopware()->Container()->get('models');
-        $api    = $models->getRepository(Api::class);
-        $entry  = $api->findOneBy(['order' => $order]);
+        $repo   = $models->getRepository(\Shopware\Models\Order\Order::class);
+        $entry  = $repo->findOneBy(['order' => $order]);
         
         if ($entry) {
-            $entry->setState($state);
-            $models->flush();
+            $attr = $entry->getAttribute();
+            $entry->setBillieState($state);
+            $models->persist($attr);
+            $models->flush($attr);
         }
     }
 }
