@@ -17,12 +17,15 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     protected $entityManager = null;
 
-
     /**
      * @var \Shopware\Components\Model\QueryBuilder
      */
     protected $queryBuilder = null;
 
+    /**
+     * @var \Shopware\Components\Logger
+     */
+    protected $logger = null;
 
     /**
      * Assign CSRF-Token to view.
@@ -97,6 +100,8 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $order = $this->Request()->getParam('order_id');
 
         // TODO: Retrieve Order (GET /v1/order/{order_id})
+        $this->getLogger()->info(sprintf('GET /v1/order/%s', $order));
+
         // Test data for now
         $data = [
             'state' => 'canceled',
@@ -129,6 +134,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $order  = $this->Request()->getParam('order_id');
         $amount = floatval($this->Request()->getParam('amount'));
 
+        $this->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
         $this->Front()->Plugins()->Json()->setRenderer();
         $this->View()->assign(['success' => true, 'title' => 'Erfolgreich', 'data' => 'response reason']);
     }
@@ -140,8 +146,9 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function cancelOrderAction()
     {
-        // TODO: run POST /v1/order/{order_1}/cancel
+        // TODO: run POST /v1/order/{order_id}/cancel
         $order  = $this->Request()->getParam('order_id');
+        $this->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
         $this->Front()->Plugins()->Json()->setRenderer();
         $this->View()->assign(['success' => true, 'title' => 'Erfolgreich', 'data' => 'Cancelation Response']);
     }
@@ -182,5 +189,19 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         }
         
         return $this->entityManager;
+    }
+
+    /**
+     * Internal helper function to get access the plugin logger
+     *
+     * @return \Shopware\Components\Logger
+     */
+    private function getLogger()
+    {
+        if ($this->logger === null) {
+            $this->logger = Shopware()->Container()->get('pluginlogger');
+        }
+        
+        return $this->logger;
     }
 }
