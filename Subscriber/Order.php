@@ -3,6 +3,7 @@
 namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
+use BilliePayment\Components\BilliePayment\Api;
 
 /**
  * Order Cronjob to check order status.
@@ -10,17 +11,29 @@ use Enlight\Event\SubscriberInterface;
 class Order implements SubscriberInterface
 {
     /**
+     * @var $api Api
+     */
+    private $api;
+        
+    /**
      * Canceled Order Code
      * @var integer
      */
     const ORDER_CANCELED = 4;
-
 
     /**
      * Shipped Order Code
      * @var integer
      */
     const ORDER_SHIPPED = 7;
+
+    /**
+     * @param $api Api
+     */
+    public function __construct(Api $api)
+    {
+        $this->api = $api;
+    }
 
     /**
      * {@inheritdoc}
@@ -51,8 +64,13 @@ class Order implements SubscriberInterface
             
             // Update Amount if changed
             if ($order->getInvoiceAmount() != $params['invoiceAmount']) {
-                // TODO: run PATCH /v1/order/{order_id}
                 // TODO: print possible error message
+                $response = $this->api->updateOrder($order->getId(), [
+                    'amount' => [
+                        'net'   => $params['invoiceAmountNet'] + $params['invoiceShippingNet'],
+                        'gross' => $params['invoiceAmount'] + $params['invoiceShipping'],
+                    ]
+                ]);
                 // exit('{"success": false, "message": "Dies ist eine Fehlernachricht"}');
             }
         }
@@ -107,44 +125,19 @@ class Order implements SubscriberInterface
         switch ($order['status']) {
             // Order is canceled.
             case self::ORDER_CANCELED:
-                // TODO: run POST /v1/order/{order_1}/cancel
                 // TODO: print possible error message
-                $this->updateState($order['id'], 'canceled');
+                $response = $this->api->cancelOrder($order['id']);
                 // $view->assign(['success' => false, 'message' => 'Dies ist eine Fehlernachricht']);
                 // exit('{"success": false, "message": "Dies ist eine Fehlernachricht"}');
                 break;
 
             // Order is shipped
             case self::ORDER_SHIPPED:
-                // TODO: run POST /v1/order/{order_id}/ship
-                // TODO: Flag billie state as 'shipped' (or declined based on api response)
-                $this->updateState($order['id'], 'shipped');
+                $response = $this->api->shipOrder($order['id']);
                 break;
 
             default:
                 break;
-        }
-    }
-
-    /**
-     * Update local api order state.
-     *
-     * @param integer $order
-     * @param string $state
-     * @return void
-     */
-    protected function updateState($order, $state)
-    {
-        // Save api state for order
-        $models = Shopware()->Container()->get('models');
-        $repo   = $models->getRepository(\Shopware\Models\Order\Order::class);
-        $entry  = $repo->find($order);
-        
-        if ($entry) {
-            $attr = $entry->getAttribute();
-            $attr->setBillieState($state);
-            $models->persist($attr);
-            $models->flush($attr);
         }
     }
 }

@@ -12,14 +12,16 @@
         <!-- Register Checkout subscriber -->
         <service id="billie_payment.subscriber.checkout" class="BilliePayment\Subscriber\Checkout">
             <tag name="shopware.event_subscriber"/>
+            <argument type="service" id="billie_payment.api"/>
         </service>
         <!-- Check Status Order subscriber -->
         <service id="billie_payment.subscriber.order" class="BilliePayment\Subscriber\Order">
             <tag name="shopware.event_subscriber" />
+            <argument type="service" id="billie_payment.api"/>
         </service>
         <!-- Example Payment Service -->
-        <service id="billie_payment.payment_service"
-                 class="BilliePayment\Components\BilliePayment\PaymentService">
-        </service>
+        <service id="billie_payment.payment_service" class="BilliePayment\Components\BilliePayment\PaymentService" />
+        <!-- API Wrapper -->
+        <service id="billie_payment.api" class="BilliePayment\Components\BilliePayment\Api" />
     </services>
 </container>

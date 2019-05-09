@@ -3,13 +3,26 @@
 namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
-use Shopware\Models\Order\Order;
+use BilliePayment\Components\BilliePayment\Api;
 
 /**
  * Subscriber to assign api messages to the checkout view
  */
 class Checkout implements SubscriberInterface
 {
+    /**
+     * @var $api Api
+     */
+    private $api;
+
+    /**
+     * @param $api Api
+     */
+    public function __construct(Api $api)
+    {
+        $this->api = $api;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -29,20 +42,9 @@ class Checkout implements SubscriberInterface
      */
     public function onSaveOrder(\Enlight_Event_EventArgs $args)
     {
-        /** @var \Shopware\Components\Model\ModelManager $entityManager */
-        $models = Shopware()->Container()->get('models');
-        $repo   = $models->getRepository(Order::class);
-
-        // Save api state for order
-        $order = $repo->find($args['orderId']);
-        $attr  = $order->getAttribute();
-        $attr->setBillieState(Shopware()->Session()->apiOrderState);
-
-        $models->persist($attr);
-        $models->flush($attr);
-
-        // Clear api responses
-        Shopware()->Session()->apiOrderState = null;
+        $session = Shopware()->Session();
+        $this->api->updateLocal($args['orderId'], ['state' => $session->apiOrderState]);
+        $session->apiOrderState = null;
     }
     
     /**

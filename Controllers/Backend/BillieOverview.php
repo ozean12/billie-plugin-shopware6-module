@@ -1,6 +1,5 @@
 <?php
 
-use BilliePayment\Models\Api;
 use Shopware\Components\CSRFWhitelistAware;
 
 /**
@@ -11,22 +10,6 @@ use Shopware\Components\CSRFWhitelistAware;
  */
 class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Action implements CSRFWhitelistAware
 {
-
-    /**
-     * @var \Shopware\Components\Model\ModelManager
-     */
-    protected $entityManager = null;
-
-    /**
-     * @var \Shopware\Components\Model\QueryBuilder
-     */
-    protected $queryBuilder = null;
-
-    /**
-     * @var \Shopware\Components\Logger
-     */
-    protected $logger = null;
-
     /**
      * Assign CSRF-Token to view.
      *
@@ -45,39 +28,17 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function indexAction()
     {
-        // Query Params
-        $filters   = [
+        // Load Orders
+        $api     = $this->container->get('billie_payment.api');
+        $sort    = [['property' => 'orders.orderTime', 'direction' => 'DESC']];
+        $filters = [
             ['property' => 'payment.name', 'value' => 'billie_payment_after_delivery']
         ];
-        $sort    = [['property' => 'orders.orderTime', 'direction' => 'DESC']];
-        $page    = intval($this->Request()->getParam('page', 1));
-        $perPage = 25;
-        $offset  = ($page - 1) * $perPage;
-
-        // Load Orders
-        $builder = $this->getQueryBuilder();
-        $builder->select(['orders, attribute'])
-            ->from(\Shopware\Models\Order\Order::class, 'orders')
-            ->leftJoin('orders.attribute', 'attribute')
-            ->leftJoin('orders.payment', 'payment')
-            ->andWhere('orders.number IS NOT NULL')
-            ->andWhere('orders.status != -1')
-            ->addOrderBy($sort)
-            ->addFilter($filters)
-            ->setFirstResult($offset)
-            ->setMaxResults($perPage);
+        $orders = $api->getList(intval($this->Request()->getParam('page', 1)), 25, $filters, $sort);
         
-        // Get Query and paginator
-        $query = $builder->getQuery();
-        $query->setHydrationMode(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
-        $paginator = $this->getEnityManager()->createPaginator($query);
-        
+        // Assign view data
+        $this->View()->assign($orders);
         $this->View()->assign([
-            'orders'        => $paginator->getIterator()->getArrayCopy(),
-            'total'         => $paginator->count(),
-            'totalPages'    => ceil($paginator->count()/$perPage),
-            'page'          => $page,
-            'perPage'       => $perPage,
             'statusClasses' =>  [
                 'created'  => 'info',
                 'declined' => 'danger',
@@ -97,40 +58,16 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function orderAction()
     {
-        // TODO: Retrieve Order (GET /v1/order/{order_id})
-        $order = $this->Request()->getParam('order_id');
-        $this->getLogger()->info(sprintf('GET /v1/order/%s', $order));
+        // Retrieve Order Information
+        $api      = $this->container->get('billie_payment.api');
+        $order    = $this->Request()->getParam('order_id');
+        $response = $api->retrieveOrder($order);
 
-        // Load order entry
-        $models = $this->getEnityManager();
-        $repo   = $models->getRepository(\Shopware\Models\Order\Order::class);
-        $entry  = $repo->find($order);
-        
-        if (!$entry) {
+        if (!$response) {
             $this->forward('index');
         }
 
-        // TODO: Update order details in database with new ones from billie
-
-        // Test data for now
-        $data = [
-            'state' => $entry->getAttribute()->getBillieState(),
-            'order_id' => $entry->getId(),
-            'bank_account' => [
-                'iban' => $entry->getAttribute()->getBillieIban(),
-                'bic'  => $entry->getAttribute()->getBillieBic()
-            ],
-            'debtor_company' => [
-                'name' => $entry->getBilling()->getFirstname() . ' ' . $entry->getBilling()->getLastname(),
-                'address_house_number' => $entry->getBilling()->getZipCode(),
-                'address_house_street' => $entry->getBilling()->getStreet(),
-                'address_house_city' => $entry->getBilling()->getCity(),
-                'address_house_postal_code' => $entry->getBilling()->getZipCode(),
-                'address_house_country' => $entry->getBilling()->getCountry()->getName(),
-            ]
-        ];
-
-        $this->View()->assign($data);
+        $this->View()->assign($response);
     }
 
     /**
@@ -140,13 +77,15 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function confirmPaymentAction()
     {
-        // TODO: Call POST /v1/order/{order_id}/confirm-payment
-        $order  = $this->Request()->getParam('order_id');
-        $amount = floatval($this->Request()->getParam('amount'));
+        // Confirm payment via api
+        $api      = $this->container->get('billie_payment.api');
+        $amount   = floatval($this->Request()->getParam('amount'));
+        $order    = $this->Request()->getParam('order_id');
+        $response = $api->confirmPayment($order, $amount);
 
-        $this->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
+        // Return result message
         $this->Front()->Plugins()->Json()->setRenderer();
-        $this->View()->assign(['success' => true, 'title' => 'Erfolgreich', 'data' => 'response reason']);
+        $this->View()->assign($response);
     }
 
     /**
@@ -156,27 +95,14 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function cancelOrderAction()
     {
-        // TODO: run POST /v1/order/{order_id}/cancel
-        $order  = $this->Request()->getParam('order_id');
-        $this->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
-        $this->Front()->Plugins()->Json()->setRenderer();
+        // Cancel order via api
+        $api      = $this->container->get('billie_payment.api');
+        $order    = $this->Request()->getParam('order_id');
+        $response = $api->cancelOrder($order);
 
-        $models = $this->getEnityManager();
-        $repo   = $models->getRepository(\Shopware\Models\Order\Order::class);
-        $entry  = $repo->find($order);
-        
-        if (!$entry) {
-            $this->View()->assign(['success' => false, 'title' => 'Fehler', 'data' => 'Fehlernachricht']);
-            return;
-        }
-
-        // update state
-        $attr = $entry->getAttribute();
-        $attr->setBillieState('canceled');
-        $models->persist($attr);
-        $models->flush($attr);
-        
-        $this->View()->assign(['success' => true, 'title' => 'Erfolgreich', 'data' => 'Cancelation Response']);
+        // Return result message
+        $this->Front()->Plugins()->Json()->setRenderer();        
+        $this->View()->assign($response);
     }
 
     /**
@@ -187,47 +113,5 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     public function getWhitelistedCSRFActions()
     {
         return [ 'index', 'order' ];
-    }
-
-    /**
-     * Internal helper function to get access to the query builder.
-     *
-     * @return \Shopware\Components\Model\QueryBuilder
-     */
-    private function getQueryBuilder()
-    {
-        if ($this->queryBuilder === null) {
-            $this->queryBuilder = $this->getEnityManager()->createQueryBuilder();
-        }
-        
-        return $this->queryBuilder;
-    }
-
-    /**
-     * Internal helper function to get access the Model Manager.
-     *
-     * @return \Shopware\Components\Model\ModelManager
-     */
-    private function getEnityManager()
-    {
-        if ($this->entityManager === null) {
-            $this->entityManager = Shopware()->Container()->get('models');
-        }
-        
-        return $this->entityManager;
-    }
-
-    /**
-     * Internal helper function to get access the plugin logger
-     *
-     * @return \Shopware\Components\Logger
-     */
-    private function getLogger()
-    {
-        if ($this->logger === null) {
-            $this->logger = Shopware()->Container()->get('pluginlogger');
-        }
-        
-        return $this->logger;
     }
 }
