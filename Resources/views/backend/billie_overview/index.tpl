@@ -56,7 +56,11 @@
                                     </li>
                                 {/if}
                                 {for $curr=1 to $totalPages step 1}
-                                    <li><a href="{url controller="BillieOverview" action="index" page=$curr}">{$curr}</a></li>
+                                    <li {if $curr == $page}class="active"{/if}>
+                                        <a href="{url controller="BillieOverview" action="index" page=$curr}">
+                                            {$curr}
+                                        </a>
+                                    </li>
                                 {/for}
                                 {if $page < $totalPages}
                                     <li>
