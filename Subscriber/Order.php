@@ -138,7 +138,7 @@ class Order implements SubscriberInterface
         // Save api state for order
         $models = Shopware()->Container()->get('models');
         $repo   = $models->getRepository(\Shopware\Models\Order\Order::class);
-        $entry  = $repo->findOneBy(['order' => $order]);
+        $entry  = $repo->find($order);
         
         if ($entry) {
             $attr = $entry->getAttribute();
