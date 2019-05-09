@@ -17,7 +17,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a id="test" class="navbar-brand" href="#">{s name=billiepayment/overview/title}Billie.io Overview{/s}</a>
+            <a id="test" class="navbar-brand" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">{s name=billiepayment/overview/title}Billie.io Overview{/s}</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
