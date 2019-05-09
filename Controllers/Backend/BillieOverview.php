@@ -9,10 +9,18 @@ use Shopware\Components\CSRFWhitelistAware;
  */
 class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Action implements CSRFWhitelistAware
 {
+
     /**
-     * @var OrderRepository
+     * @var \Shopware\Components\Model\ModelManager
      */
-    protected $orderRepository = null;
+    protected $entityManager = null;
+
+
+    /**
+     * @var \Shopware\Components\Model\QueryBuilder
+     */
+    protected $queryBuilder = null;
+
 
     /**
      * Assign CSRF-Token to view.
@@ -26,20 +34,6 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     }
 
     /**
-     * Internal helper function to get access to the order repository.
-     *
-     * @return OrderRepository
-     */
-    private function getOrderRepository()
-    {
-        if ($this->orderRepository === null) {
-            $this->orderRepository = $this->getModelManager()->getRepository('Shopware\Models\Order\Order');
-        }
-
-        return $this->orderRepository;
-    }
-
-    /**
      * Index action displays list with orders paid with billie.io
      *
      * @return void
@@ -47,19 +41,39 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     public function indexAction()
     {
         // Query Params
-        $filter   = [
+        $filters   = [
             ['property' => 'payment.name', 'value' => 'billie_payment_after_delivery']
         ];
         $sort    = [['property' => 'orders.orderTime', 'direction' => 'DESC']];
         $page    = intval($this->Request()->getParam('page', 1));
         $perPage = 25;
+        $offset  = ($page - 1) * $perPage;
 
         // Load Orders
-        $query  = $this->getOrderRepository()->getOrdersQuery($filter, $sort, ($page - 1) * $perPage, $perPage);
-        $total  = $this->getModelManager()->getQueryCount($query);
-        $orders = $query->getArrayResult();
+        $builder = $this->getQueryBuilder();
+        $builder->select(['orders'])
+            ->from(\Shopware\Models\Order\Order::class, 'orders')
+            ->leftJoin('orders.attribute', 'attribute')
+            ->leftJoin('orders.payment', 'payment')
+            ->andWhere('orders.number IS NOT NULL')
+            ->andWhere('orders.status != -1')
+            ->addOrderBy($sort)
+            ->addFilter($filters)
+            ->setFirstResult($offset)
+            ->setMaxResults($perPage);
+        
+        // Get Query and paginator
+        $query = $builder->getQuery();
+        $query->setHydrationMode(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
+        $paginator = $this->getEnityManager()->createPaginator($query);
 
-        $this->View()->assign(['orders' => $orders, 'total' => $total, 'totalPages' => ceil($total/$perPage), 'page' => $page, 'perPage' => $perPage]);
+        $this->View()->assign([
+            'orders'     => $paginator->getIterator()->getArrayCopy(),
+            'total'      => $paginator->count(),
+            'totalPages' => ceil($paginator->count()/$perPage),
+            'page'       => $page,
+            'perPage'    => $perPage
+        ]);
     }
 
     /**
@@ -129,5 +143,34 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     public function getWhitelistedCSRFActions()
     {
         return [ 'index', 'order' ];
+    }
+
+    /**
+     * Internal helper function to get access to the query builder.
+     *
+     * @return \Shopware\Components\Model\QueryBuilder
+     */
+    private function getQueryBuilder()
+    {
+
+        if ($this->queryBuilder === null) {
+            $this->queryBuilder = $this->getEnityManager()->createQueryBuilder();
+        }
+        
+        return $this->queryBuilder;
+    }
+
+    /**
+     * Internal helper function to get access the Model Manager.
+     *
+     * @return \Shopware\Components\Model\ModelManager
+     */
+    private function getEnityManager()
+    {
+        if ($this->entityManager === null) {
+            $this->entityManager = Shopware()->Container()->get('models');
+        }
+        
+        return $this->entityManager;
     }
 }
