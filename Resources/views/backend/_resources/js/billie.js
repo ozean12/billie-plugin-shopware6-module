@@ -25,6 +25,7 @@ $(function () {
      */
     var onConfirmPayment = function (event) {
         var target = $(event.target);
+        event.preventDefault();
 
         postMessageApi.createPromptMessage(
             _BILLIE_SNIPPETS_.confirm_payment.title,
@@ -61,6 +62,7 @@ $(function () {
      */
     var onCancelOrder = function(event) {
         var target = $(event.target);
+        event.preventDefault();
 
         postMessageApi.createConfirmMessage(
             _BILLIE_SNIPPETS_.cancel_order.title,

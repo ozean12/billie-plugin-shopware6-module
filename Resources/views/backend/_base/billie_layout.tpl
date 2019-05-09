@@ -37,7 +37,23 @@
 <script type="text/javascript" src="{link file="backend/_resources/js/jquery-2.1.4.min.js"}"></script>
 <script type="text/javascript" src="{link file="backend/_resources/js/bootstrap.min.js"}"></script>
 
-{block name="content/layout/javascript"}{/block}
-{block name="content/javascript"}{/block}
+{block name="content/layout/javascript"}
+<script type="text/javascript">
+    var _BILLIE_SNIPPETS_ = {
+        confirm_payment: {
+            title: "{s name=billiepayment/snippets/confirm_payment/title}Zahlungsbetrag{/s}",
+            desc: "{s name=billiepayment/snippets/confirm_payment/description}Bitte geben Sie Zahlungsbetrag an.{/s}",
+        },
+        cancel_order: {
+            title: "{s name=billiepayment/snippets/cancel_order/title}Bestellung abbrechen{/s}",
+            desc: "{s name=billiepayment/snippets/cancel_order/description}Sind Sie sicher, dass Sie die Bestellung über Billie.io abbrechen möchten?{/s}",
+        }
+    };
+</script>
+{/block}
+{block name="content/javascript"}
+<script type="text/javascript" src="{link file="backend/_resources/js/billie.js"}"></script>
+{/block}
+
 </body>
 </html>

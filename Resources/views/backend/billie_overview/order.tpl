@@ -95,24 +95,3 @@
         </div> *}
     </form>
 {/block}
-
-
-{block name="content/layout/javascript"}
-    {$smarty.block.parent}
-    <script type="text/javascript">
-        var _BILLIE_SNIPPETS_ = {
-            confirm_payment: {
-                title: "{s name=billiepayment/snippets/confirm_payment/title}Zahlungsbetrag{/s}",
-                desc: "{s name=billiepayment/snippets/confirm_payment/description}Bitte geben Sie Zahlungsbetrag an.{/s}",
-            },
-            cancel_order: {
-                title: "{s name=billiepayment/snippets/cancel_order/title}Bestellung abbrechen{/s}",
-                desc: "{s name=billiepayment/snippets/cancel_order/description}Sind Sie sicher, dass Sie die Bestellung über Billie.io abbrechen möchten?{/s}",
-            }
-        };
-    </script>
-{/block}
-{block name="content/javascript"}
-    {$smarty.block.parent}
-    <script type="text/javascript" src="{link file="backend/_resources/js/billie.js"}"></script>
-{/block}
