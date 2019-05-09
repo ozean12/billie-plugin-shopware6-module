@@ -3,8 +3,18 @@
 use BilliePayment\Components\BilliePayment\PaymentResponse;
 use BilliePayment\Components\BilliePayment\PaymentService;
 
+/**
+ * Frontend Controller for Billie.io Payment.
+ * Handles the Checkout process with billi.io API.
+ *
+ * @SuppressWarnings(PHPMD.CamelCaseClassName)
+ */
 class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_Frontend_Payment
 {
+    /**
+     * Payment Status Paid Code
+     * @var integer
+     */
     const PAYMENTSTATUSPAID = 12;
 
     /**
@@ -31,7 +41,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $service = $this->container->get('billie_payment.payment_service');
         $user    = $this->getUser();
         $billing = $user['billingaddress'];
-        
+
         /** @var PaymentResponse $response */
         $response  = $service->createPaymentResponse($this->Request());
         $signature = $response->signature;

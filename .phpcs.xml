@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<ruleset name="MyStandard">
+    <description>My custom coding standard.</description>
+    <rule ref="PSR1">
+        <exclude name="PSR1.Classes.ClassDeclaration" />
+        <exclude name="Squiz.Classes.ValidClassName.NotCamelCaps"/>
+        <exclude name="PSR1.Methods.CamelCapsMethodName.NotCamelCaps" />
+    </rule>
+</ruleset>

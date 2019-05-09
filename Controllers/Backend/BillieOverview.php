@@ -6,6 +6,8 @@ use Shopware\Components\CSRFWhitelistAware;
 /**
  * Backend Controller for lightweight backend module.
  * Manages Billie Order Details and States.
+ * 
+ * @SuppressWarnings(PHPMD.CamelCaseClassName)
  */
 class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Action implements CSRFWhitelistAware
 {
