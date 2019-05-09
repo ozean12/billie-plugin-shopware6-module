@@ -18,6 +18,11 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     const PAYMENTSTATUSPAID = 12;
 
     /**
+     * @var \Shopware\Components\Logger
+     */
+    protected $logger = null;
+
+    /**
      * Index action method.
      *
      * Forwards to the correct action.
@@ -69,7 +74,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                 // TODO: get infos from $user, $basket and from plugin config
                 // TODO: Update API order status to either 'declined' or 'created' depending on api return state
                 // var_dump($response, $user, $basket, $billing);die;
-                // Shopware()->Container()->get('pluginlogger')->info('POST /v1/order');
+                $this->getLogger()->info('POST /v1/order');
                 Shopware()->Session()->apiOrderState = 'created';
 
                 // TODO: Check for actual api error
@@ -119,5 +124,19 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         ];
 
         return $url . '?' . http_build_query($parameter);
+    }
+
+     /**
+     * Internal helper function to get access the plugin logger
+     *
+     * @return \Shopware\Components\Logger
+     */
+    private function getLogger()
+    {
+        if ($this->logger === null) {
+            $this->logger = Shopware()->Container()->get('pluginlogger');
+        }
+        
+        return $this->logger;
     }
 }
