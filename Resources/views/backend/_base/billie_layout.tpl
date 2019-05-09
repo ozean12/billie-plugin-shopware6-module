@@ -46,7 +46,7 @@
         },
         cancel_order: {
             title: "{s name=billiepayment/snippets/cancel_order/title}Bestellung abbrechen{/s}",
-            desc: "{s name=billiepayment/snippets/cancel_order/description}Sind Sie sicher, dass Sie die Bestellung über Billie.io abbrechen möchten?{/s}",
+            desc: "{s name=billiepayment/snippets/cancel_order/description}Sind Sie sicher, dass Sie die Bestellung über Billie.io stornieren möchten?{/s}",
         }
     };
 </script>
