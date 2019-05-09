@@ -142,7 +142,7 @@ class Order implements SubscriberInterface
         
         if ($entry) {
             $attr = $entry->getAttribute();
-            $entry->setBillieState($state);
+            $attr->setBillieState($state);
             $models->persist($attr);
             $models->flush($attr);
         }

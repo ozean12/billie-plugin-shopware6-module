@@ -126,7 +126,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         return $url . '?' . http_build_query($parameter);
     }
 
-     /**
+    /**
      * Internal helper function to get access the plugin logger
      *
      * @return \Shopware\Components\Logger

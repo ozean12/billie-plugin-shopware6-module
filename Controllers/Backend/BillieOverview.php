@@ -160,6 +160,22 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $order  = $this->Request()->getParam('order_id');
         $this->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
         $this->Front()->Plugins()->Json()->setRenderer();
+
+        $models = $this->getEnityManager();
+        $repo   = $models->getRepository(\Shopware\Models\Order\Order::class);
+        $entry  = $repo->find($order);
+        
+        if (!$entry) {
+            $this->View()->assign(['success' => false, 'title' => 'Fehler', 'data' => 'Fehlernachricht']);
+            return;
+        }
+
+        // update state
+        $attr = $entry->getAttribute();
+        $attr->setBillieState('canceled');
+        $models->persist($attr);
+        $models->flush($attr);
+        
         $this->View()->assign(['success' => true, 'title' => 'Erfolgreich', 'data' => 'Cancelation Response']);
     }
 
