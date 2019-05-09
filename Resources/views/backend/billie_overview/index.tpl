@@ -2,18 +2,18 @@
 
 {block name="content/main"}
     <div class="page-header">
-        <h1>Bestellungen</h1>
+        <h1>{s name="billiepayment/listing/heading"}Bestellungen{/s}</h1>
     </div>
 
     <div class="table-responsive">
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Bestell-Zeit</th>
-                    <th>Bestellnummer</th>
-                    <th>Betrag</th>
-                    <th>Transaktion</th>
-                    <th>Aktueller Status</th>
+                    <th>{s name="billiepayment/listing/column/order_time"}Bestell-Zeit{/s}</th>
+                    <th>{s name="billiepayment/listing/column/order_numer"}Bestellnummer{/s}</th>
+                    <th>{s name="billiepayment/listing/column/amount"}Betrag{/s}</th>
+                    <th>{s name="billiepayment/listing/column/transaction"}Transaktion{/s}</th>
+                    <th>{s name="billiepayment/listing/column/current_state"}Aktueller Status{/s}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -44,14 +44,14 @@
             <tfoot>
                 <tr class="active">
                     <td colspan="2">
-                        <strong>Einträge:</strong> {$total}
+                        <strong>{s name="billiepayment/listing/column/entires"}Einträge:{/s}</strong> {$total}
                     </td>
                     <td colspan="4">
-                        <nav aria-label="Page navigation" class="pull-right">
+                        <nav aria-label="{s name="billiepayment/listing/navigation/label"}Navigation{/s}" class="pull-right">
                             <ul class="pagination">
                                 {if $page > 1}
                                     <li>
-                                        <a href="{url controller="BillieOverview" action="index" page=($page -1)}" aria-label="Previous">
+                                        <a href="{url controller="BillieOverview" action="index" page=($page -1)}" aria-label="{s name="billiepayment/listing/navigation/prev"}Zurück{/s}">
                                             <span aria-hidden="true">&laquo;</span>
                                         </a>
                                     </li>
@@ -65,7 +65,7 @@
                                 {/for}
                                 {if $page < $totalPages}
                                     <li>
-                                        <a href="{url controller="BillieOverview" action="index" page=($page + 1)}" aria-label="Next">
+                                        <a href="{url controller="BillieOverview" action="index" page=($page + 1)}" aria-label="{s name="billiepayment/listing/navigation/next"}Weiter{/s}">
                                             <span aria-hidden="true">&raquo;</span>
                                         </a>
                                     </li>
