@@ -60,7 +60,7 @@ Ext.define('Shopware.apps.BilliePayment.view.detail.Overview', {
                 scope: me,
                 cls: 'secondary',
                 onClick: function() {
-                    Shopware.ModuleManager.createSimplifiedModule("BillieOverview/?order_id=" + me.record.data.id, { "order_id": me.record.id, "title": "{s name=billiepayment/overview/title}Billie.io Übersicht{/s}" })
+                    Shopware.ModuleManager.createSimplifiedModule("BillieOverview/order/?order_id=" + me.record.data.id, { "order_id": me.record.id, "title": "{s name=billiepayment/overview/title}Billie.io Übersicht{/s}" })
                 },
             });
 

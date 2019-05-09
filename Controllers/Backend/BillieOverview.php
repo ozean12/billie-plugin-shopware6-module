@@ -25,7 +25,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      *
      * @return void
      */
-    public function indexAction()
+    public function orderAction()
     {
         $order = $this->Request()->getParam('order_id');
 
@@ -40,7 +40,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
             ],
             'debtor_company' => [
                 'name' => 'John Doe',
-                'address_house_number' => 'John Doe',
+                'address_house_number' => '42',
                 'address_house_street' => 'XYZ',
                 'address_house_city' => 'ABCDE',
                 'address_house_postal_code' => '12345',
@@ -86,6 +86,6 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function getWhitelistedCSRFActions()
     {
-        return [ 'index' ];
+        return [ 'index', 'order' ];
     }
 }
