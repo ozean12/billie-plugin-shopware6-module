@@ -17,15 +17,8 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a id="test" class="navbar-brand" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">{s name=billiepayment/overview/title}Billie.io Overview{/s}</a>
+            <a class="navbar-brand" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">{s name=billiepayment/overview/title}Billie.io Overview{/s}</a>
         </div>
-        <div id="navbar" class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <li{if {controllerAction} === 'index'} class="active"{/if}>
-                    <a href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">Home</a>
-                </li>
-            </ul>
-        </div><!--/.nav-collapse -->
     </div>
 </nav>
 
