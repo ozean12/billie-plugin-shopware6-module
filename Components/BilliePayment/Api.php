@@ -29,10 +29,11 @@ class Api
      */
     protected $config = [];
 
+    /**
+     * Load Plugin config
+     */
     public function __construct()
     {
-        // TODO: get infos from $user, $basket and from plugin config
-        // $config = Shopware()->Plugins()->Frontend()->BilliePayment()->Config();
         $this->config = Shopware()->Container()->get('shopware.plugin.cached_config_reader')->getByPluginName('BilliePayment', Shopware()->Shop());
     }
 

@@ -18,11 +18,6 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     const PAYMENTSTATUSPAID = 12;
 
     /**
-     * @var \Shopware\Components\Logger
-     */
-    protected $logger = null;
-
-    /**
      * Index action method.
      *
      * Forwards to the correct action.
@@ -126,19 +121,5 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         ];
 
         return $url . '?' . http_build_query($parameter);
-    }
-
-    /**
-     * Internal helper function to get access the plugin logger
-     *
-     * @return \Shopware\Components\Logger
-     */
-    private function getLogger()
-    {
-        if ($this->logger === null) {
-            $this->logger = Shopware()->Container()->get('pluginlogger');
-        }
-        
-        return $this->logger;
     }
 }
