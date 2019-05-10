@@ -69,6 +69,7 @@ class Order implements SubscriberInterface
                     'amount' => [
                         'net'   => $params['invoiceAmountNet'] + $params['invoiceShippingNet'],
                         'gross' => $params['invoiceAmount'] + $params['invoiceShipping'],
+                        'currency' => 'EUR', //TODO: Fetch correct currency
                     ]
                 ]);
                 // exit('{"success": false, "message": "Dies ist eine Fehlernachricht"}');

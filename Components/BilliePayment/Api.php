@@ -3,6 +3,8 @@
 namespace BilliePayment\Components\BilliePayment;
 
 use Shopware\Models\Order\Order;
+use Shopware\Models\Shop\Shop;
+// use Billie\HttpClient\BillieClient;
 
 /**
  * Service Wrapper for billie API sdk
@@ -30,11 +32,27 @@ class Api
     protected $config = [];
 
     /**
+     * @var BillieClient
+     */
+    protected $client = null;
+
+    /**
      * Load Plugin config
      */
     public function __construct()
     {
-        $this->config = Shopware()->Container()->get('shopware.plugin.cached_config_reader')->getByPluginName('BilliePayment', Shopware()->Shop());
+        $container = Shopware()->Container();
+        $shop      = $container->initialized('shop')
+            ? $container->get('shop')
+            : $container->get('models')->getRepository(Shop::class)->getActiveDefault();
+
+        $this->config = $container
+            ->get('shopware.plugin.cached_config_reader')
+            ->getByPluginName('BilliePayment', $shop);
+
+        
+        // initialize Billie Client
+        // $this->client = BillieClient::create($this->config['apikey'], $this->config['sandbox']);
     }
 
     /**
@@ -83,39 +101,60 @@ class Api
      * @return array
      */
     public function createOrder($orderNumber)
-    {
-        $this->getLogger()->info('POST /v1/order');
-
+    {   
         // Get Order from db
+        $local  = ['state' => 'created'];
         $models = $this->getEnityManager();
         $repo   = $models->getRepository(Order::class);
         $order  = $repo->findOneBy(['number' => $orderNumber]);
-
-        if ($order) {
-            // Prepare data
-            $amountNet = $order->getInvoiceAmountNet() + $order->getInvoiceShippingNet();
-            $amountGross = $order->getInvoiceAmount() + $order->getInvoiceShipping();
-
-            $data = [
-                'debtor_person' => [
-                    'salutation' => $order->getBilling()->getSalutation(),
-                    'last_name' => $order->getBilling()->getLastName(),
-                    'first_name' => $order->getBilling()->getFirstName(),
-                    'phone_number' => $order->getBilling()->getPhone(),
-                    'email' => $order->getCustomer()->getEmail(),
-                ],
-                'amount' => [
-                    'net' => $amountNet,
-                    'gross' => $amountGross,
-                    'tax' => $amountGross - $amountNet,
-                ],
-                'order_id' => $order->getId()
-            ];
-
-            // TODO: Call API Endpoint to create order -> POST /v1/order
-            // TODO: Update API order status to either 'declined' or 'created' depending on api return state
-            return ['success' => true, 'messages' => 'OK'];
+        
+        if (!$order) {
+            return $this->orderNotFoundMessage($orderNumber);
         }
+
+        // Prepare data
+        $amountNet   = $order->getInvoiceAmountNet() + $order->getInvoiceShippingNet();
+        $amountGross = $order->getInvoiceAmount() + $order->getInvoiceShipping();
+        $taxRate     = round(($amountGross / $amountNet - 1) * 100); // TODO: find correct rate in db
+        $billing     = $order->getBilling();
+        // $command     = new Billie\Command\CreateOrder();
+
+        // Address of the company
+        $companyAddress = new \stdClass();//new Billie\Model\Address();
+        $companyAddress->street      = $billing->getStreet(); // TODO: Split street and housenumber
+        $companyAddress->houseNumber = $billing->getStreet(); // TODO: Split street and housenumber
+        $companyAddress->postalCode  = $billing->getZipCode();
+        $companyAddress->city        = $billing->getCity();
+        $companyAddress->countryCode = $billing->getCountry()->getIso();
+        
+        // TODO: Company information, whereas CUSTOMER_ID_1 is the merchant's customer id (use _null_ for guest orders)
+        // $command->debtorCompany = new Billie\Model\Company($order->getCustomer()->getId(), $billing->getCompany(), $companyAddress);
+        // $command->debtorCompany->legalForm = '10001';
+        // $command->amount = new Billie\Model\Amount($amountGross * 100, $order->getCurrency(), $taxRate); // amounts are in cent!
+        // $command->duration = $this->config['duration']; // duration=14 meaning: when the order is shipped on the 1st May, the due date is the 15th May
+        
+        // TODO: Call API Endpoint to create order -> POST /v1/order
+        // try {
+        //     /** @var Billie\Model\Orderr $order */
+        //     $order = $this->client->createOrder($command);
+        //     $this->getLogger()->info('POST /v1/order');
+        //     $local['referenceId'] = $order->referenceId; // save data
+        // } catch (Billie\Exception\OrderDeclinedException $exception) {
+        //     $message = $exception->getBillieMessage();
+        //     // for custom translation
+        //     $messageKey = $exception->getBillieCode();
+        //     $reason = $exception->getReason();
+        //     $local['state'] = 'declined';
+        //     return ['success' => false, 'title' => 'Error', 'data' => $reason];
+        // }
+
+        // TODO: Update API order status to either 'declined' or 'created' depending on api return state
+        // Update local state
+        if (($localUpdate = $this->updateLocal($order->getId(), $local)) !== true) {
+            return $localUpdate;
+        }
+            
+        return ['success' => true, 'messages' => 'OK'];
     }
 
     /**
@@ -126,16 +165,33 @@ class Api
      */
     public function cancelOrder($order)
     {
+        // Get Order
+        $local = ['state' => 'canceled'];
+        $item  = $this->getOrder($order);
+        
+        if (!$item) {
+            return $this->orderNotFoundMessage($order);
+        }
+
         // TODO: run POST /v1/order/{order_id}/cancel
-        $this->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
-        $response = ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Cancelation Response'];
+        // try {
+        //     $command = new Billie\Command\CancelOrder($item->getAttribute()->getBillieReferenceId());
+        //     $this->client->cancelOrder($command);
+        //     $this->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
+        // } catch (Billie\Exception\OrderNotCancelledException $exception) {
+        //     $message = $exception->getBillieMessage();
+        //     $messageKey = $exception->getBillieCode();
+        //     // $local = ['state' => 'canceled'];
+
+        //     return ['success' => false, 'title' => 'Error', 'data' => $message];
+        // }
 
         // Update local state
-        if (($localUpdate = $this->updateLocal($order, ['state' => 'canceled'])) !== true) {
+        if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
             return $localUpdate;
         }
         
-        return $response;
+        return ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Cancelation Response'];
     }
 
     /**
@@ -146,12 +202,43 @@ class Api
      */
     public function shipOrder($order)
     {
-        // TODO: run POST /v1/order/{order_id}/ship
-        // TODO: Flag billie state as 'shipped' (or declined based on api response)
-        $this->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
-        $response = ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Ship Response'];
+        // Get Order
+        $local = ['state' => 'shipped'];
+        $item  = $this->getOrder($order);
+        
+        if (!$item) {
+            return $this->orderNotFoundMessage($order);
+        }
 
-        return $response;
+        // Prepare Data
+        // $command = new Billie\Command\ShipOrder($item->getAttribute()->getBillieReferenceId()); // th reference ID was provided by Billie in the createOrder Response.
+        // $command->orderId = $item->getId(); // TODO: order_id or order_number? id that the customer know
+        // $command->invoiceNumber = '12/0001/2019'; // required, given by merchant
+        // $command->invoiceUrl = 'https://www.example.com/invoice.pdf'; // required, given by merchant
+        // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
+
+        // TODO: run POST /v1/order/{order_id}/ship
+        // try {
+        //     /** @var Billie\Model\Orderr $order */
+        //     $order = $this->client->shipOrder($command);
+        //     $this->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
+        //     $dueDate = $order->invoice->dueDate;
+        // } catch (Billie\Exception\OrderNotShippedException $exception) {
+        //     // TODO: Flag billie state as declined based on api response
+        //     $message = $exception->getBillieMessage();
+        //     $messageKey = $exception->getBillieCode();
+        //     $reason = $exception->getReason();
+        //     $local['state'] = 'declined';
+        //
+        //     return ['success' => false, 'title' => 'Error', 'data' => $reason];
+        // }
+        
+        // Update local state
+        if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
+            return $localUpdate;
+        }
+
+        return ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Ship Response'];
     }
 
     /**
@@ -163,11 +250,50 @@ class Api
      */
     public function updateOrder($order, array $data)
     {
-        // TODO: run PATCH /v1/order/{order_id}
-        $this->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $order));
-        $response = ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Update Response'];
+        // Get Order
+        $item  = $this->getOrder($order);
         
-        return $response;
+        if (!$item) {
+            return $this->orderNotFoundMessage($order);
+        }
+
+        // Reduce Amount
+        // if (in_array('amount', $data)) {
+        //     $command = new Billie\Command\ReduceOrderAmount($item->getAttribute()->getBillieReferenceId());
+        //     $command->amount = new Billie\Model\Amount(
+        //         $data['amount']['net'],
+        //         $data['amount']['currency'],
+        //         $data['amount']['gross'] - $data['amount']['net'] // Gross - Net = Tax Amount
+        //     );
+
+        //     // TODO: ONLY if the order has been SHIPPED already, you need to provide a invoice url and invoice number
+        //     if ($item->getAttribute()->getBillieState() === 'shipped') {
+        //         $command->invoiceNumber = '12/0002/2019';
+        //         $command->invoiceUrl = 'https://www.example.com/invoice_new.pdf';
+        //     }
+
+        //     // TODO: run PATCH /v1/order/{order_id}
+        //     $order = $this->client->reduceOrderAmount($command);
+        //     $this->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $item->getId()));
+        // }
+
+        // // Postpone Due Date
+        // if (in_array('duration', $data)) {
+        //     $command = new Billie\Command\PostponeOrderDueDate($item->getAttribute()->getBillieReferenceId());
+        //     $command->duration = $data['duration'];
+
+        //     try {
+        //         /** @var Billie\Model\Orderr $order */
+        //         $order = $this->client->postponeOrderDueDate($command);
+        //         $dueDate = $order->invoice->dueDate;
+        //     } catch (Billie\Exception\PostponeDueDateNotAllowedException $exception) {
+        //         $message = $exception->getBillieMessage();
+        //         $messageKey = $exception->getBillieCode();
+        //         return ['success' => false, 'title' => 'Error', 'data' => $message];
+        //     }
+        // }
+
+        return ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Update Response'];
     }
 
     /**
@@ -179,17 +305,31 @@ class Api
      */
     public function confirmPayment($order, $amount)
     {
-        $this->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
-        // TODO: Call POST /v1/order/{order_id}/confirm-payment
-        $response = ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Confirm Payment Response'];
+        // Get Order
+        $local = ['state' => 'completed'];
+        $item  = $this->getOrder($order);
+        
+        if (!$item) {
+            return $this->orderNotFoundMessage($order);
+        }
 
-        // TODO: Only if api call was
+        // // TODO: Call POST /v1/order/{order_id}/confirm-payment
+        // try {
+        //     $command = new Billie\Command\ConfirmPayment($item->getAttribute()->getBillieReferenceId(), $amount);
+        //     $this->client->confirmPayment($command);
+        //     $this->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
+        // } catch (Billie\Exception\BillieException $exception) {
+        //     $message = $exception->getBillieMessage();
+        //     $messageKey = $exception->getBillieCode();
+        //     return ['success' => false, 'title' => 'Error', 'data' => $message];
+        // }
+
         // Update local state
         if (($localUpdate = $this->updateLocal($order, ['state' => 'completed'])) !== true) {
             return $localUpdate;
         }
-
-        return $response;
+        
+        return ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Confirm Payment Response'];
     }
 
     /**
@@ -200,11 +340,26 @@ class Api
      */
     public function retrieveOrder($order)
     {
+        // Get Order
+        $local = [];
+        $item  = $this->getOrder($order);
+        
+        if (!$item) {
+            return $this->orderNotFoundMessage($order);
+        }
+
         // TODO: run GET /v1/order/{order_id}
-        $this->getLogger()->info(sprintf('GET /v1/order/%s', $order));
-        $models = $this->getEnityManager();
-        $repo   = $models->getRepository(Order::class);
-        $item   = $repo->find($order);
+        // try {
+        //     $response = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
+        //     $this->getLogger()->info(sprintf('GET /v1/order/%s', $order));
+        //     $local['state'] = $response...getstate etc
+        //     $local['iban'] = $response...getiban etc
+        //     $local['bic'] = $response...getbic etc
+        // } catch(Billie\Exception\InvalidCommandException $exception) {
+        //     return ['success' => false, 'title' => 'Error', 'data' => $exception];
+        // }
+        
+        // TODO: Delete testdata
         $response = [
             'state' => $item->getAttribute()->getBillieState(),
             'order_id' => $item->getId(),
@@ -222,11 +377,10 @@ class Api
             ]
         ];
 
-
-        // TODO: Update order details in database with new ones from billie
-        // if (($localUpdate = $this->updateLocal($order, ['state' => 'canceled'])) !== true) {
-        //     return $localUpdate;
-        // }
+        // Update order details in database with new ones from billie
+        if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
+            return $localUpdate;
+        }
         
         return $response;
     }
@@ -234,24 +388,19 @@ class Api
     /**
      * Update local information
      *
-     * @param integer $order
+     * @param Order|integer $order
      * @param array $data
      * @return bool|array
      */
     public function updateLocal($order, $data)
     {
-        // Get order
-        $models = $this->getEnityManager();
-        $repo   = $models->getRepository(Order::class);
-        $item   = $repo->find($order);
+        // Get Order if necessary.
+        if (!$order instanceof Order) {
+            $item = $this->getOrder($order);
 
-        // Order not found
-        if (!$item) {
-            return [
-                'success' => false,
-                'title'   => 'Fehler',
-                'data'    => sprintf('Bestellung mit ID %s konnte nicht gefunden werden', $order)
-            ];
+            if (!$item) {
+                return $this->orderNotFoundMessage($order);
+            }
         }
 
         // set values
@@ -269,6 +418,9 @@ class Api
                 case 'bic':
                     $attr->setBillieBic($value);
                     break;
+
+                case 'reference':
+                    $attr->setBillieReferenceId($value);
                 
                 default:
                     break;
@@ -280,6 +432,34 @@ class Api
         $models->flush($attr);
 
         return true;
+    }
+
+    /**
+     * Get an order by id
+     *
+     * @param integer $order
+     * @return Order
+     */
+    protected function getOrder($order)
+    {
+        $models = $this->getEnityManager();
+        $repo   = $models->getRepository(Order::class);
+        return $repo->find($order);
+    }
+
+    /**
+     * Get the order not found data message
+     *
+     * @param integer $order
+     * @return array
+     */
+    private function orderNotFoundMessage($order)
+    {
+        return [
+            'success' => false,
+            'title'   => 'Fehler',
+            'data'    => sprintf('Bestellung mit ID %s konnte nicht gefunden werden', $order)
+        ];
     }
 
     /**

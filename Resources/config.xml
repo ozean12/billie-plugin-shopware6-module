@@ -10,6 +10,14 @@
             <description lang="de">Ihr billie.io API-Schlüssel</description>
             <description lang="en">Your billie.io API key.</description>
         </element>
+        <element type="boolean" scope="locale">
+            <name>sandbox</name>
+            <label lang="de">API Sandbox</label>
+            <label lang="en">API Sandbox</label>
+            <value>false</value>
+            <description lang="de">Aktivieren des API Sandbox Modus</description>
+            <description lang="en">Activate the API Sandbox mode.</description>
+        </element>
         <element required="true" type="number" scope="locale">
             <name>duration</name>
             <label lang="de">Dauer</label>

@@ -91,6 +91,7 @@ class BilliePayment extends Plugin
     private function createDatabase()
     {
         $service = $this->container->get('shopware_attribute.crud_service');
+        $service->update('s_order_attributes', 'billie_referenceId', 'string');
         $service->update('s_order_attributes', 'billie_state', 'string');
         $service->update('s_order_attributes', 'billie_iban', 'string');
         $service->update('s_order_attributes', 'billie_bic', 'string');
@@ -108,6 +109,7 @@ class BilliePayment extends Plugin
     private function removeDatabase()
     {
         $service = $this->container->get('shopware_attribute.crud_service');
+        $service->delete('s_order_attributes', 'billie_referenceId');
         $service->delete('s_order_attributes', 'billie_state');
         $service->delete('s_order_attributes', 'billie_iban');
         $service->delete('s_order_attributes', 'billie_bic');
