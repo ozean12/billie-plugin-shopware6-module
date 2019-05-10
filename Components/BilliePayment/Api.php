@@ -25,6 +25,18 @@ class Api
     protected $queryBuilder = null;
 
     /**
+     * @var array
+     */
+    protected $config = [];
+
+    public function __construct()
+    {
+        // TODO: get infos from $user, $basket and from plugin config
+        // $config = Shopware()->Plugins()->Frontend()->BilliePayment()->Config();
+        $this->config = Shopware()->Container()->get('shopware.plugin.cached_config_reader')->getByPluginName('BilliePayment', Shopware()->Shop());
+    }
+
+    /**
      * Load orders paid with billie.
      *
      * @param integer $page
@@ -61,7 +73,48 @@ class Api
             'page'       => $page,
             'perPage'    => $perPage
         ];
+    }
 
+    /**
+     * Tell billie about newly created order
+     *
+     * @param integer $orderNumber
+     * @return array
+     */
+    public function createOrder($orderNumber)
+    {
+        $this->getLogger()->info('POST /v1/order');
+
+        // Get Order from db
+        $models = $this->getEnityManager();
+        $repo   = $models->getRepository(Order::class);
+        $order  = $repo->findOneBy(['number' => $orderNumber]);
+
+        if ($order) {
+            // Prepare data
+            $amountNet = $order->getInvoiceAmountNet() + $order->getInvoiceShippingNet();
+            $amountGross = $order->getInvoiceAmount() + $order->getInvoiceShipping();
+
+            $data = [
+                'debtor_person' => [
+                    'salutation' => $order->getBilling()->getSalutation(),
+                    'last_name' => $order->getBilling()->getLastName(),
+                    'first_name' => $order->getBilling()->getFirstName(),
+                    'phone_number' => $order->getBilling()->getPhone(),
+                    'email' => $order->getCustomer()->getEmail(),
+                ],
+                'amount' => [
+                    'net' => $amountNet,
+                    'gross' => $amountGross,
+                    'tax' => $amountGross - $amountNet,
+                ],
+                'order_id' => $order->getId()
+            ];
+
+            // TODO: Call API Endpoint to create order -> POST /v1/order
+            // TODO: Update API order status to either 'declined' or 'created' depending on api return state
+            return ['success' => true, 'messages' => 'OK'];
+        }
     }
 
     /**
@@ -77,7 +130,7 @@ class Api
         $response = ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Cancelation Response'];
 
         // Update local state
-        if (($localUpdate = $this>updateLocal($order, ['state' => 'canceled'])) !== true) {
+        if (($localUpdate = $this->updateLocal($order, ['state' => 'canceled'])) !== true) {
             return $localUpdate;
         }
         
@@ -131,7 +184,7 @@ class Api
 
         // TODO: Only if api call was
         // Update local state
-        if (($localUpdate = $this>updateLocal($order, ['state' => 'completed'])) !== true) {
+        if (($localUpdate = $this->updateLocal($order, ['state' => 'completed'])) !== true) {
             return $localUpdate;
         }
 
@@ -170,7 +223,7 @@ class Api
 
 
         // TODO: Update order details in database with new ones from billie
-        // if (($localUpdate = $this>updateLocal($order, ['state' => 'canceled'])) !== true) {
+        // if (($localUpdate = $this->updateLocal($order, ['state' => 'canceled'])) !== true) {
         //     return $localUpdate;
         // }
         
@@ -195,8 +248,8 @@ class Api
         if (!$item) {
             return [
                 'success' => false,
-                'title' => 'Fehler',
-                'data' => sprintf('Bestellung mit ID %s konnte nicht gefunden werden', $order)
+                'title'   => 'Fehler',
+                'data'    => sprintf('Bestellung mit ID %s konnte nicht gefunden werden', $order)
             ];
         }
 
@@ -206,6 +259,14 @@ class Api
             switch ($key) {
                 case 'state':
                     $attr->setBillieState($value);
+                    break;
+
+                case 'iban':
+                    $attr->setBillieIban($value);
+                    break;
+
+                case 'bic':
+                    $attr->setBillieBic($value);
                     break;
                 
                 default:

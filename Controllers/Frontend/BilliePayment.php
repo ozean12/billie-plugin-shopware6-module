@@ -70,24 +70,26 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         // Check response status and save order when everything went fine.
         switch ($response->status) {
             case 'accepted':
-                // TODO: Call API Endpoint to create order -> POST /v1/order
-                // TODO: get infos from $user, $basket and from plugin config
-                // TODO: Update API order status to either 'declined' or 'created' depending on api return state
-                // var_dump($response, $user, $basket, $billing);die;
-                $this->getLogger()->info('POST /v1/order');
-                Shopware()->Session()->apiOrderState = 'created';
-
-                // TODO: Check for actual api error
-                // Shopware()->Session()->apiErrorMessages = ['Example: Something went wrong. Please try again'];
-                // $this->redirect(['controller' => 'checkout', 'action' => 'confirm']);
-                // break;
-
-                $this->saveOrder(
+                // Create Order
+                $orderNumber = $this->saveOrder(
                     $response->transactionId,
                     $response->token,
                     self::PAYMENTSTATUSPAID
                 );
-                $this->redirect(['controller' => 'checkout', 'action' => 'finish']);
+
+                // Call Api for created order
+                $api      = $this->container->get('billie_payment.api');
+                $response = $api->createOrder($orderNumber);
+
+                if ($response['success']) {
+                    $this->redirect(['controller' => 'checkout', 'action' => 'finish']);
+                    break;
+                }
+
+                // Error messages
+                Shopware()->Session()->apiErrorMessages = $response['messages'];
+                $this->redirect(['controller' => 'checkout', 'action' => 'confirm']);
+
                 break;
             default:
                 $this->forward('cancel');
