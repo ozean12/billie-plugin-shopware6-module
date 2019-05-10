@@ -25,7 +25,23 @@
                         <td>{$order.number}</td>
                         <td>{$order.invoiceAmount|currency:use_shortname:right}</td>
                         <td>{$order.transactionId}</td>
-                        <td class="state">{$order.attribute.billieState}</td>
+                        <td class="state">
+                            {if $order.attribute.billieState == 'created'}
+                                {s name="billiepayment/order/state/created"}erstellt{/s}
+                            {elseif $order.attribute.billieState == 'declined'}
+                                {s name="billiepayment/order/state/declined"}abgelehnt{/s}
+                            {elseif $order.attribute.billieState == 'shipped'}
+                                {s name="billiepayment/order/state/shipped"}verschickt{/s}
+                            {elseif $order.attribute.billieState == 'paid_out'}
+                                {s name="billiepayment/order/state/paid_out"}ausbezahlt{/s}
+                            {elseif $order.attribute.billieState == 'late'}
+                                {s name="billiepayment/order/state/late"}überfällig{/s}
+                            {elseif $order.attribute.billieState == 'complete'}
+                                {s name="billiepayment/order/state/complete"}abgeschlossen{/s}
+                            {elseif $order.attribute.billieState == 'canceled'}
+                                {s name="billiepayment/order/state/canceled"}storniert{/s}
+                            {/if}
+                        </td>
                         <td>
                             <a href="{url controller="BillieOverview" action="order" order_id="{$order.id}"}" class="btn btn-primary">
                                 <i class="glyphicon glyphicon-pencil"></i>

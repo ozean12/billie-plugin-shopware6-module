@@ -24,17 +24,25 @@
 
         <h3>{s name="billiepayment/order/state/heading"}Zustandsdetails{/s}</h3>
         <div class="form-group">
-            <label for="state" class="col-sm-2 control-label">{s name="billiepayment/order/state/state"}Zusantd{/s}</label>
+            <label for="state" class="col-sm-2 control-label">{s name="billiepayment/order/state/state"}Zustand{/s}</label>
             <div class="col-sm-10">
-                <select class="form-control" readonly>
-                    <option value="completed" {{if $state == 'created'}} selected{{/if}}>{s name="billiepayment/order/state/created"}erstellt{/s}</option>
-                    <option value="completed" {{if $state == 'declined'}} selected{{/if}}>{s name="billiepayment/order/state/declined"}abgelehnt{/s}</option>
-                    <option value="completed" {{if $state == 'shipped'}} selected{{/if}}>{s name="billiepayment/order/state/shipped"}verschickt{/s}</option>
-                    <option value="completed" {{if $state == 'paid_out'}} selected{{/if}}>{s name="billiepayment/order/state/paid_out"}ausbezahlt{/s}</option>
-                    <option value="completed" {{if $state == 'late'}} selected{{/if}}>{s name="billiepayment/order/state/late"}überfällig{/s}</option>
-                    <option value="completed" {{if $state == 'complete'}} selected{{/if}}>{s name="billiepayment/order/state/complete"}abgeschlossen{/s}</option>
-                    <option value="canceled" {{if $state == 'canceled'}} selected{{/if}}>{s name="billiepayment/order/state/canceled"}storniert{/s}</option>
-                </select>
+                <span class="state">
+                    {if $state == 'created'}
+                        {s name="billiepayment/order/state/created"}erstellt{/s}
+                    {elseif $state == 'declined'}
+                        {s name="billiepayment/order/state/declined"}abgelehnt{/s}
+                    {elseif $state == 'shipped'}
+                        {s name="billiepayment/order/state/shipped"}verschickt{/s}
+                    {elseif $state == 'paid_out'}
+                        {s name="billiepayment/order/state/paid_out"}ausbezahlt{/s}
+                    {elseif $state == 'late'}
+                        {s name="billiepayment/order/state/late"}überfällig{/s}
+                    {elseif $state == 'complete'}
+                        {s name="billiepayment/order/state/complete"}abgeschlossen{/s}
+                    {elseif $state == 'canceled'}
+                        {s name="billiepayment/order/state/canceled"}storniert{/s}
+                    {/if}
+                </span>
             </div>
         </div>
 
