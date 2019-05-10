@@ -40,18 +40,18 @@ $(function () {
 
     /**
      * Calls the cancel order action.
-     * @param {string} url URL to endpoint
-     * @param {number} order Order ID
+     * @param {HTMLElement} target Button that was clicked
      */
-    var callCancelOrderEndpoint = function (url, order) {
+    var callCancelOrderEndpoint = function (target) {
         $.ajax({
-            url: url,
+            url: target.data('action'),
             method: 'POST',
             data: {
-                'order_id': order
+                'order_id': target.data('order_id')
             },
             success: function (response) {
                 postMessageApi.createGrowlMessage(response.title, response.data);
+                target.closest('.wrapper').addClass('danger').find('.state').text(_BILLIE_SNIPPETS_.states.canceled)
             }
         });
     };
@@ -69,7 +69,7 @@ $(function () {
             _BILLIE_SNIPPETS_.cancel_order.desc,
             function (data) {
                 if ('yes' == data) {
-                    callCancelOrderEndpoint(target.data('action'), target.data('order_id'));
+                    callCancelOrderEndpoint(target);
                 }
             }
         );

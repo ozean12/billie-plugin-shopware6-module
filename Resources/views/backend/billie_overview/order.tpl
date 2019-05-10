@@ -1,6 +1,7 @@
 {extends file="parent:backend/_base/billie_layout.tpl"}
 
 {block name="content/main"}
+<div class="wrapper">
     <div class="page-header">
         <h1>{s name="billiepayment/order/heading"}Bestellung{/s} <small><code>order_id: {$order_id}</code></small></h1>
         <button
@@ -99,4 +100,5 @@
             </div>
         </div> *}
     </form>
+</div>
 {/block}

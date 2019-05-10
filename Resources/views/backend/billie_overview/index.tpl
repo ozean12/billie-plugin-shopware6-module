@@ -20,12 +20,12 @@
             <tbody>
                 {foreach $orders as $order}
                     {$state = $order.attribute.billieState}
-                    <tr class="{$statusClasses.$state}">
+                    <tr class="wrapper {$statusClasses.$state}">
                         <td>{$order.orderTime|date:DATE_SHORT}</td>
                         <td>{$order.number}</td>
                         <td>{$order.invoiceAmount|currency:use_shortname:right}</td>
                         <td>{$order.transactionId}</td>
-                        <td>{$order.attribute.billieState}</td>
+                        <td class="state">{$order.attribute.billieState}</td>
                         <td>
                             <a href="{url controller="BillieOverview" action="order" order_id="{$order.id}"}" class="btn btn-primary">
                                 <i class="glyphicon glyphicon-pencil"></i>
