@@ -37,6 +37,11 @@ class Api
     protected $client = null;
 
     /**
+     * @var CommandFactory
+     */
+    protected $commandFactory = null;
+
+    /**
      * Load Plugin config
      */
     public function __construct()
@@ -52,6 +57,7 @@ class Api
 
         
         // initialize Billie Client
+        // $this->commandFactory = new CommandFactory();
         // $this->client = BillieClient::create($this->config['apikey'], $this->config['sandbox']);
     }
 
@@ -112,31 +118,10 @@ class Api
             return $this->orderNotFoundMessage($orderNumber);
         }
 
-        // Prepare data
-        $amountNet   = $order->getInvoiceAmountNet() + $order->getInvoiceShippingNet();
-        $amountGross = $order->getInvoiceAmount() + $order->getInvoiceShipping();
-        $taxRate     = round(($amountGross / $amountNet - 1) * 100); // TODO: find correct rate in db
-        $billing     = $order->getBilling();
-        // $command     = new Billie\Command\CreateOrder();
-
-        // Address of the company
-        $companyAddress = new \stdClass();//new Billie\Model\Address();
-        $companyAddress->street      = $billing->getStreet(); // TODO: Split street and housenumber
-        $companyAddress->houseNumber = $billing->getStreet(); // TODO: Split street and housenumber
-        $companyAddress->postalCode  = $billing->getZipCode();
-        $companyAddress->city        = $billing->getCity();
-        $companyAddress->countryCode = $billing->getCountry()->getIso();
-        
-        // TODO: Company information, whereas CUSTOMER_ID_1 is the merchant's customer id (use _null_ for guest orders)
-        // $command->debtorCompany = new Billie\Model\Company($order->getCustomer()->getId(), $billing->getCompany(), $companyAddress);
-        // $command->debtorCompany->legalForm = '10001';
-        // $command->amount = new Billie\Model\Amount($amountGross * 100, $order->getCurrency(), $taxRate); // amounts are in cent!
-        // $command->duration = $this->config['duration']; // duration=14 meaning: when the order is shipped on the 1st May, the due date is the 15th May
-        
         // TODO: Call API Endpoint to create order -> POST /v1/order
         // try {
         //     /** @var Billie\Model\Orderr $order */
-        //     $order = $this->client->createOrder($command);
+        //     $order = $this->client->createOrder($this->commandFactory->createOrderCommand($order));
         //     $this->getLogger()->info('POST /v1/order');
         //     $local['referenceId'] = $order->referenceId; // save data
         // } catch (Billie\Exception\OrderDeclinedException $exception) {
@@ -210,17 +195,10 @@ class Api
             return $this->orderNotFoundMessage($order);
         }
 
-        // Prepare Data
-        // $command = new Billie\Command\ShipOrder($item->getAttribute()->getBillieReferenceId()); // th reference ID was provided by Billie in the createOrder Response.
-        // $command->orderId = $item->getId(); // TODO: order_id or order_number? id that the customer know
-        // $command->invoiceNumber = '12/0001/2019'; // required, given by merchant
-        // $command->invoiceUrl = 'https://www.example.com/invoice.pdf'; // required, given by merchant
-        // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
-
         // TODO: run POST /v1/order/{order_id}/ship
         // try {
         //     /** @var Billie\Model\Orderr $order */
-        //     $order = $this->client->shipOrder($command);
+        //     $order = $this->client->shipOrder($this->commandFactory->createShipCommand($item));
         //     $this->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
         //     $dueDate = $order->invoice->dueDate;
         // } catch (Billie\Exception\OrderNotShippedException $exception) {
@@ -257,21 +235,12 @@ class Api
             return $this->orderNotFoundMessage($order);
         }
 
+        $refId = $item->getAttribute()->getBillieReferenceId();
+        $state = $item->getAttribute()->getBillieState();
+
         // Reduce Amount
         // if (in_array('amount', $data)) {
-        //     $command = new Billie\Command\ReduceOrderAmount($item->getAttribute()->getBillieReferenceId());
-        //     $command->amount = new Billie\Model\Amount(
-        //         $data['amount']['net'],
-        //         $data['amount']['currency'],
-        //         $data['amount']['gross'] - $data['amount']['net'] // Gross - Net = Tax Amount
-        //     );
-
-        //     // TODO: ONLY if the order has been SHIPPED already, you need to provide a invoice url and invoice number
-        //     if ($item->getAttribute()->getBillieState() === 'shipped') {
-        //         $command->invoiceNumber = '12/0002/2019';
-        //         $command->invoiceUrl = 'https://www.example.com/invoice_new.pdf';
-        //     }
-
+        //     $command = $this->commandFactory->createReduceAmountCommand($refId, $state, $data['amount']);
         //     // TODO: run PATCH /v1/order/{order_id}
         //     $order = $this->client->reduceOrderAmount($command);
         //     $this->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $item->getId()));
@@ -279,9 +248,8 @@ class Api
 
         // // Postpone Due Date
         // if (in_array('duration', $data)) {
-        //     $command = new Billie\Command\PostponeOrderDueDate($item->getAttribute()->getBillieReferenceId());
-        //     $command->duration = $data['duration'];
-
+        //     $command = $this->commandFactory->createPostponeDueDateCommand($refId, $data['duration']);
+        //
         //     try {
         //         /** @var Billie\Model\Orderr $order */
         //         $order = $this->client->postponeOrderDueDate($command);
