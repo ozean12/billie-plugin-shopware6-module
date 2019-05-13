@@ -2,6 +2,7 @@
 
 namespace BilliePayment\Components\BilliePayment;
 
+use Exception;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Shop\Shop;
 use Billie\HttpClient\BillieClient;
@@ -203,6 +204,9 @@ class Api
             $reason     = $exception->getReason();
         
             return ['success' => false, 'title' => 'Error', 'data' => $reason];
+        } catch(Exception $exception) {
+            $this->getLogger()->info('An exception occured: ' . $exception->getMessage());
+            return ['success' => false, 'title' => 'Error', 'data' => $exception->getMessage()];
         }
         
         // Update local state

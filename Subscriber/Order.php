@@ -102,7 +102,7 @@ class Order implements SubscriberInterface
 
             // Process Single Order.
             case 'save':
-                $this->processOrder($request->getParams());
+                $this->processOrder($request->getParams(), $view);
                 // $args->stop();
                 break;
 
@@ -121,20 +121,20 @@ class Order implements SubscriberInterface
      * @param array $order
      * @return void
      */
-    protected function processOrder($order)
+    protected function processOrder($order, $view)
     {
         switch ($order['status']) {
             // Order is canceled.
             case self::ORDER_CANCELED:
                 // TODO: print possible error message
                 $response = $this->api->cancelOrder($order['id']);
-                // $view->assign(['success' => false, 'message' => 'Dies ist eine Fehlernachricht']);
-                // exit('{"success": false, "message": "Dies ist eine Fehlernachricht"}');
+                $view->assign(['success' => $response['success'], 'message' => $response['data']]);
                 break;
 
             // Order is shipped
             case self::ORDER_SHIPPED:
                 $response = $this->api->shipOrder($order['id']);
+                $view->assign(['success' => $response['success'], 'message' => $response['data']]);
                 break;
 
             default:
