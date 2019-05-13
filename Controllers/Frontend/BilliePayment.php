@@ -2,6 +2,8 @@
 
 use BilliePayment\Components\BilliePayment\PaymentResponse;
 use BilliePayment\Components\BilliePayment\PaymentService;
+use Shopware\Models\Order\Order;
+
 
 /**
  * Frontend Controller for Billie.io Payment.
@@ -65,24 +67,31 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         // Check response status and save order when everything went fine.
         switch ($response->status) {
             case 'accepted':
-                // Create Order
-                $orderNumber = $this->saveOrder(
-                    $response->transactionId,
-                    $response->token,
-                    self::PAYMENTSTATUSPAID
-                );
-
                 // Call Api for created order
                 $api      = $this->container->get('billie_payment.api');
-                $response = $api->createOrder($orderNumber);
+                $response = $api->createOrder($service->createApiArgs($user, $this->getBasket()));
 
+                // Save Order on success
                 if ($response['success']) {
+                    $orderNumber = $this->saveOrder(
+                        $response->transactionId,
+                        $response->token,
+                        self::PAYMENTSTATUSPAID
+                    );
+
+                    // Save local
+                    $models = Shopware()->Container()->get('models');
+                    $repo   = $models->getRepository(Order::class);
+                    $order  = $repo->findOneBy(['number' => $orderNumber]);
+                    $api->updateLocal($order, $response['local']);
+                    
+                    // Finish checkout
                     $this->redirect(['controller' => 'checkout', 'action' => 'finish']);
                     break;
                 }
 
                 // Error messages
-                Shopware()->Session()->apiErrorMessages = $response['messages'];
+                Shopware()->Session()->apiErrorMessages = $response['data'];
                 $this->redirect(['controller' => 'checkout', 'action' => 'confirm']);
 
                 break;

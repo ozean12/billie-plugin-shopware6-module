@@ -5,6 +5,9 @@ namespace BilliePayment\Components\BilliePayment;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Shop\Shop;
 use Billie\HttpClient\BillieClient;
+use Billie\Exception\OrderDecline\OrderDeclinedException;
+use Billie\Exception\InvalidCommandException;
+use Billie\Exception\DebtorAddressException;
 
 /**
  * Service Wrapper for billie API sdk
@@ -58,7 +61,7 @@ class Api
         
         // initialize Billie Client
         $this->commandFactory = new CommandFactory();
-        // $this->client = BillieClient::create($this->config['apikey'], $this->config['sandbox']);
+        $this->client = BillieClient::create($this->config['apikey'], $this->config['sandbox']);
     }
 
     /**
@@ -103,43 +106,31 @@ class Api
     /**
      * Tell billie about newly created order
      *
-     * @param integer $orderNumber
+     * @param ApiArguments $args
      * @return array
      */
-    public function createOrder($orderNumber)
-    {   
-        // Get Order from db
+    public function createOrder(ApiArguments $args)
+    {
         $local  = [];
-        $models = $this->getEnityManager();
-        $repo   = $models->getRepository(Order::class);
-        $order  = $repo->findOneBy(['number' => $orderNumber]);
-        
-        if (!$order) {
-            return $this->orderNotFoundMessage($orderNumber);
+
+        // Call API Endpoint to create order -> POST /v1/order
+        try {
+            /** @var Billie\Model\Orderr $order */
+            $order                = $this->client->createOrder($this->commandFactory->createOrderCommand($args, $this->config['duration']));
+            $local['referenceId'] = $order->referenceId;
+            $local['state']       = $order->state;
+            $this->getLogger()->info('POST /v1/order');
+        } catch (OrderDeclinedException $exception) {
+            $message        = $exception->getBillieMessage();
+            $local['state'] = 'declined';
+            return ['success' => false, 'title' => 'Error', 'data' => $message, 'local' => $local];
+        } catch(InvalidCommandException $exc) {
+            $violations = $exc->getViolations();
+            $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
+            return ['success' => false, 'title' => 'Error', 'data' => $violations, 'local' => $local];
         }
-
-        // TODO: Call API Endpoint to create order -> POST /v1/order
-        // try {
-        //     /** @var Billie\Model\Orderr $order */
-        //     $order = $this->client->createOrder($this->commandFactory->createOrderCommand($order, $this->config['duration']));
-        //     $this->getLogger()->info('POST /v1/order');
-        //     $local['referenceId'] = $order->referenceId;
-        //     $local['state'] = $order->state;
-        // } catch (Billie\Exception\OrderDeclinedException $exception) {
-        //     $message = $exception->getBillieMessage();
-        //     // for custom translation
-        //     $messageKey = $exception->getBillieCode();
-        //     $reason = $exception->getReason();
-        //     $local['state'] = 'declined';
-        //     return ['success' => false, 'title' => 'Error', 'data' => $reason];
-        // }
-
-        // Update local state
-        if (($localUpdate = $this->updateLocal($order->getId(), $local)) !== true) {
-            return $localUpdate;
-        }
-
-        return ['success' => true, 'messages' => 'OK'];
+ 
+        return ['success' => true, 'messages' => 'OK', 'local' => $local];
     }
 
     /**
@@ -167,7 +158,6 @@ class Api
         //     $message = $exception->getBillieMessage();
         //     $messageKey = $exception->getBillieCode();
         //     // $local = ['state' => 'canceled'];
-
         //     return ['success' => false, 'title' => 'Error', 'data' => $message];
         // }
 
@@ -328,18 +318,21 @@ class Api
         }
 
         // TODO: run GET /v1/order/{order_id}
-        // try {
-        //     $response = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
-        //     $this->getLogger()->info(sprintf('GET /v1/order/%s', $order));
-        //     $local['state'] = $response->state; 
-        //     $local['iban'] = $response->bankAccount->iban;
-        //     $local['bic'] = $response->bankAccount->bic;
-        // } catch(Billie\Exception\InvalidCommandException $exception) {
-        //     return ['success' => false, 'title' => 'Error', 'data' => $exception];
-        // }
+        try {
+            $response = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
+            $this->getLogger()->info(sprintf('GET /v1/order/%s', $order));
+            $local['state'] = $response->state; 
+            $local['iban']  = $response->bankAccount->iban;
+            $local['bic']   = $response->bankAccount->bic;
+        } catch(\Billie\Exception\InvalidCommandException  $exception) {
+            $violations = $exception->getViolations();
+            $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
+            return ['success' => false, 'title' => 'Error', 'data' => $violations[0]];
+        }
         
         // TODO: Delete testdata
         $response = [
+            'success' => true,
             'state' => $item->getAttribute()->getBillieState(),
             'order_id' => $item->getId(),
             'bank_account' => [
