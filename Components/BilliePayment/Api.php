@@ -295,7 +295,7 @@ class Api
         }
 
         // Update local state
-        if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
+        if (($localUpdate = $this->updateLocal($item->getId(), $local)) !== true) {
             return $localUpdate;
         }
         
