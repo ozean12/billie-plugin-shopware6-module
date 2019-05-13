@@ -5,11 +5,15 @@ namespace BilliePayment\Components\BilliePayment;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Shop\Shop;
 use Billie\HttpClient\BillieClient;
+use Billie\Exception\BillieException;
 use Billie\Exception\OrderDecline\OrderDeclinedException;
 use Billie\Exception\InvalidCommandException;
 use Billie\Exception\DebtorAddressException;
 use Billie\Exception\OrderNotCancelledException;
+use Billie\Exception\OrderNotShippedException;
+use Billie\Exception\PostponeDueDateNotAllowedException;
 use Billie\Command\CancelOrder;
+use Billie\Command\ConfirmPayment;
 
 /**
  * Service Wrapper for billie API sdk
@@ -186,22 +190,20 @@ class Api
             return $this->orderNotFoundMessage($order);
         }
 
-        // TODO: run POST /v1/order/{order_id}/ship
-        // try {
-        //     /** @var Billie\Model\Order $order */
-        //     $order = $this->client->shipOrder($this->commandFactory->createShipCommand($item));
-        //     $local['state'] = $order->state;
-        //     $this->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
-        //     $dueDate = $order->invoice->dueDate;
-        // } catch (Billie\Exception\OrderNotShippedException $exception) {
-        //     // TODO: Flag billie state as declined based on api response
-        //     $message = $exception->getBillieMessage();
-        //     $messageKey = $exception->getBillieCode();
-        //     $reason = $exception->getReason();
-        //     $local['state'] = 'declined';
-        //
-        //     return ['success' => false, 'title' => 'Error', 'data' => $reason];
-        // }
+        // run POST /v1/order/{order_id}/ship
+        try {
+            /** @var Billie\Model\Order $order */
+            $order          = $this->client->shipOrder($this->commandFactory->createShipCommand($item));
+            $local['state'] = $order->state;
+            $this->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
+            // $dueDate = $order->invoice->dueDate;
+        } catch (OrderNotShippedException $exception) {
+            // $message    = $exception->getBillieMessage();
+            // $messageKey = $exception->getBillieCode();
+            $reason     = $exception->getReason();
+        
+            return ['success' => false, 'title' => 'Error', 'data' => $reason];
+        }
         
         // Update local state
         if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
@@ -232,35 +234,33 @@ class Api
         $state = $item->getAttribute()->getBillieState();
 
         // Reduce Amount
-        // if (in_array('amount', $data)) {
-        //     $command = $this->commandFactory->createReduceAmountCommand($refId, $state, $data['amount']);
-        //     // TODO: run PATCH /v1/order/{order_id}
-        //     $order = $this->client->reduceOrderAmount($command);
-        //     $local['state'] = $order->state;
-        //     $this->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $item->getId()));
-        // }
+        if (in_array('amount', $data)) {
+            $command        = $this->commandFactory->createReduceAmountCommand($refId, $state, $data['amount']);
+            $order          = $this->client->reduceOrderAmount($command);
+            $local['state'] = $order->state;
+            $this->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $item->getId()));
+        }
 
-        // // Postpone Due Date
-        // if (in_array('duration', $data)) {
-        //     $command = $this->commandFactory->createPostponeDueDateCommand($refId, $data['duration']);
-        //
-        //     try {
-        //         /** @var Billie\Model\Orderr $order */
-        //         $order = $this->client->postponeOrderDueDate($command);
-        //         $local['state'] = $order->state;
-        //         $dueDate = $order->invoice->dueDate;
-        //     } catch (Billie\Exception\PostponeDueDateNotAllowedException $exception) {
-        //         $message = $exception->getBillieMessage();
-        //         $messageKey = $exception->getBillieCode();
-        //         return ['success' => false, 'title' => 'Error', 'data' => $message];
-        //     }
-        // }
+        // Postpone Due Date
+        if (in_array('duration', $data)) {
+            $command = $this->commandFactory->createPostponeDueDateCommand($refId, $data['duration']);
+        
+            try {
+                /** @var Billie\Model\Orderr $order */
+                $order          = $this->client->postponeOrderDueDate($command);
+                $local['state'] = $order->state;
+                // $dueDate = $order->invoice->dueDate;
+            } catch (PostponeDueDateNotAllowedException $exception) {
+                $message    = $exception->getBillieMessage();
+                // $messageKey = $exception->getBillieCode();
+                return ['success' => false, 'title' => 'Error', 'data' => $message];
+            }
+        }
 
         // Update local state
         if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
             return $localUpdate;
         }
-
 
         return ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Update Response'];
     }
@@ -282,17 +282,17 @@ class Api
             return $this->orderNotFoundMessage($order);
         }
 
-        // // TODO: Call POST /v1/order/{order_id}/confirm-payment
-        // try {
-        //     $command = new Billie\Command\ConfirmPayment($item->getAttribute()->getBillieReferenceId(), $amount);
-        //     $order = $this->client->confirmPayment($command);
-        //     $local['state'] = $order->state;
-        //     $this->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
-        // } catch (Billie\Exception\BillieException $exception) {
-        //     $message = $exception->getBillieMessage();
-        //     $messageKey = $exception->getBillieCode();
-        //     return ['success' => false, 'title' => 'Error', 'data' => $message];
-        // }
+        // Call POST /v1/order/{order_id}/confirm-payment
+        try {
+            $command        = new ConfirmPayment($item->getAttribute()->getBillieReferenceId(), $amount * 100); // amount are in cents!
+            $order          = $this->client->confirmPayment($command);
+            $local['state'] = $order->state;
+            $this->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
+        } catch (BillieException $exception) {
+            $message    = $exception->getBillieMessage();
+            // $messageKey = $exception->getBillieCode();
+            return ['success' => false, 'title' => 'Error', 'data' => $message];
+        }
 
         // Update local state
         if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
@@ -325,7 +325,7 @@ class Api
             $local['state'] = $response->state; 
             $local['iban']  = $response->bankAccount->iban;
             $local['bic']   = $response->bankAccount->bic;
-        } catch(InvalidCommandException  $exception) {
+        } catch(InvalidCommandException $exception) {
             $violations = $exception->getViolations();
             $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
             return ['success' => false, 'title' => 'Error', 'data' => $violations];
