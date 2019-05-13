@@ -60,7 +60,6 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             $basket = $this->loadBasketFromSignature($signature);
             $this->verifyBasketSignature($signature, $basket);
         } catch (\Exception $e) {
-            // TODO: do error handling like redirecting to error page!
             $this->forward('cancel');
         }
         

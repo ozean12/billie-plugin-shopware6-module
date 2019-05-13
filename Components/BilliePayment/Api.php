@@ -191,6 +191,12 @@ class Api
             return $this->orderNotFoundMessage($order);
         }
 
+        // Already shipped/canceled
+        $state = $item->getAttribute()->getBillieState();
+        if ($state == 'shipped' || $state == 'canceled') {
+            return;
+        }
+
         // run POST /v1/order/{order_id}/ship
         try {
             /** @var Billie\Model\Order $order */

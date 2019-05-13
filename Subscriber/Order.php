@@ -61,19 +61,16 @@ class Order implements SubscriberInterface
         if ($request->getActionName() == 'save') {
             $params = $request->getParams();
             $order  = Shopware()->Models()->find('Shopware\Models\Order\Order', $params['id']);
-            
-            // Update Amount if changed
-            if ($order->getInvoiceAmount() != $params['invoiceAmount']) {
-                // TODO: print possible error message
-                $response = $this->api->updateOrder($order->getId(), [
-                    'amount' => [
-                        'net'   => $params['invoiceAmountNet'] + $params['invoiceShippingNet'],
-                        'gross' => $params['invoiceAmount'] + $params['invoiceShipping'],
-                        'currency' => 'EUR', //TODO: Fetch correct currency
-                    ]
-                ]);
-                // exit('{"success": false, "message": "Dies ist eine Fehlernachricht"}');
-            }
+
+            // Update Amount
+            $response = $this->api->updateOrder($order->getId(), [
+                'amount' => [
+                    'net'   => $params['invoiceAmountNet'] + $params['invoiceShippingNet'],
+                    'gross' => $params['invoiceAmount'] + $params['invoiceShipping'],
+                    'currency' => $order->getCurrency(),
+                ]
+            ]);
+            $controller->View()->assign(['success' => $response['success'], 'title' => $response['title'], 'message' => $response['data']]);
         }
     }
 
@@ -126,7 +123,6 @@ class Order implements SubscriberInterface
         switch ($order['status']) {
             // Order is canceled.
             case self::ORDER_CANCELED:
-                // TODO: print possible error message
                 $response = $this->api->cancelOrder($order['id']);
                 $view->assign(['success' => $response['success'], 'message' => $response['data']]);
                 break;
