@@ -335,7 +335,7 @@ class Api
         $response = [
             'success'      => true,
             'state'        => $response->state,
-            'order_id'     => $item->getId(),
+            'order_id'     => $item->getNumber(), //$item->getId(),
             'bank_account' => [
                 'iban' => $response->bankAccount->iban,
                 'bic'  => $response->bankAccount->bic
