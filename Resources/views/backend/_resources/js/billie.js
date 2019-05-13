@@ -14,7 +14,7 @@ $(function () {
                 'amount': amount
             },
             success: function (response) {
-                postMessageApi.createGrowlMessage(response.title, response.data);
+                postMessageApi.createGrowlMessage(response.title, response.data, !response.success);
             }
         });
     };
@@ -50,7 +50,7 @@ $(function () {
                 'order_id': target.data('order_id')
             },
             success: function (response) {
-                postMessageApi.createGrowlMessage(response.title, response.data);
+                postMessageApi.createGrowlMessage(response.title, response.data, !response.success);
                 target.closest('.wrapper').addClass('danger').find('.state').text(_BILLIE_SNIPPETS_.states.canceled)
             }
         });

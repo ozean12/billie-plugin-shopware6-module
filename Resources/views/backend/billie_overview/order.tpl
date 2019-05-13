@@ -3,7 +3,7 @@
 {block name="content/main"}
 <div class="wrapper">
     <div class="page-header">
-        <h1>{s name="billiepayment/order/heading"}Bestellung{/s} <small><code>order_id: {$order_id}</code></small></h1>
+        <h1>{s name="billiepayment/order/heading"}Bestellung{/s} <small><code>order_id: {$order_number}</code></small></h1>
         <button
             class="btn btn-primary confirm-payment"
             data-order_id="{$order_id}"

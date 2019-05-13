@@ -130,7 +130,7 @@ class Order implements SubscriberInterface
             // Order is shipped
             case self::ORDER_SHIPPED:
                 $response = $this->api->shipOrder($order['id']);
-                $view->assign(['success' => $response['success'], 'message' => $response['data']]);
+                $view->assign(['success' => $response['success'], 'title' => $response['title'], 'message' => $response['data']]);
                 break;
 
             default:

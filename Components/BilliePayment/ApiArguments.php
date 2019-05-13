@@ -14,7 +14,6 @@ class ApiArguments
      */
     public $taxAmount;
 
-
     /**
      * Paid net amount
      *

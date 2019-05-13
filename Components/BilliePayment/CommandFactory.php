@@ -2,6 +2,7 @@
 
 namespace BilliePayment\Components\BilliePayment;
 
+use Doctrine\Common\Collections\Criteria;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Order\Billing;
 use Billie\Model\Address;
@@ -50,6 +51,26 @@ class CommandFactory
         $command->amount   = new Amount($args->amountNet * 100, $args->currency, $args->taxAmount * 100);
         $command->duration = $duration; // duration=14 meaning: when the order is shipped on the 1st May, the due date is the 15th May
 
+        // TODO: Remove Test data that works with billie api
+        $command = new CreateOrder();
+
+        $companyAddress = new Address();
+        $companyAddress->street = 'Charlottenstr.';
+        $companyAddress->houseNumber = '4';
+        $companyAddress->postalCode = '10969';
+        $companyAddress->city = 'Berlin';
+        $companyAddress->countryCode = 'DE';
+        $command->debtorCompany = new Company('BILLIE-00000001', 'Billie GmbH', $companyAddress);
+        $command->debtorCompany->legalForm = '10001';
+
+        $command->debtorPerson = new Person('max.mustermann@musterfirma.de');
+        $command->debtorPerson->salution = 'm';
+        $command->debtorPerson->phone = '+4930120111111';
+        $command->deliveryAddress = $companyAddress; // or: new \Billie\Model\Address();
+        $command->amount = new Amount(100, 'EUR', 19);
+
+        $command->duration = 14;
+
         return  $command;
     }
 
@@ -62,10 +83,18 @@ class CommandFactory
     public function createShipCommand(Order $order)
     {
         $command                      = new ShipOrder($order->getAttribute()->getBillieReferenceId());
-        $command->orderId             = $order->getId(); // TODO: order_id or order_number? id that the customer know
-        $command->invoiceNumber       = '12/0001/2019'; // required, given by merchant
-        $command->invoiceUrl          = 'https://www.example.com/invoice.pdf'; // required, given by merchant
-        $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
+        $command->orderId             = $order->getNumber();
+
+        // Get Invoice if exists
+        $criteria  = Criteria::create()->where(Criteria::expr()->eq('typeId', '1'));
+        $documents = $order->getDocuments()->matching($criteria);
+        
+        if ($documents->count()) {
+            $invoice                      = $documents->first();
+            $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
+            $command->invoiceUrl          = 'https://www.example.com/invoice.pdf'; // TODO: required, given by merchant
+            // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
+        }
 
         return $command;
     }
@@ -73,24 +102,28 @@ class CommandFactory
     /**
      * Factory method for the ReduceOrderAmount command
      *
-     * @param string $refId
-     * @param string $state
+     * @param Order $order
      * @param array $amount
      * @return ReduceOrderAmount
      */
-    public function createReduceAmountCommand($refId, $state, $amount)
+    public function createReduceAmountCommand(Order $order, $amount)
     {
-        $command = new ReduceOrderAmount($refId);
+        $command = new ReduceOrderAmount($order->getAttribute()->getBillieReferenceId());
         $command->amount = new Amount(
             $amount['net'],
             $amount['currency'],
             $amount['gross'] - $amount['net'] // Gross - Net = Tax Amount
         );
 
-        // TODO: ONLY if the order has been SHIPPED already, you need to provide a invoice url and invoice number
-        if ($state === 'shipped') {
-            $command->invoiceNumber = '12/0002/2019';
-            $command->invoiceUrl    = 'https://www.example.com/invoice_new.pdf';
+        // Get Invoice if exists
+        $criteria  = Criteria::create()->where(Criteria::expr()->eq('typeId', '1'));
+        $documents = $order->getDocuments()->matching($criteria);
+
+        if ($order->getAttribute()->getBillieState() === 'shipped' && $documents->count()) {
+            $invoice                      = $documents->first();
+            $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
+            $command->invoiceUrl          = 'https://www.example.com/invoice.pdf'; // TODO: required, given by merchant
+            // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
         }
 
         return $command;
