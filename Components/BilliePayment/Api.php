@@ -8,6 +8,8 @@ use Billie\HttpClient\BillieClient;
 use Billie\Exception\OrderDecline\OrderDeclinedException;
 use Billie\Exception\InvalidCommandException;
 use Billie\Exception\DebtorAddressException;
+use Billie\Exception\OrderNotCancelledException;
+use Billie\Command\CancelOrder;
 
 /**
  * Service Wrapper for billie API sdk
@@ -150,17 +152,15 @@ class Api
             return $this->orderNotFoundMessage($order);
         }
 
-        // TODO: run POST /v1/order/{order_id}/cancel
-        // try {
-        //     $command = new Billie\Command\CancelOrder($item->getAttribute()->getBillieReferenceId());
-        //     $this->client->cancelOrder($command);
-        //     $this->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
-        // } catch (Billie\Exception\OrderNotCancelledException $exception) {
-        //     $message = $exception->getBillieMessage();
-        //     $messageKey = $exception->getBillieCode();
-        //     // $local = ['state' => 'canceled'];
-        //     return ['success' => false, 'title' => 'Error', 'data' => $message];
-        // }
+        // run POST /v1/order/{order_id}/cancel
+        try {
+            $command = new CancelOrder($item->getAttribute()->getBillieReferenceId());
+            $this->client->cancelOrder($command);
+            $this->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
+        } catch (OrderNotCancelledException $exception) {
+            $message = $exception->getBillieMessage();
+            return ['success' => false, 'title' => 'Error', 'data' => $message];
+        }
 
         // Update local state
         if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
