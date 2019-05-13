@@ -70,9 +70,10 @@ class Checkout implements SubscriberInterface
         // Get API errors from the session and assign them to the view
         $errors = $session->apiErrorMessages;
         if (isset($errors) && !empty($errors)) {
+            $errors = is_array($errors) ? $errors : [$errors];
             $logger->error('Error on POST /v1/order: ' . json_encode($errors));
             $view->assign('apiErrorMessages', $errors);
-            $session->apiErrorMessages = null;
+            unset($session->apiErrorMessages);
         }
     }
 }
