@@ -24,6 +24,24 @@ class PaymentService
     }
 
     /**
+     * @param array $user
+     * @param array $basket
+     * @return ApiArguments
+     */
+    public function createApiArgs($user, $basket)
+    {
+        $args                = new ApiArguments();
+        $args->billing       = $user['billingaddress'];
+        $args->amountNet     = $basket['AmountNetNumeric'];
+        $args->currency      = $basket['sCurrencyName'];
+        $args->taxAmount     = $basket['sAmountTax'];
+        $args->customerEmail = $user['additional']['user']['email']; 
+        $args->country       = $user['additional']['country'];
+        
+        return $args;
+    }
+
+    /**
      * @param PaymentResponse $response
      * @param string $token
      * @return bool
