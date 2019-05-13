@@ -69,10 +69,10 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             case 'accepted':
                 // Call Api for created order
                 $api      = $this->container->get('billie_payment.api');
-                $response = $api->createOrder($service->createApiArgs($user, $this->getBasket()));
+                $apiResp  = $api->createOrder($service->createApiArgs($user, $this->getBasket()));
 
                 // Save Order on success
-                if ($response['success']) {
+                if ($apiResp['success']) {
                     $orderNumber = $this->saveOrder(
                         $response->transactionId,
                         $response->token,
@@ -83,7 +83,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     $models = Shopware()->Container()->get('models');
                     $repo   = $models->getRepository(Order::class);
                     $order  = $repo->findOneBy(['number' => $orderNumber]);
-                    $api->updateLocal($order, $response['local']);
+                    $api->updateLocal($order, $apiResp['local']);
                     
                     // Finish checkout
                     $this->redirect(['controller' => 'checkout', 'action' => 'finish']);
@@ -91,7 +91,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                 }
 
                 // Error messages
-                Shopware()->Session()->apiErrorMessages = $response['data'];
+                Shopware()->Session()->apiErrorMessages = $apiResp['data'];
                 $this->redirect(['controller' => 'checkout', 'action' => 'confirm']);
 
                 break;

@@ -57,7 +57,6 @@ class Api
         $this->config = $container
             ->get('shopware.plugin.cached_config_reader')
             ->getByPluginName('BilliePayment', $shop);
-
         
         // initialize Billie Client
         $this->commandFactory = new CommandFactory();
@@ -116,9 +115,11 @@ class Api
         // Call API Endpoint to create order -> POST /v1/order
         try {
             /** @var Billie\Model\Orderr $order */
-            $order                = $this->client->createOrder($this->commandFactory->createOrderCommand($args, $this->config['duration']));
-            $local['referenceId'] = $order->referenceId;
-            $local['state']       = $order->state;
+            $order              = $this->client->createOrder($this->commandFactory->createOrderCommand($args, $this->config['duration']));
+            $local['reference'] = $order->referenceId;
+            $local['state']     = $order->state;
+            $local['iban']      = $order->bankAccount->iban;
+            $local['bic']       = $order->bankAccount->bic;
             $this->getLogger()->info('POST /v1/order');
         } catch (OrderDeclinedException $exception) {
             $message        = $exception->getBillieMessage();
@@ -317,35 +318,35 @@ class Api
             return $this->orderNotFoundMessage($order);
         }
 
-        // TODO: run GET /v1/order/{order_id}
+        // GET /v1/order/{order_id}
         try {
             $response = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
             $this->getLogger()->info(sprintf('GET /v1/order/%s', $order));
             $local['state'] = $response->state; 
             $local['iban']  = $response->bankAccount->iban;
             $local['bic']   = $response->bankAccount->bic;
-        } catch(\Billie\Exception\InvalidCommandException  $exception) {
+        } catch(InvalidCommandException  $exception) {
             $violations = $exception->getViolations();
             $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
-            return ['success' => false, 'title' => 'Error', 'data' => $violations[0]];
+            return ['success' => false, 'title' => 'Error', 'data' => $violations];
         }
-        
-        // TODO: Delete testdata
+
+        // Retrieved Data
         $response = [
-            'success' => true,
-            'state' => $item->getAttribute()->getBillieState(),
-            'order_id' => $item->getId(),
+            'success'      => true,
+            'state'        => $response->state,
+            'order_id'     => $item->getId(),
             'bank_account' => [
-                'iban' => $item->getAttribute()->getBillieIban(),
-                'bic'  => $item->getAttribute()->getBillieBic()
+                'iban' => $response->bankAccount->iban,
+                'bic'  => $response->bankAccount->bic
             ],
             'debtor_company' => [
-                'name' => $item->getBilling()->getFirstname() . ' ' . $item->getBilling()->getLastname(),
-                'address_house_number' => $item->getBilling()->getZipCode(),
-                'address_house_street' => $item->getBilling()->getStreet(),
-                'address_house_city' => $item->getBilling()->getCity(),
-                'address_house_postal_code' => $item->getBilling()->getZipCode(),
-                'address_house_country' => $item->getBilling()->getCountry()->getName()
+                'name'                      => $response->debtorCompany->name,
+                'address_house_number'      => $response->debtorCompany->address->houseNumber,
+                'address_house_street'      => $response->debtorCompany->address->street,
+                'address_house_city'        => $response->debtorCompany->address->city,
+                'address_house_postal_code' => $response->debtorCompany->address->postalCode,
+                'address_house_country'     => $response->debtorCompany->address->countryCode
             ]
         ];
 
@@ -367,6 +368,7 @@ class Api
     public function updateLocal($order, $data)
     {
         // Get Order if necessary.
+        $item = $order;
         if (!$order instanceof Order) {
             $item = $this->getOrder($order);
 
