@@ -4,7 +4,7 @@ namespace BilliePayment\Components\BilliePayment;
 
 use Shopware\Models\Order\Order;
 use Shopware\Models\Shop\Shop;
-// use Billie\HttpClient\BillieClient;
+use Billie\HttpClient\BillieClient;
 
 /**
  * Service Wrapper for billie API sdk
@@ -57,7 +57,7 @@ class Api
 
         
         // initialize Billie Client
-        // $this->commandFactory = new CommandFactory();
+        $this->commandFactory = new CommandFactory();
         // $this->client = BillieClient::create($this->config['apikey'], $this->config['sandbox']);
     }
 
@@ -109,7 +109,7 @@ class Api
     public function createOrder($orderNumber)
     {   
         // Get Order from db
-        $local  = ['state' => 'created'];
+        $local  = [];
         $models = $this->getEnityManager();
         $repo   = $models->getRepository(Order::class);
         $order  = $repo->findOneBy(['number' => $orderNumber]);
@@ -121,9 +121,10 @@ class Api
         // TODO: Call API Endpoint to create order -> POST /v1/order
         // try {
         //     /** @var Billie\Model\Orderr $order */
-        //     $order = $this->client->createOrder($this->commandFactory->createOrderCommand($order));
+        //     $order = $this->client->createOrder($this->commandFactory->createOrderCommand($order, $this->config['duration']));
         //     $this->getLogger()->info('POST /v1/order');
-        //     $local['referenceId'] = $order->referenceId; // save data
+        //     $local['referenceId'] = $order->referenceId;
+        //     $local['state'] = $order->state;
         // } catch (Billie\Exception\OrderDeclinedException $exception) {
         //     $message = $exception->getBillieMessage();
         //     // for custom translation
@@ -133,19 +134,18 @@ class Api
         //     return ['success' => false, 'title' => 'Error', 'data' => $reason];
         // }
 
-        // TODO: Update API order status to either 'declined' or 'created' depending on api return state
         // Update local state
         if (($localUpdate = $this->updateLocal($order->getId(), $local)) !== true) {
             return $localUpdate;
         }
-            
+
         return ['success' => true, 'messages' => 'OK'];
     }
 
     /**
      * Full Cancelation of an order on billie site.
      *
-     * @param integer $order
+     * @param integer $orderf
      * @return array
      */
     public function cancelOrder($order)
@@ -188,7 +188,7 @@ class Api
     public function shipOrder($order)
     {
         // Get Order
-        $local = ['state' => 'shipped'];
+        $local = [];
         $item  = $this->getOrder($order);
         
         if (!$item) {
@@ -197,8 +197,9 @@ class Api
 
         // TODO: run POST /v1/order/{order_id}/ship
         // try {
-        //     /** @var Billie\Model\Orderr $order */
+        //     /** @var Billie\Model\Order $order */
         //     $order = $this->client->shipOrder($this->commandFactory->createShipCommand($item));
+        //     $local['state'] = $order->state;
         //     $this->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
         //     $dueDate = $order->invoice->dueDate;
         // } catch (Billie\Exception\OrderNotShippedException $exception) {
@@ -229,6 +230,7 @@ class Api
     public function updateOrder($order, array $data)
     {
         // Get Order
+        $local = [];
         $item  = $this->getOrder($order);
         
         if (!$item) {
@@ -243,6 +245,7 @@ class Api
         //     $command = $this->commandFactory->createReduceAmountCommand($refId, $state, $data['amount']);
         //     // TODO: run PATCH /v1/order/{order_id}
         //     $order = $this->client->reduceOrderAmount($command);
+        //     $local['state'] = $order->state;
         //     $this->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $item->getId()));
         // }
 
@@ -253,6 +256,7 @@ class Api
         //     try {
         //         /** @var Billie\Model\Orderr $order */
         //         $order = $this->client->postponeOrderDueDate($command);
+        //         $local['state'] = $order->state;
         //         $dueDate = $order->invoice->dueDate;
         //     } catch (Billie\Exception\PostponeDueDateNotAllowedException $exception) {
         //         $message = $exception->getBillieMessage();
@@ -260,6 +264,12 @@ class Api
         //         return ['success' => false, 'title' => 'Error', 'data' => $message];
         //     }
         // }
+
+        // Update local state
+        if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
+            return $localUpdate;
+        }
+
 
         return ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Update Response'];
     }
@@ -274,7 +284,7 @@ class Api
     public function confirmPayment($order, $amount)
     {
         // Get Order
-        $local = ['state' => 'completed'];
+        $local = [];
         $item  = $this->getOrder($order);
         
         if (!$item) {
@@ -284,7 +294,8 @@ class Api
         // // TODO: Call POST /v1/order/{order_id}/confirm-payment
         // try {
         //     $command = new Billie\Command\ConfirmPayment($item->getAttribute()->getBillieReferenceId(), $amount);
-        //     $this->client->confirmPayment($command);
+        //     $order = $this->client->confirmPayment($command);
+        //     $local['state'] = $order->state;
         //     $this->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
         // } catch (Billie\Exception\BillieException $exception) {
         //     $message = $exception->getBillieMessage();
@@ -293,7 +304,7 @@ class Api
         // }
 
         // Update local state
-        if (($localUpdate = $this->updateLocal($order, ['state' => 'completed'])) !== true) {
+        if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
             return $localUpdate;
         }
         
@@ -320,9 +331,9 @@ class Api
         // try {
         //     $response = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
         //     $this->getLogger()->info(sprintf('GET /v1/order/%s', $order));
-        //     $local['state'] = $response...getstate etc
-        //     $local['iban'] = $response...getiban etc
-        //     $local['bic'] = $response...getbic etc
+        //     $local['state'] = $response->state; 
+        //     $local['iban'] = $response->bankAccount->iban;
+        //     $local['bic'] = $response->bankAccount->bic;
         // } catch(Billie\Exception\InvalidCommandException $exception) {
         //     return ['success' => false, 'title' => 'Error', 'data' => $exception];
         // }
@@ -396,6 +407,7 @@ class Api
         }
 
         // save item
+        $models = $this->getEnityManager();
         $models->persist($attr);
         $models->flush($attr);
 

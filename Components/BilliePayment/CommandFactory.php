@@ -15,9 +15,10 @@ class CommandFactory
      * Factory method for the CreateOrder Command
      *
      * @param Order $order
+     * @param int $duration
      * @return CreateOrder
      */
-    public function createOrderCommand(Order $order)
+    public function createOrderCommand(Order $order, $duration)
     {
         // Prepare data
         $amountNet   = $order->getInvoiceAmountNet() + $order->getInvoiceShippingNet();
@@ -41,7 +42,7 @@ class CommandFactory
         $command->deliveryAddress          = $address; // or: new \Billie\Model\Address();
 
         $command->amount   = new Billie\Model\Amount($amountGross * 100, $order->getCurrency(), $taxRate); // amounts are in cent!
-        $command->duration = $this->config['duration']; // duration=14 meaning: when the order is shipped on the 1st May, the due date is the 15th May
+        $command->duration = $duration; // duration=14 meaning: when the order is shipped on the 1st May, the due date is the 15th May
 
         return  $command;
     }
@@ -54,10 +55,10 @@ class CommandFactory
      */
     public function createShipCommand(Order $order)
     {
-        $command = new Billie\Command\ShipOrder($order->getAttribute()->getBillieReferenceId());
-        $command->orderId = $order->getId(); // TODO: order_id or order_number? id that the customer know
-        $command->invoiceNumber = '12/0001/2019'; // required, given by merchant
-        $command->invoiceUrl = 'https://www.example.com/invoice.pdf'; // required, given by merchant
+        $command                      = new Billie\Command\ShipOrder($order->getAttribute()->getBillieReferenceId());
+        $command->orderId             = $order->getId(); // TODO: order_id or order_number? id that the customer know
+        $command->invoiceNumber       = '12/0001/2019'; // required, given by merchant
+        $command->invoiceUrl          = 'https://www.example.com/invoice.pdf'; // required, given by merchant
         $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
 
         return $command;
@@ -83,7 +84,7 @@ class CommandFactory
         // TODO: ONLY if the order has been SHIPPED already, you need to provide a invoice url and invoice number
         if ($state === 'shipped') {
             $command->invoiceNumber = '12/0002/2019';
-            $command->invoiceUrl = 'https://www.example.com/invoice_new.pdf';
+            $command->invoiceUrl    = 'https://www.example.com/invoice_new.pdf';
         }
 
         return $command;
@@ -98,7 +99,7 @@ class CommandFactory
      */
     public function createPostponeDueDateCommand($refId, $duration)
     {
-        $command = new Billie\Command\PostponeOrderDueDate($refId);
+        $command           = new Billie\Command\PostponeOrderDueDate($refId);
         $command->duration = $duration;
         
         return $command;
@@ -112,7 +113,7 @@ class CommandFactory
      */
     public function createAddress(Billing $billing)
     {
-        $address = new Billie\Model\Address();
+        $address              = new Billie\Model\Address();
         $address->street      = $billing->getStreet(); // TODO: Split street and housenumber
         $address->houseNumber = $billing->getStreet(); // TODO: Split street and housenumber
         $address->postalCode  = $billing->getZipCode();
