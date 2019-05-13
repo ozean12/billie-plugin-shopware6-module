@@ -23,6 +23,9 @@
 </nav>
 
 <div class="container theme-showcase" role="main">
+    {if $errors}
+        <div class="alert alert-danger" role="alert">{$errors[0]}</div>
+    {/if}
     {block name="content/main"}{/block}
 </div> <!-- /container -->
 
