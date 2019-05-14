@@ -132,7 +132,8 @@ class BilliePayment extends Plugin
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Dispatcher_ControllerPath_Backend_BillieOverview' => 'onGetBackendController'
+            'Enlight_Controller_Dispatcher_ControllerPath_Backend_BillieOverview' => 'onGetBackendController',
+            'Enlight_Controller_Front_StartDispatch'                              => 'onFrontStartDispatch',
         ];
     }
 
@@ -142,5 +143,15 @@ class BilliePayment extends Plugin
     public function onGetBackendController()
     {
         return __DIR__ . '/Controllers/Backend/BillieOverview.php';
+    }
+
+    /**
+     * Include composer autoloader
+     */
+    public function onFrontStartDispatch()
+    {
+        if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+            require_once __DIR__ . '/vendor/autoload.php';
+        }
     }
 }
