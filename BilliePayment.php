@@ -135,18 +135,7 @@ class BilliePayment extends Plugin
         $service->delete('s_user_addresses_attributes', 'billie_legalform');
     }
 
-     /**
-     * @param ModelManager $modelManager
-     * @return array
-     */
-    private function getClasses(ModelManager $modelManager)
-    {
-        return [
-            $modelManager->getClassMetadata(Api::class)
-        ];
-    }
-
-      /**
+    /**
      * @return array
      */
     public static function getSubscribedEvents()
