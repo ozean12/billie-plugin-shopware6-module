@@ -29,9 +29,9 @@ class Checkout implements SubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Action_PreDispatch_Frontend_Checkout' => 'onFrontendCheckout',
-            'Enlight_Controller_Action_PreDispatch_Frontend_Address'  => 'onFrontendAddress',
-            'Shopware_Modules_Order_SaveOrder_ProcessDetails'         => 'onSaveOrder'
+            'Enlight_Controller_Action_PostDispatch_Frontend_Checkout' => [ 'addApiMessagesToView', -1 ],
+            'Enlight_Controller_Action_PreDispatch_Frontend_Address'   => 'extendAddressForm',
+            'Shopware_Modules_Order_SaveOrder_ProcessDetails'          => 'onSaveOrder'
         ];
     }
 
@@ -54,7 +54,7 @@ class Checkout implements SubscriberInterface
      * @param \Enlight_Event_EventArgs $args
      * @return void
      */
-    public function onFrontendAddress(\Enlight_Event_EventArgs $args)
+    public function extendAddressForm(\Enlight_Event_EventArgs $args)
     {
         $controller = $args->getSubject();
         $request    = $controller->Request();
@@ -74,7 +74,7 @@ class Checkout implements SubscriberInterface
      * @param \Enlight_Event_EventArgs $args
      * @return void
      */
-    public function onFrontendCheckout(\Enlight_Event_EventArgs $args)
+    public function addApiMessagesToView(\Enlight_Event_EventArgs $args)
     {
         /** @var $controller \Enlight_Controller_Action */
         $controller = $args->getSubject();
@@ -86,6 +86,13 @@ class Checkout implements SubscriberInterface
         // Only valid actions
         if (!in_array($request->getActionName(), ['finish', 'payment', 'confirm'])) {
             return;
+        }
+
+        // Display error when legalform is missing
+        $payment   = $view->sPayment['name'];
+        $legalForm = $view->sUserData['billingaddress']['attributes']['billieLegalform'];
+        if ($payment === 'billie_payment_after_delivery' && (!isset($legalForm) || is_null($legalForm))) {
+            $view->assign('invalidBillingAddress', true);
         }
         
         // Get API errors from the session and assign them to the view

@@ -1,6 +1,7 @@
 {extends file="parent:frontend/address/form.tpl"}
 {namespace name="frontend/address/index"}
 
+{* Registration Number & Legal Form *}
 {block name='frontend_address_form_input_vatid' append}
     <div class="address--regNumber">
         <input name="{$inputPrefix}[attribute][billieRegistrationnumber]"
