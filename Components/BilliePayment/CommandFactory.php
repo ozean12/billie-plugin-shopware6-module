@@ -154,8 +154,8 @@ class CommandFactory
     public function createAddress(array $billing, array $country)
     {
         $address              = new Address();
-        $address->street      = $billing['street']; // TODO: Split street and housenumber
-        $address->houseNumber = $billing['street']; // TODO: Split street and housenumber
+        $address->street      = $billing['street'];
+        $address->houseNumber = $billing['additionalAddressLine1'];
         $address->postalCode  = $billing['zipcode'];
         $address->city        = $billing['city'];
         $address->countryCode = $country['countryiso'];
