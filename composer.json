@@ -1,0 +1,20 @@
+{
+    "name": "s360/billie-payment",
+    "authors": [
+        {
+            "name": "Pascal Kleindienst",
+            "email": "pascal.kleindienst@solution360.de"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Billie\\": "./billie-shop-plugin-sdk-master/lib/"
+        }
+    },
+    "require": {
+        "php": ">=5.6",
+        "guzzlehttp/guzzle": "~5.0",
+        "symfony/validator": "3.4.24",
+        "symfony/intl": "3.4.24"
+    }
+}
