@@ -37,6 +37,7 @@ class BilliePayment extends Plugin
         ];
         $installer->createOrUpdate($context->getPlugin(), $options);
 
+        $this->autoload();
         $this->createDatabase();
     }
 
@@ -90,15 +91,32 @@ class BilliePayment extends Plugin
      */
     private function createDatabase()
     {
+        $allLegalForms = \Billie\Util\LegalFormProvider::all();
+        $legalData     = [];
+        foreach ($allLegalForms as $legal) {
+            $legalData[] = ['key' => $legal['code'], 'value' => $legal['label']];
+        }
+
         $service = $this->container->get('shopware_attribute.crud_service');
         $service->update('s_order_attributes', 'billie_referenceId', 'string');
         $service->update('s_order_attributes', 'billie_state', 'string');
         $service->update('s_order_attributes', 'billie_iban', 'string');
         $service->update('s_order_attributes', 'billie_bic', 'string');
-        
+        $service->update('s_user_addresses_attributes', 'billie_registrationNumber', 'string', [
+            'label'            => 'Registration Number',
+            'translatable'     => true,
+            'displayInBackend' => true,
+        ]);
+        $service->update('s_user_addresses_attributes', 'billie_legalform', 'combobox', [
+            'label'            => 'Legalform',
+            'translatable'     => true,
+            'displayInBackend' => true,
+            'arrayStore'       => $legalData
+        ]);
+
         $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
         $metaDataCache->deleteAll();
-        Shopware()->Models()->generateAttributeModels(array('s_order_attributes'));
+        Shopware()->Models()->generateAttributeModels(['s_order_attributes', 's_user_addresses_attributes']);
     }
 
     /**
@@ -113,6 +131,8 @@ class BilliePayment extends Plugin
         $service->delete('s_order_attributes', 'billie_state');
         $service->delete('s_order_attributes', 'billie_iban');
         $service->delete('s_order_attributes', 'billie_bic');
+        $service->delete('s_user_addresses_attributes', 'billie_registrationNumber');
+        $service->delete('s_user_addresses_attributes', 'billie_legalform');
     }
 
      /**
@@ -133,7 +153,7 @@ class BilliePayment extends Plugin
     {
         return [
             'Enlight_Controller_Dispatcher_ControllerPath_Backend_BillieOverview' => 'onGetBackendController',
-            'Enlight_Controller_Front_StartDispatch'                              => 'onFrontStartDispatch',
+            'Enlight_Controller_Front_StartDispatch'                              => 'autoload',
         ];
     }
 
@@ -148,7 +168,7 @@ class BilliePayment extends Plugin
     /**
      * Include composer autoloader
      */
-    public function onFrontStartDispatch()
+    public function autoload()
     {
         if (file_exists(__DIR__ . '/vendor/autoload.php')) {
             require_once __DIR__ . '/vendor/autoload.php';

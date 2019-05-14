@@ -30,6 +30,7 @@ class Checkout implements SubscriberInterface
     {
         return [
             'Enlight_Controller_Action_PreDispatch_Frontend_Checkout' => 'onFrontendCheckout',
+            'Enlight_Controller_Action_PreDispatch_Frontend_Address'  => 'onFrontendAddress',
             'Shopware_Modules_Order_SaveOrder_ProcessDetails'         => 'onSaveOrder'
         ];
     }
@@ -46,7 +47,27 @@ class Checkout implements SubscriberInterface
         $this->api->updateLocal($args['orderId'], ['state' => $session->apiOrderState]);
         $session->apiOrderState = null;
     }
-    
+
+    /**
+     * Add Legalforms to address form
+     *
+     * @param \Enlight_Event_EventArgs $args
+     * @return void
+     */
+    public function onFrontendAddress(\Enlight_Event_EventArgs $args)
+    {
+        $controller = $args->getSubject();
+        $request    = $controller->Request();
+        $view       = $controller->View();
+
+        // Only valid actions
+        if (!in_array($request->getActionName(), ['ajaxEditor', 'edit', 'create'])) {
+            return;
+        }
+
+        $view->assign('legalForms', \Billie\Util\LegalFormProvider::all());
+    }
+
     /**
      * Add API Messages to the Checkout View.
      *
@@ -66,8 +87,9 @@ class Checkout implements SubscriberInterface
         if (!in_array($request->getActionName(), ['finish', 'payment', 'confirm'])) {
             return;
         }
-
+        
         // Get API errors from the session and assign them to the view
+        $view->assign('errorCode', $request->getParam('errorCode'));
         $errors = $session->apiErrorMessages;
         if (isset($errors) && !empty($errors)) {
             $errors = is_array($errors) ? $errors : [$errors];

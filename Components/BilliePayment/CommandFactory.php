@@ -30,26 +30,26 @@ class CommandFactory
     public function createOrderCommand(ApiArguments $args, $duration)
     {
         // Create command and fill it
-        $address = $this->createAddress($args->billing, $args->country);
-        $command = new CreateOrder();
+        $customer = isset($args->billing['customer']) && array_key_exists('id', $args->billing['customer']) ? $args->billing['customer']['id'] : null;
+        $address  = $this->createAddress($args->billing, $args->country);
+        $command  = new CreateOrder();
 
-        // TODO: Company information, whereas CUSTOMER_ID is the merchant's customer id (use _null_ for guest orders)
-        $command->debtorCompany = new Company(
-            $args->billing['customer']['id'],
-            $args->billing['company'],
-            $address
-        );
-        $command->debtorCompany->legalForm = '10001'; //TODO: find correct legelform
-        $command->debtorPerson             = new Person($args->customerEmail);
-        $command->debtorPerson->salution   = $args->billing['salutation'] === 'mr' ? 'm' : 'f'; // m or f
-        $command->debtorPerson->firstname  = $args->billing['firstname'];
-        $command->debtorPerson->lastname   = $args->billing['lastname'];
-        $command->debtorPerson->phone      = $args->billing['phone'];
-        $command->deliveryAddress          = $address; // or: new \Billie\Model\Address();
+        // Company information, whereas CUSTOMER_ID is the merchant's customer id (null for guest orders)
+        $command->debtorCompany                     = new Company($customer, $args->billing['company'], $address);
+        $command->debtorCompany->legalForm          = $args->billing['attributes']['billieLegalform'];
+        $command->debtorCompany->registrationNumber = $args->billing['attributes']['billieRegistrationnumber'];
 
+        // Debtor Person data
+        $command->debtorPerson            = new Person($args->customerEmail);
+        $command->debtorPerson->salution  = $args->billing['salutation'] === 'mr' ? 'm' : 'f'; // m or f
+        $command->debtorPerson->firstname = $args->billing['firstname'];
+        $command->debtorPerson->lastname  = $args->billing['lastname'];
+        $command->debtorPerson->phone     = $args->billing['phone'];
+        
         // amounts are in cent!
-        $command->amount   = new Amount($args->amountNet * 100, $args->currency, $args->taxAmount * 100);
-        $command->duration = $duration; // duration=14 meaning: when the order is shipped on the 1st May, the due date is the 15th May
+        $command->amount          = new Amount($args->amountNet * 100, $args->currency, $args->taxAmount * 100);
+        $command->deliveryAddress = $address; // or: new \Billie\Model\Address();
+        $command->duration        = $duration; // duration=14 meaning: when the order is shipped on the 1st May, the due date is the 15th May
 
         // TODO: Remove Test data that works with billie api
         $command = new CreateOrder();
@@ -82,8 +82,8 @@ class CommandFactory
      */
     public function createShipCommand(Order $order)
     {
-        $command                      = new ShipOrder($order->getAttribute()->getBillieReferenceId());
-        $command->orderId             = $order->getNumber();
+        $command          = new ShipOrder($order->getAttribute()->getBillieReferenceId());
+        $command->orderId = $order->getNumber();
 
         // Get Invoice if exists
         $criteria  = Criteria::create()->where(Criteria::expr()->eq('typeId', '1'));
@@ -108,7 +108,7 @@ class CommandFactory
      */
     public function createReduceAmountCommand(Order $order, $amount)
     {
-        $command = new ReduceOrderAmount($order->getAttribute()->getBillieReferenceId());
+        $command         = new ReduceOrderAmount($order->getAttribute()->getBillieReferenceId());
         $command->amount = new Amount(
             $amount['net'],
             $amount['currency'],

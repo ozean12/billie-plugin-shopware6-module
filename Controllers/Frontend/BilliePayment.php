@@ -49,6 +49,12 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $signature = $response->signature;
         $token     = $service->createPaymentToken($this->getAmount(), $billing['customernumber']);
 
+        // Make sure that a legalform is selected, otherwise display error message.
+        if (!isset($billing['attributes']['billieLegalform']) || is_null($billing['attributes']['billieLegalform'])) {
+            $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => 'MissingLegalForm']);
+            return;
+        }
+
         // If token is invalid, cancel action!
         if (!$service->isValidToken($response, $token)) {
             $this->forward('cancel');
