@@ -53,6 +53,7 @@ class Api
 
     /**
      * Load Plugin config
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function __construct()
     {
@@ -128,17 +129,21 @@ class Api
             $local['iban']      = $order->bankAccount->iban;
             $local['bic']       = $order->bankAccount->bic;
             $this->getLogger()->info('POST /v1/order');
-        } catch (OrderDeclinedException $exception) {
-            $message        = $exception->getBillieMessage();
-            $local['state'] = 'declined';
-            return ['success' => false, 'title' => 'Error', 'data' => $message, 'local' => $local];
-        } catch(InvalidCommandException $exc) {
-            $violations = $exc->getViolations();
-            $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
-            return ['success' => false, 'title' => 'Error', 'data' => $violations, 'local' => $local];
+        } 
+        // Order Declined -> Billie User Error Message
+        catch (OrderDeclinedException $exc) {
+            return $this->errorMessage($exc, ['state' => 'declined']);
+        }
+        // Invalid Command -> Non-technical user error message
+        catch(InvalidCommandException $exc) {
+            return $this->invalidCommandMessage($exc);
+        }
+        // Catch other billie exceptions
+        catch(BillieException $exc) {
+            return $this->errorMessage($exc, $local);
         }
  
-        return ['success' => true, 'messages' => 'OK', 'local' => $local];
+        return ['success' => true, 'local' => $local];
     }
 
     /**
@@ -462,6 +467,33 @@ class Api
             'title'   => 'Fehler',
             'data'    => sprintf('Bestellung mit ID %s konnte nicht gefunden werden', $order)
         ];
+    }
+
+    /**
+     * Generate Response based on exception
+     *
+     * @param BillieException $exc
+     * @param array $local
+     * @return array
+     */
+    private function errorMessage(BillieException $exc, array $local = [])
+    {
+        $this->getLogger()->error($exc->getBillieMessage());
+        return ['success' => false, 'data' => $exc->getBillieCode(), 'local' => $local];
+    }
+
+    /**
+     * Generate InvalidCommand error message
+     *
+     * @param InvalidCommandException $exc
+     * @param array $local
+     * @return array
+     */
+    private function invalidCommandMessage(InvalidCommandException $exc, array $local = [])
+    {
+        $violations = $exc->getViolations();
+        $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
+        return ['success' => false, 'data' => 'InvalidCommandException', 'local' => $local];
     }
 
     /**

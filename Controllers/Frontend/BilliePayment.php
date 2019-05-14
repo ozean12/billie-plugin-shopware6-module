@@ -96,8 +96,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                 }
 
                 // Error messages
-                Shopware()->Session()->apiErrorMessages = $apiResp['data'];
-                $this->redirect(['controller' => 'checkout', 'action' => 'confirm']);
+                $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $apiResp['data']]);
 
                 break;
             default:
