@@ -9,7 +9,7 @@
             <label lang="de">Billie.io Übersicht</label>
             <controller>BillieOverview</controller>
             <action>index</action>
-            <class>sprite-application-block</class>
+            <class>sprite-billie-menu</class>
             <parent identifiedBy="controller">Order</parent>
             <onclick>Shopware.ModuleManager.createSimplifiedModule("BillieOverview", { "title": "Billie.io Übersicht" })</onclick>
         </entry>

@@ -18,7 +18,9 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">{s name="overview/title"}Billie.io Overview{/s}</a>
+            <a class="navbar-brand" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">
+                <img class="img-responsive" src="{link file="backend/_resources/images/plugin.png"}" style="display: inline-block" /> {s name="overview/title"}Billie.io Overview{/s}
+            </a>
         </div>
     </div>
 </nav>

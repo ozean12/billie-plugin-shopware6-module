@@ -35,8 +35,24 @@ class TemplateRegistration implements SubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Action_PreDispatch' => 'onPreDispatch'
+            'Enlight_Controller_Action_PreDispatch'                => 'onPreDispatch',
+            'Enlight_Controller_Action_PostDispatch_Backend_Index' => 'addMenuItem'
         ];
+    }
+
+    /**
+     * Add Menu item sprite class
+     * @param Enlight_Event_EventArgs $args
+     */
+    public function addMenuItem(\Enlight_Event_EventArgs $args)
+    {
+        /** @var \Enlight_Controller_Action $controller */
+        $controller = $args->getSubject();
+        $view       = $controller->View();
+        
+        if ($view->hasTemplate()) {
+            $view->extendsTemplate('backend/billie_overview/menuitem.tpl');
+        }
     }
 
     /**
