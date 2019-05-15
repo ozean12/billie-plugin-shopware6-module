@@ -88,7 +88,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     $models = Shopware()->Container()->get('models');
                     $repo   = $models->getRepository(Order::class);
                     $order  = $repo->findOneBy(['number' => $orderNumber]);
-                    $api->updateLocal($order, $apiResp['local']);
+                    $api->helper->updateLocal($order, $apiResp['local']);
                     
                     // Finish checkout
                     $this->redirect(['controller' => 'checkout', 'action' => 'finish']);

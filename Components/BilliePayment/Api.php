@@ -22,21 +22,6 @@ use Billie\Command\ConfirmPayment;
 class Api
 {
     /**
-     * @var \Shopware\Components\Model\ModelManager
-     */
-    protected $entityManager = null;
-
-    /**
-     * @var \Shopware\Components\Logger
-     */
-    protected $logger = null;
-
-    /**
-     * @var \Shopware\Components\Model\QueryBuilder
-     */
-    protected $queryBuilder = null;
-
-    /**
      * @var array
      */
     protected $config = [];
@@ -50,6 +35,11 @@ class Api
      * @var CommandFactory
      */
     protected $commandFactory = null;
+
+    /**
+     * @var ApiHelper
+     */
+    public $helper = null;
 
     /**
      * Load Plugin config
@@ -67,6 +57,7 @@ class Api
             ->getByPluginName('BilliePayment', $shop);
         
         // initialize Billie Client
+        $this->helper         = new ApiHelper();
         $this->commandFactory = new CommandFactory();
         $this->client         = BillieClient::create($this->config['apikey'], $this->config['sandbox']);
     }
@@ -83,7 +74,7 @@ class Api
     public function getList($page = 1, $perPage = 25, $filters = null, $sorting = null)
     {
         // Load Orders
-        $builder = $this->getQueryBuilder();
+        $builder = $this->helper->getQueryBuilder();
         $builder->select(['orders, attribute'])
             ->from(Order::class, 'orders')
             ->leftJoin('orders.attribute', 'attribute')
@@ -98,7 +89,7 @@ class Api
         // Get Query and paginator
         $query = $builder->getQuery();
         $query->setHydrationMode(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
-        $paginator = $this->getEnityManager()->createPaginator($query);
+        $paginator = $this->helper->getEnityManager()->createPaginator($query);
 
         // Return result
         return [
@@ -128,19 +119,19 @@ class Api
             $local['state']     = $order->state;
             $local['iban']      = $order->bankAccount->iban;
             $local['bic']       = $order->bankAccount->bic;
-            $this->getLogger()->info('POST /v1/order');
+            $this->helper->getLogger()->info('POST /v1/order');
         } 
         // Order Declined -> Billie User Error Message
         catch (OrderDeclinedException $exc) {
-            return $this->errorMessage($exc, ['state' => 'declined']);
+            return $this->helper->errorMessage($exc, ['state' => 'declined']);
         }
         // Invalid Command -> Non-technical user error message
         catch(InvalidCommandException $exc) {
-            return $this->invalidCommandMessage($exc);
+            return $this->helper->invalidCommandMessage($exc);
         }
         // Catch other billie exceptions
         catch(BillieException $exc) {
-            return $this->errorMessage($exc, $local);
+            return $this->helper->errorMessage($exc, $local);
         }
  
         return ['success' => true, 'local' => $local];
@@ -156,29 +147,29 @@ class Api
     {
         // Get Order
         $local = [];
-        $item  = $this->getOrder($order);
+        $item  = $this->helper->getOrder($order);
         
         if (!$item) {
-            return $this->orderNotFoundMessage($order);
+            return $this->helper->orderNotFoundMessage($order);
         }
 
         // run POST /v1/order/{order_id}/cancel
         try {
             $this->client->cancelOrder(new CancelOrder($item->getAttribute()->getBillieReferenceId()));
-            $this->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
+            $this->helper->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
             $local['state'] = 'canceled';
         }
         // Invalid Command -> Non-technical user error message
         catch(InvalidCommandException $exc) {
-            return $this->invalidCommandMessage($exc);
+            return $this->helper->invalidCommandMessage($exc);
         }
         // Catch other billie exceptions
         catch(BillieException $exc) {
-            return $this->errorMessage($exc, $local);
+            return $this->helper->errorMessage($exc, $local);
         }
         
         // Update local state
-        if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
+        if (($localUpdate = $this->helper->updateLocal($order, $local)) !== true) {
             return $localUpdate;
         }
         
@@ -195,10 +186,10 @@ class Api
     {
         // Get Order
         $local = [];
-        $item  = $this->getOrder($order);
+        $item  = $this->helper->getOrder($order);
         
         if (!$item) {
-            return $this->orderNotFoundMessage($order);
+            return $this->helper->orderNotFoundMessage($order);
         }
 
         // Already shipped/canceled
@@ -212,20 +203,20 @@ class Api
             /** @var Billie\Model\Order $response */
             $response       = $this->client->shipOrder($this->commandFactory->createShipCommand($item));
             $local['state'] = $response->state;
-            $this->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
+            $this->helper->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
             // $dueDate = $order->invoice->dueDate;
         } 
         // Invalid Command -> Non-technical user error message
         catch(InvalidCommandException $exc) {
-            return $this->invalidCommandMessage($exc);
+            return $this->helper->invalidCommandMessage($exc);
         }
         // Catch other billie exceptions
         catch(BillieException $exc) {
-            return $this->errorMessage($exc, $local);
+            return $this->helper->errorMessage($exc, $local);
         }
 
         // Update local state
-        if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
+        if (($localUpdate = $this->helper->updateLocal($order, $local)) !== true) {
             return $localUpdate;
         }
 
@@ -243,10 +234,10 @@ class Api
     {
         // Get Order
         $local = [];
-        $item  = $this->getOrder($order);
+        $item  = $this->helper->getOrder($order);
         
         if (!$item) {
-            return $this->orderNotFoundMessage($order);
+            return $this->helper->orderNotFoundMessage($order);
         }
 
         $refId = $item->getAttribute()->getBillieReferenceId();
@@ -256,7 +247,7 @@ class Api
             $command        = $this->commandFactory->createReduceAmountCommand($item, $data['amount']);
             $order          = $this->client->reduceOrderAmount($command);
             $local['state'] = $order->state;
-            $this->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $item->getId()));
+            $this->helper->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $item->getId()));
         }
 
         // Postpone Due Date
@@ -271,16 +262,16 @@ class Api
             } 
             // Invalid Command -> Non-technical user error message
             catch(InvalidCommandException $exc) {
-                return $this->invalidCommandMessage($exc);
+                return $this->helper->invalidCommandMessage($exc);
             }
             // Catch other billie exceptions
             catch(BillieException $exc) {
-                return $this->errorMessage($exc, $local);
+                return $this->helper->errorMessage($exc, $local);
             }
         }
 
         // Update local state
-        if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
+        if (($localUpdate = $this->helper->updateLocal($order, $local)) !== true) {
             return $localUpdate;
         }
 
@@ -298,10 +289,10 @@ class Api
     {
         // Get Order
         $local = [];
-        $item  = $this->getOrder($order);
+        $item  = $this->helper->getOrder($order);
         
         if (!$item) {
-            return $this->orderNotFoundMessage($order);
+            return $this->helper->orderNotFoundMessage($order);
         }
 
         // Call POST /v1/order/{order_id}/confirm-payment
@@ -309,19 +300,19 @@ class Api
             $command        = new ConfirmPayment($item->getAttribute()->getBillieReferenceId(), $amount * 100); // amount are in cents!
             $order          = $this->client->confirmPayment($command);
             $local['state'] = $order->state;
-            $this->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
+            $this->helper->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
         } 
         // Invalid Command -> Non-technical user error message
         catch(InvalidCommandException $exc) {
-            return $this->invalidCommandMessage($exc);
+            return $this->helper->invalidCommandMessage($exc);
         }
         // Catch other billie exceptions
         catch(BillieException $exc) {
-            return $this->errorMessage($exc, $local);
+            return $this->helper->errorMessage($exc, $local);
         }
 
         // Update local state
-        if (($localUpdate = $this->updateLocal($item->getId(), $local)) !== true) {
+        if (($localUpdate = $this->helper->updateLocal($item->getId(), $local)) !== true) {
             return $localUpdate;
         }
         
@@ -338,15 +329,15 @@ class Api
     {
         // Get Order
         $local = [];
-        $item  = $this->getOrder($order);
+        $item  = $this->helper->getOrder($order);
         
         if (!$item) {
-            return $this->orderNotFoundMessage($order);
+            return $this->helper->orderNotFoundMessage($order);
         }
 
         // GET /v1/order/{order_id}
         try {
-            $this->getLogger()->info(sprintf('GET /v1/order/%s', $order));
+            $this->helper->getLogger()->info(sprintf('GET /v1/order/%s', $order));
             $response       = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
             $local['state'] = $response->state; 
             $local['iban']  = $response->bankAccount->iban;
@@ -354,11 +345,11 @@ class Api
         } 
         // Invalid Command -> Non-technical user error message
         catch(InvalidCommandException $exc) {
-            return $this->invalidCommandMessage($exc);
+            return $this->helper->invalidCommandMessage($exc);
         }
         // Catch other billie exceptions
         catch(BillieException $exc) {
-            return $this->errorMessage($exc, $local);
+            return $this->helper->errorMessage($exc, $local);
         }
  
         // Retrieved Data
@@ -382,7 +373,7 @@ class Api
         ];
 
         // Update order details in database with new ones from billie
-        if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
+        if (($localUpdate = $this->helper->updateLocal($order, $local)) !== true) {
             return $localUpdate;
         }
         
@@ -401,10 +392,10 @@ class Api
         // Get Order if necessary.
         $item = $order;
         if (!$order instanceof Order) {
-            $item = $this->getOrder($order);
+            $item = $this->helper->getOrder($order);
 
             if (!$item) {
-                return $this->orderNotFoundMessage($order);
+                return $this->helper->orderNotFoundMessage($order);
             }
         }
 
@@ -438,102 +429,5 @@ class Api
         $models->flush($attr);
 
         return true;
-    }
-
-    /**
-     * Get an order by id
-     *
-     * @param integer $order
-     * @return Order
-     */
-    protected function getOrder($order)
-    {
-        $models = $this->getEnityManager();
-        $repo   = $models->getRepository(Order::class);
-        return $repo->find($order);
-    }
-
-    /**
-     * Get the order not found data message
-     *
-     * @param integer $order
-     * @return array
-     */
-    private function orderNotFoundMessage($order)
-    {
-        return [
-            'success' => false,
-            'title'   => 'Fehler',
-            'data'    => sprintf('Bestellung mit ID %s konnte nicht gefunden werden', $order)
-        ];
-    }
-
-    /**
-     * Generate Response based on exception
-     *
-     * @param BillieException $exc
-     * @param array $local
-     * @return array
-     */
-    private function errorMessage(BillieException $exc, array $local = [])
-    {
-        $this->getLogger()->error($exc->getBillieMessage());
-        return ['success' => false, 'data' => $exc->getBillieCode(), 'local' => $local];
-    }
-
-    /**
-     * Generate InvalidCommand error message
-     *
-     * @param InvalidCommandException $exc
-     * @param array $local
-     * @return array
-     */
-    private function invalidCommandMessage(InvalidCommandException $exc, array $local = [])
-    {
-        $violations = $exc->getViolations();
-        $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
-        return ['success' => false, 'data' => 'InvalidCommandException', 'local' => $local];
-    }
-
-    /**
-     * Internal helper function to get access to the query builder.
-     *
-     * @return \Shopware\Components\Model\QueryBuilder
-     */
-    private function getQueryBuilder()
-    {
-        if ($this->queryBuilder === null) {
-            $this->queryBuilder = $this->getEnityManager()->createQueryBuilder();
-        }
-        
-        return $this->queryBuilder;
-    }
-
-    /**
-     * Internal helper function to get access the Model Manager.
-     *
-     * @return \Shopware\Components\Model\ModelManager
-     */
-    private function getEnityManager()
-    {
-        if ($this->entityManager === null) {
-            $this->entityManager = Shopware()->Container()->get('models');
-        }
-        
-        return $this->entityManager;
-    }
-
-    /**
-     * Internal helper function to get access the plugin logger
-     *
-     * @return \Shopware\Components\Logger
-     */
-    private function getLogger()
-    {
-        if ($this->logger === null) {
-            $this->logger = Shopware()->Container()->get('pluginlogger');
-        }
-        
-        return $this->logger;
     }
 }
