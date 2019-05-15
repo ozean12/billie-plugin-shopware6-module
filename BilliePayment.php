@@ -39,6 +39,7 @@ class BilliePayment extends Plugin
 
         $this->autoload();
         $this->createDatabase();
+        $context->scheduleClearCache(InstallContext::CACHE_LIST_DEFAULT);
     }
 
     /**
@@ -52,6 +53,8 @@ class BilliePayment extends Plugin
         if (!$context->keepUserData()) {
             $this->removeDatabase();
         }
+
+        $context->scheduleClearCache(UninstallContext::CACHE_LIST_DEFAULT);
     }
 
     /**
@@ -60,6 +63,7 @@ class BilliePayment extends Plugin
     public function deactivate(DeactivateContext $context)
     {
         $this->setActiveFlag($context->getPlugin()->getPayments(), false);
+        $context->scheduleClearCache(DeactivateContext::CACHE_LIST_DEFAULT);
     }
 
     /**
@@ -68,6 +72,7 @@ class BilliePayment extends Plugin
     public function activate(ActivateContext $context)
     {
         $this->setActiveFlag($context->getPlugin()->getPayments(), true);
+        $context->scheduleClearCache(ActivateContext::CACHE_LIST_DEFAULT);
     }
 
     /**
