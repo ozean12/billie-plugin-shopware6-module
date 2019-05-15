@@ -119,7 +119,7 @@ class Api
         } 
         // Order Declined -> Billie User Error Message
         catch (OrderDeclinedException $exc) {
-            return $this->helper->errorMessage($exc, ['state' => 'declined']);
+            return $this->helper->declinedErrorMessage($exc, ['state' => 'declined']);
         }
         // Invalid Command -> Non-technical user error message
         catch(InvalidCommandException $exc) {

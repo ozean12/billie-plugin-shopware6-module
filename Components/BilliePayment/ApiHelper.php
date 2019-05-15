@@ -5,6 +5,11 @@ namespace BilliePayment\Components\BilliePayment;
 use Shopware\Models\Order\Order;
 use Billie\Exception\BillieException;
 use Billie\Exception\InvalidCommandException;
+use Billie\Exception\OrderDecline\OrderDeclinedException;
+use Billie\Exception\OrderDecline\DebtorAddressException;
+use Billie\Exception\OrderDecline\DebtorLimitExceededException;
+use Billie\Exception\OrderDecline\DebtorNotIdentifiedException;
+use Billie\Exception\OrderDecline\RiskPolicyDeclinedException;
 
 /**
  * Helper Class to manage error messages and
@@ -115,8 +120,38 @@ class ApiHelper
      */
     public function errorMessage(BillieException $exc, array $local = [])
     {
-        $this->getLogger()->error($exc->getBillieMessage());
+        $this->getLogger()->error(sprintf('[%s]: %s', $exc->getBillieCode(), $exc->getBillieMessage()));
         return ['success' => false, 'data' => $exc->getBillieCode(), 'local' => $local];
+    }
+
+    /**
+     * Generate Response based on declined order exception
+     *
+     * @param OrderDeclinedException $exc
+     * @param array $local
+     * @return array
+     */
+    public function declinedErrorMessage(OrderDeclinedException $exc, array $local = [])
+    {
+        // Get Code of OrderDecined child
+        $code = $exc->getBillieCode();
+        switch (get_class($exc)) {
+            case DebtorAddressException::class:
+                $code = 'DEBTOR_ADDRESS';
+                break; 
+            case DebtorNotIdentifiedException::class:
+                $code = 'DEBTOR_NOT_IDENTIFIED';
+                break; 
+            case RiskPolicyDeclinedException::class:
+                $code = 'RISK_POLICY';
+                break; 
+            case DebtorLimitExceededException::class:
+                $code = 'DEBTOR_LIMIT_EXCEEDED';
+                break;
+        }
+
+        $this->getLogger()->error(sprintf('[%s]: %s', $code, $exc->getBillieMessage()));
+        return ['success' => false, 'data' => $code, 'local' => $local];
     }
 
     /**
@@ -129,7 +164,7 @@ class ApiHelper
     public function invalidCommandMessage(InvalidCommandException $exc, array $local = [])
     {
         $violations = $exc->getViolations();
-        $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
+        $this->getLogger()->error('[InvalidCommandException]: ' . implode('; ', $violations));
         return ['success' => false, 'data' => 'InvalidCommandException', 'local' => $local];
     }
 
