@@ -14,7 +14,10 @@ $(function () {
                 'amount': amount
             },
             success: function (response) {
-                postMessageApi.createGrowlMessage(response.title, response.data, !response.success);
+                postMessageApi.createAlertMessage(
+                    response.success ? _BILLIE_SNIPPETS_.errorCodes.success : _BILLIE_SNIPPETS_.errorCodes.error,
+                    response.success ? _BILLIE_SNIPPETS_.confirm_payment.success : _BILLIE_SNIPPETS_.errorCodes[response.data]
+                );
             }
         });
     };
@@ -50,7 +53,10 @@ $(function () {
                 'order_id': target.data('order_id')
             },
             success: function (response) {
-                postMessageApi.createGrowlMessage(response.title, response.data, !response.success);
+                postMessageApi.createAlertMessage(
+                    response.success ? _BILLIE_SNIPPETS_.errorCodes.success : _BILLIE_SNIPPETS_.errorCodes.error,
+                    response.success ? _BILLIE_SNIPPETS_.cancel_order.success : _BILLIE_SNIPPETS_.errorCodes[response.data]
+                );
                 target.closest('.wrapper').addClass('danger').find('.state').text(_BILLIE_SNIPPETS_.states.canceled)
             }
         });

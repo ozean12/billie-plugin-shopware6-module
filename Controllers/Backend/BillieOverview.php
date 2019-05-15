@@ -37,6 +37,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $orders = $api->getList(intval($this->Request()->getParam('page', 1)), 25, $filters, $sort);
         
         // Assign view data
+        $this->View()->assign('errorCode', $this->Request()->getParam('errorCode'));
         $this->View()->assign($orders);
         $this->View()->assign([
             'statusClasses' =>  [
@@ -49,14 +50,6 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
                 'canceled' => 'danger',
             ]
         ]);
-
-        // Errors
-        $errors = $this->container->get('backendsession')->apiErrorMessages;
-        if (isset($errors) && !empty($errors)) {
-            $errors = is_array($errors) ? $errors : [$errors];
-            $this->View()->assign('errors', $errors);
-            unset($this->container->get('backendsession')->apiErrorMessages);
-        }
     }
 
     /**
@@ -72,8 +65,8 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $response = $api->retrieveOrder($order);
 
         if ($response['success'] === false) {
-            $this->container->get('backendsession')->apiErrorMessages = $response['data'];
-            $this->forward('index');
+            $this->redirect(['controller' => 'BillieOverview', 'action' => 'index', 'errorCode' => $response['data']]);
+            return;
         }
 
         $this->View()->assign($response);

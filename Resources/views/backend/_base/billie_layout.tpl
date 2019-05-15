@@ -24,6 +24,9 @@
 </nav>
 
 <div class="container theme-showcase" role="main">
+    {if $errorCode}
+        <div class="alert alert-danger" role="alert">{$errorCode|snippet:$errorCode:'backend/billie_overview/errors'}</div>
+    {/if}
     {if $errors}
         <div class="alert alert-danger" role="alert">{$errors[0]}</div>
     {/if}
@@ -40,10 +43,12 @@
         confirm_payment: {
             title: '{s name="confirm_payment/title"}Zahlungsbetrag{/s}',
             desc: '{s name="confirm_payment/description"}Bitte geben Sie Zahlungsbetrag an.{/s}',
+            success: '{s name="confirm_payment/success"}Billie.io wurde über den angegebenen Zahlungsbetrag informiert.{/s}',
         },
         cancel_order: {
             title: '{s name="cancel_order/title"}Bestellung abbrechen{/s}',
             desc: '{s name="cancel_order/description"}Sind Sie sicher, dass Sie die Bestellung über Billie.io stornieren möchten?{/s}',
+            success: '{s name="cancel_order/success"}Die Bestellung wurde erfolgreich über Billie.io storniert.{/s}',
         },
         states: {
             created: '{s name="order/state/created" namespace="backend/billie_overview/order"}created{/s}',
@@ -53,6 +58,16 @@
             late: '{s name="order/state/late" namespace="backend/billie_overview/order"}late{/s}',
             complete: '{s name="order/state/complete" namespace="backend/billie_overview/order"}complete{/s}',
             canceled: '{s name="order/state/canceled" namespace="backend/billie_overview/order"}canceled{/s}'
+        },
+        errorCodes: {
+            error: '{s name="error" namespace="backend/billie_overview/errors"}{/s}',
+            success: '{s name="success" namespace="backend/billie_overview/errors"}{/s}',
+            InvalidCommandException: '{s name="InvalidCommandException" namespace="backend/billie_overview/errors"}{/s}',
+            INVALID_REQUEST: '{s name="INVALID_REQUEST" namespace="backend/billie_overview/errors"}{/s}',
+            NOT_ALLOWED: '{s name="NOT_ALLOWED" namespace="backend/billie_overview/errors"}{/s}',
+            NOT_AUTHORIZED: '{s name="NOT_AUTHORIZED" namespace="backend/billie_overview/errors"}{/s}',
+            SERVER_ERROR: '{s name="SERVER_ERROR" namespace="backend/billie_overview/errors"}{/s}',
+            ORDER_NOT_CANCELLED: '{s name="ORDER_NOT_CANCELLED" namespace="backend/billie_overview/errors"}{/s}'
         }
     };
 </script>

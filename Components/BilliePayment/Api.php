@@ -155,7 +155,7 @@ class Api
     public function cancelOrder($order)
     {
         // Get Order
-        $local = ['state' => 'canceled'];
+        $local = [];
         $item  = $this->getOrder($order);
         
         if (!$item) {
@@ -164,25 +164,25 @@ class Api
 
         // run POST /v1/order/{order_id}/cancel
         try {
-            $command = new CancelOrder($item->getAttribute()->getBillieReferenceId());
-            $this->client->cancelOrder($command);
+            $this->client->cancelOrder(new CancelOrder($item->getAttribute()->getBillieReferenceId()));
             $this->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
-        } catch(InvalidCommandException $exception) {
-            $violations = $exception->getViolations();
-            $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
-            return ['success' => false, 'title' => 'Error', 'data' => $violations];
-        } 
-        catch (OrderNotCancelledException $exception) {
-            $message = $exception->getBillieMessage();
-            return ['success' => false, 'title' => 'Error', 'data' => $message];
+            $local['state'] = 'canceled';
         }
-
+        // Invalid Command -> Non-technical user error message
+        catch(InvalidCommandException $exc) {
+            return $this->invalidCommandMessage($exc);
+        }
+        // Catch other billie exceptions
+        catch(BillieException $exc) {
+            return $this->errorMessage($exc, $local);
+        }
+        
         // Update local state
         if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
             return $localUpdate;
         }
         
-        return ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Cancelation Response'];
+        return ['success' => true];
     }
 
     /**
@@ -209,32 +209,27 @@ class Api
 
         // run POST /v1/order/{order_id}/ship
         try {
-            /** @var Billie\Model\Order $order */
-            $order          = $this->client->shipOrder($this->commandFactory->createShipCommand($item));
-            $local['state'] = $order->state;
+            /** @var Billie\Model\Order $response */
+            $response       = $this->client->shipOrder($this->commandFactory->createShipCommand($item));
+            $local['state'] = $response->state;
             $this->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
             // $dueDate = $order->invoice->dueDate;
-        } catch (OrderNotShippedException $exception) {
-            // $message    = $exception->getBillieMessage();
-            // $messageKey = $exception->getBillieCode();
-            $reason     = $exception->getReason();
-
-            return ['success' => false, 'title' => 'Error', 'data' => $reason];
-        } catch(InvalidCommandException $exception) {
-            $violations = $exception->getViolations();
-            $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
-            return ['success' => false, 'title' => 'Error', 'data' => $violations];
-        } catch(Exception $exception) {
-            $this->getLogger()->info('An exception occured: ' . $exception->getMessage());
-            return ['success' => false, 'title' => 'Error', 'data' => $exception->getMessage()];
+        } 
+        // Invalid Command -> Non-technical user error message
+        catch(InvalidCommandException $exc) {
+            return $this->invalidCommandMessage($exc);
         }
-        
+        // Catch other billie exceptions
+        catch(BillieException $exc) {
+            return $this->errorMessage($exc, $local);
+        }
+
         // Update local state
         if (($localUpdate = $this->updateLocal($order, $local)) !== true) {
             return $localUpdate;
         }
 
-        return ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Ship Response'];
+        return ['success' => true];
     }
 
     /**
@@ -269,18 +264,18 @@ class Api
             $command = $this->commandFactory->createPostponeDueDateCommand($refId, $data['duration']);
         
             try {
-                /** @var Billie\Model\Order $order */
-                $order          = $this->client->postponeOrderDueDate($command);
-                $local['state'] = $order->state;
+                /** @var Billie\Model\Order $response */
+                $response       = $this->client->postponeOrderDueDate($command);
+                $local['state'] = $response->state;
                 // $dueDate = $order->invoice->dueDate;
-            } catch(InvalidCommandException $exception) {
-                $violations = $exception->getViolations();
-                $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
-                return ['success' => false, 'title' => 'Error', 'data' => $violations];
-            }catch (PostponeDueDateNotAllowedException $exception) {
-                $message    = $exception->getBillieMessage();
-                // $messageKey = $exception->getBillieCode();
-                return ['success' => false, 'title' => 'Error', 'data' => $message];
+            } 
+            // Invalid Command -> Non-technical user error message
+            catch(InvalidCommandException $exc) {
+                return $this->invalidCommandMessage($exc);
+            }
+            // Catch other billie exceptions
+            catch(BillieException $exc) {
+                return $this->errorMessage($exc, $local);
             }
         }
 
@@ -315,14 +310,14 @@ class Api
             $order          = $this->client->confirmPayment($command);
             $local['state'] = $order->state;
             $this->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
-        } catch(InvalidCommandException $exception) {
-            $violations = $exception->getViolations();
-            $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
-            return ['success' => false, 'title' => 'Error', 'data' => $violations];
-        } catch (BillieException $exception) {
-            $message    = $exception->getBillieMessage();
-            // $messageKey = $exception->getBillieCode();
-            return ['success' => false, 'title' => 'Error', 'data' => $message];
+        } 
+        // Invalid Command -> Non-technical user error message
+        catch(InvalidCommandException $exc) {
+            return $this->invalidCommandMessage($exc);
+        }
+        // Catch other billie exceptions
+        catch(BillieException $exc) {
+            return $this->errorMessage($exc, $local);
         }
 
         // Update local state
@@ -330,7 +325,7 @@ class Api
             return $localUpdate;
         }
         
-        return ['success' => true, 'title' => 'Erfolgreich', 'data' => 'Confirm Payment Response'];
+        return ['success' => true];
     }
 
     /**
@@ -351,17 +346,21 @@ class Api
 
         // GET /v1/order/{order_id}
         try {
-            $response = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
             $this->getLogger()->info(sprintf('GET /v1/order/%s', $order));
+            $response       = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
             $local['state'] = $response->state; 
             $local['iban']  = $response->bankAccount->iban;
             $local['bic']   = $response->bankAccount->bic;
-        } catch(InvalidCommandException $exception) {
-            $violations = $exception->getViolations();
-            $this->getLogger()->error('InvalidCommandException: ' . implode('; ', $violations));
-            return ['success' => false, 'title' => 'Error', 'data' => $violations];
+        } 
+        // Invalid Command -> Non-technical user error message
+        catch(InvalidCommandException $exc) {
+            return $this->invalidCommandMessage($exc);
         }
-
+        // Catch other billie exceptions
+        catch(BillieException $exc) {
+            return $this->errorMessage($exc, $local);
+        }
+ 
         // Retrieved Data
         $response = [
             'success'      => true,
