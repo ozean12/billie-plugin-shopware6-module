@@ -9,10 +9,6 @@ use Billie\HttpClient\BillieClient;
 use Billie\Exception\BillieException;
 use Billie\Exception\OrderDecline\OrderDeclinedException;
 use Billie\Exception\InvalidCommandException;
-use Billie\Exception\DebtorAddressException;
-use Billie\Exception\OrderNotCancelledException;
-use Billie\Exception\OrderNotShippedException;
-use Billie\Exception\PostponeDueDateNotAllowedException;
 use Billie\Command\CancelOrder;
 use Billie\Command\ConfirmPayment;
 
