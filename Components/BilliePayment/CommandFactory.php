@@ -29,8 +29,8 @@ class CommandFactory
      */
     public function createOrderCommand(ApiArguments $args, $duration)
     {
-        // Create command and fill it
-        $customer = isset($args->billing['customer']) && array_key_exists('id', $args->billing['customer']) ? $args->billing['customer']['id'] : null;
+        // Create command and fill it, prepend id wiht 'CUSTOMER_ID_' or api will deny it!
+        $customer = isset($args->billing['customer']) && array_key_exists('id', $args->billing['customer']) ? 'CUSTOMER_ID_' . $args->billing['customer']['id'] : null;
         $address  = $this->createAddress($args->billing, $args->country);
         $command  = new CreateOrder();
 
@@ -50,26 +50,6 @@ class CommandFactory
         $command->amount          = new Amount($args->amountNet * 100, $args->currency, $args->taxAmount * 100);
         $command->deliveryAddress = $address; // or: new \Billie\Model\Address();
         $command->duration        = $duration; // duration=14 meaning: when the order is shipped on the 1st May, the due date is the 15th May
-
-        // TODO: Remove Test data that works with billie api
-        $command = new CreateOrder();
-
-        $companyAddress = new Address();
-        $companyAddress->street = 'Charlottenstr.';
-        $companyAddress->houseNumber = '4';
-        $companyAddress->postalCode = '10969';
-        $companyAddress->city = 'Berlin';
-        $companyAddress->countryCode = 'DE';
-        $command->debtorCompany = new Company('BILLIE-00000001', 'Billie GmbH', $companyAddress);
-        $command->debtorCompany->legalForm = '10001';
-
-        $command->debtorPerson = new Person('max.mustermann@musterfirma.de');
-        $command->debtorPerson->salution = 'm';
-        $command->debtorPerson->phone = '+4930120111111';
-        $command->deliveryAddress = $companyAddress; // or: new \Billie\Model\Address();
-        $command->amount = new Amount(100, 'EUR', 19);
-
-        $command->duration = 14;
 
         return  $command;
     }
