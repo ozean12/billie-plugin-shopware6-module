@@ -30,9 +30,9 @@ class BilliePayment extends Plugin
             'active'      => 1,
             'position'    => 0,
             'additionalDescription' =>
-                '<img src="http://your-image-url"/>'
-                . '<div id="payment_desc">'
-                . '  Example billie payment method.'
+                '<div id="payment_desc">'
+                . ' <img src="https://www.billie.io/assets/images/favicons/favicon-16x16.png" width="16" height="16" style="display: inline-block;" />'
+                . '  Billie.io - Payment After Delivery'
                 . '</div>'
         ];
         $installer->createOrUpdate($context->getPlugin(), $options);
