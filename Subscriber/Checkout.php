@@ -16,7 +16,7 @@ class Checkout implements SubscriberInterface
     private $api;
 
     /**
-     * @param $api Api
+     * @param Api $api Api
      */
     public function __construct(Api $api)
     {
@@ -31,21 +31,7 @@ class Checkout implements SubscriberInterface
         return [
             'Enlight_Controller_Action_PostDispatch_Frontend_Checkout' => [ 'addApiMessagesToView', -1 ],
             'Enlight_Controller_Action_PreDispatch_Frontend_Address'   => 'extendAddressForm',
-            'Shopware_Modules_Order_SaveOrder_ProcessDetails'          => 'onSaveOrder'
         ];
-    }
-
-    /**
-     * Save API State information after order is created.
-     *
-     * @param \Enlight_Event_EventArgs $args
-     * @return void
-     */
-    public function onSaveOrder(\Enlight_Event_EventArgs $args)
-    {
-        $session = Shopware()->Session();
-        $this->api->updateLocal($args['orderId'], ['state' => $session->apiOrderState]);
-        $session->apiOrderState = null;
     }
 
     /**
