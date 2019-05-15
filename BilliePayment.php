@@ -24,11 +24,11 @@ class BilliePayment extends Plugin
         $installer = $this->container->get('shopware.plugin_payment_installer');
 
         $options = [
-            'name'        => 'billie_payment_after_delivery',
-            'description' => 'Billie Payment After Delivery',
-            'action'      => 'BilliePayment',
-            'active'      => 1,
-            'position'    => 0,
+            'name'                  => 'billie_payment_after_delivery',
+            'description'           => 'Billie Payment After Delivery',
+            'action'                => 'BilliePayment',
+            'active'                => 1,
+            'position'              => 0,
             'additionalDescription' =>
                 '<div id="payment_desc">'
                 . ' <img src="https://www.billie.io/assets/images/favicons/favicon-16x16.png" width="16" height="16" style="display: inline-block;" />'
