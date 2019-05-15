@@ -1,13 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.3/engine/Shopware/Components/Plugin/schema/plugin.xsd">
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.5/engine/Shopware/Components/Plugin/schema/plugin.xsd">
 
     <label lang="en">Billie Payment After Delivery</label>
     <label lang="de">Billie Payment After Delivery</label>
 
     <version>0.0.1</version>
-    <!-- <copyright>(c) shopware AG</copyright>
-    <author>shopware AG</author> -->
+    <copyright>(c) Solution 360 GmbH</copyright>
+    <author>Solution 360 GmbH</author>
+    <link>https://www.solution360.de/</link>
+    <license>proprietary</license>
+
+     <description lang="de"><![CDATA[
+        <div style="text-align: center">
+            <img src="https://www.billie.io/assets/images/logo/billie_logo_large.svg" width="54" height="76" />
+        </div>
+        <h1>Liquidität auf Knopfdruck</h1>
+        <p>Billie begleicht Ihre offenen Rechnungen sofort - bereits ab 0,7% Einmalgebühr auf den Rechnungsbetrag.</p>
+        <hr>
+        <h2>Flexibler als jede Kreditlinie</h2>
+        <p>Registrieren Sie sich mit wenigen Klicks und sichern Sie sich Ihren monatlichen Finanzierungsrahmen von bis zu <strong>200.000 €</strong> – in nur 7 Minuten und ganz ohne Dokumente!</p>
+        <hr>
+        <h2>Unkomplizierter als klassisches Factoring</h2>
+        <p>Laden Sie einfach Ihre offenen Rechnungen hoch und erhalten Sie den <strong>Rechnungsbetrag sofort ausbezahlt</strong> – ganz ohne Mindestumsätze oder Vertragsbindung!</p>
+        <hr>
+        <h2>100% sicher & vertraulich</h2>
+        <p>Billie ist von der BaFin lizenziert und bleibt stets <strong>anonym im Hintergrund</strong>. Sie müssen kein neues Konto eröffnen und keinen Abtretungsvermerk auf Ihre Rechnungen drucken.</p>
+        <hr/>
+        <blockquote>
+        "Billie reduziert die Antragszeit beim Factoring auf sieben Minuten."
+        </blockquote>
+    ]]></description>
 
     <compatibility minVersion="5.5.0"/>
 </plugin>
