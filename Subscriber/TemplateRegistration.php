@@ -42,7 +42,7 @@ class TemplateRegistration implements SubscriberInterface
 
     /**
      * Add Menu item sprite class
-     * @param Enlight_Event_EventArgs $args
+     * @param \Enlight_Event_EventArgs $args
      */
     public function addMenuItem(\Enlight_Event_EventArgs $args)
     {

@@ -2,7 +2,6 @@
 
 namespace BilliePayment\Components\BilliePayment;
 
-use Exception;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Shop\Shop;
 use Billie\HttpClient\BillieClient;
@@ -109,7 +108,7 @@ class Api
 
         // Call API Endpoint to create order -> POST /v1/order
         try {
-            /** @var Billie\Model\Order $order */
+            /** @var \Billie\Model\Order $order */
             $order              = $this->client->createOrder($this->commandFactory->createOrderCommand($args, $this->config['duration']));
             $local['reference'] = $order->referenceId;
             $local['state']     = $order->state;
@@ -196,7 +195,7 @@ class Api
 
         // run POST /v1/order/{order_id}/ship
         try {
-            /** @var Billie\Model\Order $response */
+            /** @var \Billie\Model\Order $response */
             $response       = $this->client->shipOrder($this->commandFactory->createShipCommand($item));
             $local['state'] = $response->state;
             $this->helper->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
@@ -251,7 +250,7 @@ class Api
             $command = $this->commandFactory->createPostponeDueDateCommand($refId, $data['duration']);
         
             try {
-                /** @var Billie\Model\Order $response */
+                /** @var \Billie\Model\Order $response */
                 $response       = $this->client->postponeOrderDueDate($command);
                 $local['state'] = $response->state;
                 // $dueDate = $order->invoice->dueDate;

@@ -11,7 +11,7 @@ use BilliePayment\Components\BilliePayment\Api;
 class Checkout implements SubscriberInterface
 {
     /**
-     * @var $api Api
+     * @var Api
      */
     private $api;
 
@@ -42,6 +42,7 @@ class Checkout implements SubscriberInterface
      */
     public function extendAddressForm(\Enlight_Event_EventArgs $args)
     {
+        /** @var \Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
         $request    = $controller->Request();
         $view       = $controller->View();
@@ -62,7 +63,7 @@ class Checkout implements SubscriberInterface
      */
     public function addApiMessagesToView(\Enlight_Event_EventArgs $args)
     {
-        /** @var $controller \Enlight_Controller_Action */
+        /** @var \Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
         $request    = $controller->Request();
         $view       = $controller->View();

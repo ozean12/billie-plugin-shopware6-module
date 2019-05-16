@@ -4,7 +4,6 @@ namespace BilliePayment\Components\BilliePayment;
 
 use Doctrine\Common\Collections\Criteria;
 use Shopware\Models\Order\Order;
-use Shopware\Models\Order\Billing;
 use Billie\Model\Address;
 use Billie\Model\Amount;
 use Billie\Model\Company;

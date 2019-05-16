@@ -9,7 +9,7 @@ namespace BilliePayment\Components\BilliePayment;
 class PaymentService
 {
     /**
-     * @param $request \Enlight_Controller_Request_Request
+     * @param \Enlight_Controller_Request_Request $request
      * @return PaymentResponse
      */
     public function createPaymentResponse(\Enlight_Controller_Request_Request $request)

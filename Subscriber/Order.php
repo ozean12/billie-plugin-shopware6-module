@@ -11,7 +11,7 @@ use BilliePayment\Components\BilliePayment\Api;
 class Order implements SubscriberInterface
 {
     /**
-     * @var $api Api
+     * @var Api $api
      */
     private $api;
         
@@ -28,7 +28,7 @@ class Order implements SubscriberInterface
     const ORDER_SHIPPED = 7;
 
     /**
-     * @param $api Api
+     * @param Api $api
      */
     public function __construct(Api $api)
     {
@@ -107,8 +107,6 @@ class Order implements SubscriberInterface
             case 'load':
                 $view->extendsTemplate('backend/billie_payment/view/detail/overview.js');
                 break;
-            default:
-                break;
         }
     }
 
@@ -131,9 +129,6 @@ class Order implements SubscriberInterface
             case self::ORDER_SHIPPED:
                 $response = $this->api->shipOrder($order['id']);
                 $view->assign(['success' => $response['success'], 'title' => $response['title'], 'message' => $response['data']]);
-                break;
-
-            default:
                 break;
         }
     }

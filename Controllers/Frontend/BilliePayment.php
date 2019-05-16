@@ -73,6 +73,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         switch ($response->status) {
             case 'accepted':
                 // Call Api for created order
+                /** @var \BilliePayment\Components\BilliePayment\Api $api */
                 $api     = $this->container->get('billie_payment.api');
                 $apiResp = $api->createOrder($service->createApiArgs($user, $this->getBasket()));
 
