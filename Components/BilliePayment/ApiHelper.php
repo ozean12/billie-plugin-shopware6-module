@@ -53,25 +53,11 @@ class ApiHelper
 
         // set values
         $attr = $item->getAttribute();
+        $methods = ['state' => 'setBillieState', 'iban' => 'setBillieIban', 'bic' => 'setBillieBic', 'reference' => 'setBillieReferenceId'];
+
         foreach ($data as $key => $value) {
-            switch ($key) {
-                case 'state':
-                    $attr->setBillieState($value);
-                    break;
-
-                case 'iban':
-                    $attr->setBillieIban($value);
-                    break;
-
-                case 'bic':
-                    $attr->setBillieBic($value);
-                    break;
-
-                case 'reference':
-                    $attr->setBillieReferenceId($value);
-                
-                default:
-                    break;
+            if (array_key_exists($key, $methods) && method_exists($attr, $methods[$key])) {
+                $attr->{$methods[$key]}($value);
             }
         }
 
