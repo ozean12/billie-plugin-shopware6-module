@@ -4,7 +4,4 @@
     {if $errorCode}
         {include file="frontend/_includes/messages.tpl" type="error" content=$errorCode|snippet:$errorCode:'frontend/checkout/errors'}
     {/if}
-    {if $apiErrorMessages}
-        {include file="frontend/_includes/messages.tpl" type="error" content=$apiErrorMessages[0]}
-    {/if}
 {/block}

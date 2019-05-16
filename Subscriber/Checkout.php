@@ -63,14 +63,13 @@ class Checkout implements SubscriberInterface
      */
     public function addApiMessagesToView(\Enlight_Event_EventArgs $args)
     {
+        /** @var \Shopware\Components\Logger $logger */
+        $logger = Shopware()->Container()->get('pluginlogger');
+
         /** @var \Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
         $request    = $controller->Request();
         $view       = $controller->View();
-        
-        /** @var \Shopware\Components\Logger $logger */
-        $logger     = Shopware()->Container()->get('pluginlogger');
-        $session    = Shopware()->Session();
 
         // Only valid actions
         if (!in_array($request->getActionName(), ['finish', 'payment', 'confirm'])) {
@@ -81,18 +80,13 @@ class Checkout implements SubscriberInterface
         $payment   = $view->sPayment['name'];
         $attrs     = $view->sUserData['billingaddress']['attributes'];
         $legalForm = in_array('billie_legalform', $attrs) ? $attrs['billie_legalform'] : $attrs['billieLegalform'];
+
         if ($payment === 'billie_payment_after_delivery' && (!isset($legalForm) || is_null($legalForm))) {
             $view->assign('invalidBillingAddress', true);
         }
         
         // Get API errors from the session and assign them to the view
         $view->assign('errorCode', $request->getParam('errorCode'));
-        $errors = $session->apiErrorMessages;
-        if (isset($errors) && !empty($errors)) {
-            $errors = is_array($errors) ? $errors : [$errors];
-            $logger->error('Error on POST /v1/order: ' . json_encode($errors));
-            $view->assign('apiErrorMessages', $errors);
-            unset($session->apiErrorMessages);
-        }
+        $logger->error("API-Error Code [{$request->getParam('errorCode')}]");
     }
 }
