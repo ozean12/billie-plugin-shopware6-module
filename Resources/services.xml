@@ -3,25 +3,30 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <!-- Register TemplateRegistration subscriber -->
+        <!-- Event Subscribers -->
         <service id="billie_payment.subscriber.template_registration" class="BilliePayment\Subscriber\TemplateRegistration">
             <argument>%billie_payment.plugin_dir%</argument>
-            <argument type="service" id="template"/>
-            <tag name="shopware.event_subscriber"/>
+            <argument type="service" id="template" />
+            <tag name="shopware.event_subscriber" />
         </service>
-        <!-- Register Checkout subscriber -->
         <service id="billie_payment.subscriber.checkout" class="BilliePayment\Subscriber\Checkout">
             <tag name="shopware.event_subscriber"/>
-            <argument type="service" id="billie_payment.api"/>
+            <argument type="service" id="billie_payment.api" />
         </service>
-        <!-- Check Status Order subscriber -->
         <service id="billie_payment.subscriber.order" class="BilliePayment\Subscriber\Order">
             <tag name="shopware.event_subscriber" />
-            <argument type="service" id="billie_payment.api"/>
+            <argument type="service" id="billie_payment.api" />
         </service>
+
         <!-- Example Payment Service -->
         <service id="billie_payment.payment_service" class="BilliePayment\Components\BilliePayment\PaymentService" />
-        <!-- API Wrapper -->
-        <service id="billie_payment.api" class="BilliePayment\Components\BilliePayment\Api" />
+        
+        <!-- API Componenty -->
+        <service id="billie_payment.helper" class="BilliePayment\Components\BilliePayment\ApiHelper" />
+        <service id="billie_payment.factory" class="BilliePayment\Components\BilliePayment\CommandFactory" />
+        <service id="billie_payment.api" class="BilliePayment\Components\BilliePayment\Api">
+            <argument type="service" id="billie_payment.helper" />
+            <argument type="service" id="billie_payment.factory" />
+        </service>
     </services>
 </container>

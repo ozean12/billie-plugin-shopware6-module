@@ -38,9 +38,12 @@ class Api
 
     /**
      * Load Plugin config
+     * 
      * @SuppressWarnings(PHPMD.StaticAccess)
+     * @param ApiHelper $helper
+     * @param CommandFactory $factory
      */
-    public function __construct()
+    public function __construct(ApiHelper $helper, CommandFactory $factory)
     {
         $container = Shopware()->Container();
         $shop      = $container->initialized('shop')
@@ -52,8 +55,8 @@ class Api
             ->getByPluginName('BilliePayment', $shop);
         
         // initialize Billie Client
-        $this->helper         = new ApiHelper();
-        $this->commandFactory = new CommandFactory();
+        $this->helper         = $helper;
+        $this->commandFactory = $factory;
         $this->client         = BillieClient::create($this->config['apikey'], $this->config['sandbox']);
     }
 
