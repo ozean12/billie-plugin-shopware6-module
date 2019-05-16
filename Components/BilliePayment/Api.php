@@ -135,7 +135,7 @@ class Api
     /**
      * Full Cancelation of an order on billie site.
      *
-     * @param integer $orderf
+     * @param integer $order
      * @return array
      */
     public function cancelOrder($order)
@@ -373,56 +373,5 @@ class Api
         }
         
         return $response;
-    }
-
-    /**
-     * Update local information
-     *
-     * @param Order|integer $order
-     * @param array $data
-     * @return bool|array
-     */
-    public function updateLocal($order, $data)
-    {
-        // Get Order if necessary.
-        $item = $order;
-        if (!$order instanceof Order) {
-            $item = $this->helper->getOrder($order);
-
-            if (!$item) {
-                return $this->helper->orderNotFoundMessage($order);
-            }
-        }
-
-        // set values
-        $attr = $item->getAttribute();
-        foreach ($data as $key => $value) {
-            switch ($key) {
-                case 'state':
-                    $attr->setBillieState($value);
-                    break;
-
-                case 'iban':
-                    $attr->setBillieIban($value);
-                    break;
-
-                case 'bic':
-                    $attr->setBillieBic($value);
-                    break;
-
-                case 'reference':
-                    $attr->setBillieReferenceId($value);
-                
-                default:
-                    break;
-            }
-        }
-
-        // save item
-        $models = $this->getEnityManager();
-        $models->persist($attr);
-        $models->flush($attr);
-
-        return true;
     }
 }
