@@ -7,6 +7,7 @@ use BilliePayment\Components\BilliePayment\Api;
 
 /**
  * Subscriber to assign api messages to the checkout view
+ * @SuppressWarnings(PHPMD.StaticAccess)
  */
 class Checkout implements SubscriberInterface
 {
@@ -36,7 +37,7 @@ class Checkout implements SubscriberInterface
 
     /**
      * Add Legalforms to address form
-     *
+     * 
      * @param \Enlight_Event_EventArgs $args
      * @return void
      */

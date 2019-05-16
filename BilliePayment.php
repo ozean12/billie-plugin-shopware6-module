@@ -12,6 +12,8 @@ use Shopware\Components\Model\ModelManager;
 /**
  * Main Plugin Class with plugin options.
  * Handles (un-)installation and (de-)activation.
+ * 
+ * @SuppressWarnings(PHPMD.StaticAccess)
  */
 class BilliePayment extends Plugin
 {
