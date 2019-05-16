@@ -8,8 +8,6 @@ use Billie\HttpClient\BillieClient;
 use Billie\Exception\BillieException;
 use Billie\Exception\OrderDecline\OrderDeclinedException;
 use Billie\Exception\InvalidCommandException;
-use Billie\Command\CancelOrder;
-use Billie\Command\ConfirmPayment;
 
 /**
  * Service Wrapper for billie API sdk
@@ -29,7 +27,7 @@ class Api
     /**
      * @var CommandFactory
      */
-    protected $commandFactory = null;
+    protected $factory = null;
 
     /**
      * @var ApiHelper
@@ -55,9 +53,9 @@ class Api
             ->getByPluginName('BilliePayment', $shop);
         
         // initialize Billie Client
-        $this->helper         = $helper;
-        $this->commandFactory = $factory;
-        $this->client         = BillieClient::create($this->config['apikey'], $this->config['sandbox']);
+        $this->helper  = $helper;
+        $this->factory = $factory;
+        $this->client  = BillieClient::create($this->config['apikey'], $this->config['sandbox']);
     }
 
     /**
@@ -112,7 +110,7 @@ class Api
         // Call API Endpoint to create order -> POST /v1/order
         try {
             /** @var \Billie\Model\Order $order */
-            $order              = $this->client->createOrder($this->commandFactory->createOrderCommand($args, $this->config['duration']));
+            $order              = $this->client->createOrder($this->factory->createOrderCommand($args, $this->config['duration']));
             $local['reference'] = $order->referenceId;
             $local['state']     = $order->state;
             $local['iban']      = $order->bankAccount->iban;
@@ -153,7 +151,9 @@ class Api
 
         // run POST /v1/order/{order_id}/cancel
         try {
-            $this->client->cancelOrder(new CancelOrder($item->getAttribute()->getBillieReferenceId()));
+            $this->client->cancelOrder(
+                $this->factory->createCancelCommand($item->getAttribute()->getBillieReferenceid())
+            );
             $this->helper->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
             $local['state'] = 'canceled';
         }
@@ -199,7 +199,7 @@ class Api
         // run POST /v1/order/{order_id}/ship
         try {
             /** @var \Billie\Model\Order $response */
-            $response       = $this->client->shipOrder($this->commandFactory->createShipCommand($item));
+            $response       = $this->client->shipOrder($this->factory->createShipCommand($item));
             $local['state'] = $response->state;
             $this->helper->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
             // $dueDate = $order->invoice->dueDate;
@@ -242,7 +242,7 @@ class Api
 
         // Reduce Amount
         if (in_array('amount', $data)) {
-            $command        = $this->commandFactory->createReduceAmountCommand($item, $data['amount']);
+            $command        = $this->factory->createReduceAmountCommand($item, $data['amount']);
             $order          = $this->client->reduceOrderAmount($command);
             $local['state'] = $order->state;
             $this->helper->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $item->getId()));
@@ -250,7 +250,7 @@ class Api
 
         // Postpone Due Date
         if (in_array('duration', $data)) {
-            $command = $this->commandFactory->createPostponeDueDateCommand($refId, $data['duration']);
+            $command = $this->factory->createPostponeDueDateCommand($refId, $data['duration']);
         
             try {
                 /** @var \Billie\Model\Order $response */
@@ -295,7 +295,8 @@ class Api
 
         // Call POST /v1/order/{order_id}/confirm-payment
         try {
-            $command        = new ConfirmPayment($item->getAttribute()->getBillieReferenceId(), $amount * 100); // amount are in cents!
+            $refId          = $item->getAttribute()->getBillieReferenceid();
+            $command        = $this->factory->createConfirmPaymentCommand($refId, $amount);
             $order          = $this->client->confirmPayment($command);
             $local['state'] = $order->state;
             $this->helper->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));

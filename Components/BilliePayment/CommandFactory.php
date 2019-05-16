@@ -8,7 +8,9 @@ use Billie\Model\Address;
 use Billie\Model\Amount;
 use Billie\Model\Company;
 use Billie\Model\Person;
+use Billie\Command\CancelOrder;
 use Billie\Command\CreateOrder;
+use Billie\Command\ConfirmPayment;
 use Billie\Command\PostponeOrderDueDate;
 use Billie\Command\ReduceOrderAmount;
 use Billie\Command\ShipOrder;
@@ -65,12 +67,9 @@ class CommandFactory
         $command->orderId = $order->getNumber();
 
         // Get Invoice if exists
-        $criteria  = Criteria::create()->where(Criteria::expr()->eq('typeId', '1'));
-        $documents = $order->getDocuments()->matching($criteria);
-        
-        if ($documents->count()) {
-            /** @var \Shopware\Models\Order\Document\Document $invoice */
-            $invoice                      = $documents->first();
+        $invoice = $this->fetchInvoice($order);
+
+        if ($invoice) {
             $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
             $command->invoiceUrl          = 'https://www.example.com/invoice.pdf'; // TODO: required, given by merchant
             // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
@@ -96,12 +95,9 @@ class CommandFactory
         );
 
         // Get Invoice if exists
-        $criteria  = Criteria::create()->where(Criteria::expr()->eq('typeId', '1'));
-        $documents = $order->getDocuments()->matching($criteria);
+        $invoice = $this->fetchInvoice($order);
 
-        if ($order->getAttribute()->getBillieState() === 'shipped' && $documents->count()) {
-            /** @var \Shopware\Models\Order\Document\Document $invoice */
-            $invoice                      = $documents->first();
+        if ($invoice) {
             $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
             $command->invoiceUrl          = 'https://www.example.com/invoice.pdf'; // TODO: required, given by merchant
             // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
@@ -126,6 +122,29 @@ class CommandFactory
     }
 
     /**
+     * Create cancel order Command
+     *
+     * @param string $refId
+     * @return CancelOrder
+     */
+    public function createCancelCommand($refId)
+    {
+        return new CancelOrder($refId);
+    }
+
+    /**
+     * Create the confirm payment command
+     *
+     * @param string $refId
+     * @param float $amount
+     * @return ConfirmPayment
+     */
+    public function createConfirmPaymentCommand($refId, $amount)
+    {
+        return new ConfirmPayment($refId, $amount * 100); // amount are in cents!
+    }
+
+    /**
      * Fill Address Model
      *
      * @param array $billing
@@ -142,5 +161,23 @@ class CommandFactory
         $address->countryCode = $country['countryiso'];
 
         return $address;
+    }
+
+    /**
+     * Fetch the invoice document if it exists
+     *
+     * @param Order $order
+     * @return \Shopware\Models\Order\Document\Document|false
+     */
+    protected function fetchInvoice(Order $order)
+    {
+        $criteria  = Criteria::create()->where(Criteria::expr()->eq('typeId', '1'));
+        $documents = $order->getDocuments()->matching($criteria);
+
+        if ($order->getAttribute()->getBillieState() === 'shipped' && $documents->count()) {
+            return $documents->first();
+        }
+
+        return false;
     }
 }
