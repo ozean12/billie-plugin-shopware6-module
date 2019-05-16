@@ -54,12 +54,13 @@ class Order implements SubscriberInterface
      */
     public function onBeforeSaveOrder(\Enlight_Event_EventArgs $args)
     {
-        /** @var Shopware_Controllers_Backend_Order $controller */
+        /** @var \Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
         $request    = $controller->Request();
+        $params     = $request->getParams();
 
         if ($request->getActionName() == 'save') {
-            $params = $request->getParams();
+            /** @var \Shopware\Models\Order\Order $order */
             $order  = Shopware()->Models()->find('Shopware\Models\Order\Order', $params['id']);
 
             // Update Amount
@@ -82,24 +83,23 @@ class Order implements SubscriberInterface
      */
     public function onSaveOrder(\Enlight_Event_EventArgs $args)
     {
-        /** @var Shopware_Controllers_Backend_Order $controller */
+        /** @var \Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
         $request    = $controller->Request();
         $view       = $controller->View();
+        $params     = $request->getParams();
 
         switch ($request->getActionName()) {
             // Batch Process orders.
             case 'batchProcess':
-                $params = $request->getParams();
-
                 foreach ($params['orders'] as $order) {
-                    $this->processOrder($order);
+                    $this->processOrder($order, $view);
                 }
                 break;
 
             // Process Single Order.
             case 'save':
-                $this->processOrder($request->getParams(), $view);
+                $this->processOrder($params, $view);
                 // $args->stop();
                 break;
 
@@ -114,9 +114,10 @@ class Order implements SubscriberInterface
      * Process an order and call the respective api endpoints.
      *
      * @param array $order
+     * @param \Enlight_View_Default $view
      * @return void
      */
-    protected function processOrder($order, $view)
+    protected function processOrder(array $order, \Enlight_View_Default $view)
     {
         switch ($order['status']) {
             // Order is canceled.

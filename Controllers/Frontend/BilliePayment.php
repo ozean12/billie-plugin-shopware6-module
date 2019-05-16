@@ -72,9 +72,10 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         // Check response status and save order when everything went fine.
         switch ($response->status) {
             case 'accepted':
-                // Call Api for created order
                 /** @var \BilliePayment\Components\BilliePayment\Api $api */
-                $api     = $this->container->get('billie_payment.api');
+                $api = $this->container->get('billie_payment.api');
+                
+                // Call Api for created order
                 $apiResp = $api->createOrder($service->createApiArgs($user, $this->getBasket()));
 
                 // Save Order on success
@@ -85,7 +86,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                         self::PAYMENTSTATUSPAID
                     );
 
-                    // Save local
+                    /** @var \Shopware\Components\Model\ModelManager $models */
                     $models = Shopware()->Container()->get('models');
                     $repo   = $models->getRepository(Order::class);
                     $order  = $repo->findOneBy(['number' => $orderNumber]);

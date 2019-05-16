@@ -20,7 +20,7 @@ class TemplateRegistration implements SubscriberInterface
     private $templateManager;
 
     /**
-     * @param $pluginDirectory
+     * @param string $pluginDirectory
      * @param \Enlight_Template_Manager $templateManager
      */
     public function __construct($pluginDirectory, \Enlight_Template_Manager $templateManager)

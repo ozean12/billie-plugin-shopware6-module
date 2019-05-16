@@ -28,7 +28,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function indexAction()
     {
-        // Load Orders
+        /** @var \BilliePayment\Components\BilliePayment\Api $api */
         $api     = $this->container->get('billie_payment.api');
         $sort    = [['property' => 'orders.orderTime', 'direction' => 'DESC']];
         $filters = [
@@ -59,7 +59,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function orderAction()
     {
-        // Retrieve Order Information
+        /** @var \BilliePayment\Components\BilliePayment\Api $api */
         $api      = $this->container->get('billie_payment.api');
         $order    = $this->Request()->getParam('order_id');
         $response = $api->retrieveOrder($order);
@@ -79,7 +79,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function confirmPaymentAction()
     {
-        // Confirm payment via api
+        /** @var \BilliePayment\Components\BilliePayment\Api $api */
         $api      = $this->container->get('billie_payment.api');
         $amount   = floatval($this->Request()->getParam('amount'));
         $order    = $this->Request()->getParam('order_id');
@@ -97,7 +97,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function cancelOrderAction()
     {
-        // Cancel order via api
+        /** @var \BilliePayment\Components\BilliePayment\Api $api */
         $api      = $this->container->get('billie_payment.api');
         $order    = $this->Request()->getParam('order_id');
         $response = $api->cancelOrder($order);

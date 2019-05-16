@@ -81,6 +81,7 @@ class BilliePayment extends Plugin
      */
     private function setActiveFlag($payments, $active)
     {
+        /** @var \Shopware\Components\Model\ModelManager $models */
         $models = $this->container->get('models');
 
         foreach ($payments as $payment) {
@@ -96,12 +97,14 @@ class BilliePayment extends Plugin
      */
     private function createDatabase()
     {
+        // Get all legal forms.
         $allLegalForms = \Billie\Util\LegalFormProvider::all();
         $legalData     = [];
         foreach ($allLegalForms as $legal) {
             $legalData[] = ['key' => $legal['code'], 'value' => $legal['label']];
         }
 
+        /** @var \Shopware\Bundle\AttributeBundle\Service\CrudService $service */
         $service = $this->container->get('shopware_attribute.crud_service');
         $service->update('s_order_attributes', 'billie_referenceId', 'string');
         $service->update('s_order_attributes', 'billie_state', 'string');
@@ -131,6 +134,7 @@ class BilliePayment extends Plugin
      */
     private function removeDatabase()
     {
+        /** @var \Shopware\Bundle\AttributeBundle\Service\CrudService $service */
         $service = $this->container->get('shopware_attribute.crud_service');
         $service->delete('s_order_attributes', 'billie_referenceId');
         $service->delete('s_order_attributes', 'billie_state');

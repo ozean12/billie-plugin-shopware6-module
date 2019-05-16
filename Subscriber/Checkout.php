@@ -67,8 +67,10 @@ class Checkout implements SubscriberInterface
         $controller = $args->getSubject();
         $request    = $controller->Request();
         $view       = $controller->View();
-        $session    = Shopware()->Session();
+        
+        /** @var \Shopware\Components\Logger $logger */
         $logger     = Shopware()->Container()->get('pluginlogger');
+        $session    = Shopware()->Session();
 
         // Only valid actions
         if (!in_array($request->getActionName(), ['finish', 'payment', 'confirm'])) {

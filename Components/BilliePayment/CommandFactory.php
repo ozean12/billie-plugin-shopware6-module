@@ -69,6 +69,7 @@ class CommandFactory
         $documents = $order->getDocuments()->matching($criteria);
         
         if ($documents->count()) {
+            /** @var \Shopware\Models\Order\Document\Document $invoice */
             $invoice                      = $documents->first();
             $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
             $command->invoiceUrl          = 'https://www.example.com/invoice.pdf'; // TODO: required, given by merchant
@@ -99,6 +100,7 @@ class CommandFactory
         $documents = $order->getDocuments()->matching($criteria);
 
         if ($order->getAttribute()->getBillieState() === 'shipped' && $documents->count()) {
+            /** @var \Shopware\Models\Order\Document\Document $invoice */
             $invoice                      = $documents->first();
             $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
             $command->invoiceUrl          = 'https://www.example.com/invoice.pdf'; // TODO: required, given by merchant
