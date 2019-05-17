@@ -104,7 +104,7 @@ class Checkout implements SubscriberInterface
         // Display error when legalform is missing
         $payment   = $view->sPayment['name'];
         $attrs     = $view->sUserData['billingaddress']['attributes'];
-        $legalForm = in_array('billie_legalform', $attrs) ? $attrs['billie_legalform'] : $attrs['billieLegalform'];
+        $legalForm = array_key_exists('billie_legalform', $attrs) ? $attrs['billie_legalform'] : $attrs['billieLegalform'];
 
         if ($payment === 'billie_payment_after_delivery' && (!isset($legalForm) || is_null($legalForm))) {
             $view->assign('invalidBillingAddress', true);

@@ -43,6 +43,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $service = $this->container->get('billie_payment.payment_service');
         $user    = $this->getUser();
         $billing = $user['billingaddress'];
+        $attrs   = $billing['attributes'];
 
         /** @var PaymentResponse $response */
         $response  = $service->createPaymentResponse($this->Request());
@@ -50,7 +51,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $token     = $service->createPaymentToken($this->getAmount(), $billing['customernumber']);
 
         // Make sure that a legalform is selected, otherwise display error message.
-        if (!isset($billing['attributes']['billieLegalform']) || is_null($billing['attributes']['billieLegalform'])) {
+        if (!isset($attrs['billieLegalform']) && !isset($attrs['billie_legalform'])) {
             $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => 'MissingLegalForm']);
             return;
         }

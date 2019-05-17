@@ -30,6 +30,14 @@ class PaymentService
      */
     public function createApiArgs($user, $basket)
     {
+        // fix inconsistend camelcase
+        $attrs = $user['billingaddress']['attributes'];
+        if (array_key_exists('billie_legalform', $attrs) && !array_key_exists('billieLegalform', $attrs)) {
+            $attrs['billieLegalform']          = $attrs['billie_legalform'];
+            $attrs['billieRegistrationnumber'] = $attrs['billie_registrationnumber'];
+        }
+        $user['billingaddress']['attributes'] = $attrs;
+
         $args                = new ApiArguments();
         $args->billing       = $user['billingaddress'];
         $args->amountNet     = $basket['AmountNetNumeric'];
