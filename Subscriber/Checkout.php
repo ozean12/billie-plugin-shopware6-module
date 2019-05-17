@@ -34,7 +34,7 @@ class Checkout implements SubscriberInterface
             'Enlight_Controller_Action_PostDispatch_Frontend_Checkout' => [ 'addApiMessagesToView', -1 ],
             'Enlight_Controller_Action_PreDispatch_Frontend_Address'   => 'extendAddressForm',
             'Enlight_Controller_Action_PreDispatch_Frontend_Register'  => 'extendAddressForm',
-            'Shopware_Modules_Admin_SaveRegister_Successful'           => ['saveRegisterData']
+            'Shopware_Modules_Admin_SaveRegister_Successful'           => 'saveRegisterData'
         ];
     }
 
