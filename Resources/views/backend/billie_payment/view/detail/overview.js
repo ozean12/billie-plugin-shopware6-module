@@ -7,44 +7,6 @@ Ext.define('Shopware.apps.BilliePayment.view.detail.Overview', {
      */
     override: 'Shopware.apps.Order.view.detail.Overview',
 
-    // initComponent: function () {
-    //     var me = this;
-
-    //     me.registerEvents();
-
-    //     if (me.record.data.id >= 1) {
-    //         Ext.Ajax.request({
-    //             url: '{url controller=AttributeData action=loadData}',
-    //             params: {
-    //                 _foreignKey: me.record.data.id,
-    //                 _table: 's_order_attributes'
-    //             },
-    //             success: function (responseData, request) {
-    //                 var response = Ext.JSON.decode(responseData.responseText);
-
-    //                 console.log(response)
-    //             }
-    //         });
-    //     }
-
-    //     me.callParent(arguments);
-    // },
-
-    // createEditElements: function () {
-    //     var me = this;
-
-    //     var fields = me.callParent(arguments);
-
-    //     var testField = {
-    //         fieldLabel: 'Test Label',
-    //         name: 'attribute[ordermod]',
-    //         xtype: 'textfield',
-    //     };
-
-    //     fields = Ext.Array.insert(fields, 1, [testField]);
-    //     return fields;
-    // },
-
     /**
      * Add a Button to display a window with billie.io informations.
      * 
