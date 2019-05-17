@@ -4,6 +4,7 @@ namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
 use BilliePayment\Components\BilliePayment\Api;
+use Shopware\Models\Attribute\Customer;
 
 /**
  * Subscriber to assign api messages to the checkout view
@@ -32,7 +33,30 @@ class Checkout implements SubscriberInterface
         return [
             'Enlight_Controller_Action_PostDispatch_Frontend_Checkout' => [ 'addApiMessagesToView', -1 ],
             'Enlight_Controller_Action_PreDispatch_Frontend_Address'   => 'extendAddressForm',
+            'Enlight_Controller_Action_PreDispatch_Frontend_Register'  => 'extendAddressForm',
+            'Shopware_Modules_Admin_SaveRegister_Successful'           => ['saveRegisterData']
         ];
+    }
+
+    /**
+     * Save Custom Register data
+     * 
+     * @param \Enlight_Event_EventArgs $args
+     * @return void
+     */
+    public function saveRegisterData(\Enlight_Event_EventArgs $args)
+    {
+        // Get Customer
+        $models = Shopware()->Container()->get('models');
+        $data   = $_POST['register']['personal']['address']['attribute'];
+        $user   = $models->getRepository(Customer::class)->find($args->id);
+        $attr   = $user->getCustomer()->getDefaultBillingAddress()->getAttribute();
+
+        // Save Data
+        $attr->setBillieLegalform($data['billieLegalform']);
+        $attr->setBillieRegistrationnumber($data['billieRegistrationnumber']);
+        $models->persist($attr);
+        $models->flush($attr);
     }
 
     /**
@@ -49,7 +73,7 @@ class Checkout implements SubscriberInterface
         $view       = $controller->View();
 
         // Only valid actions
-        if (!in_array($request->getActionName(), ['ajaxEditor', 'edit', 'create'])) {
+        if (!in_array($request->getActionName(), ['ajaxEditor', 'edit', 'create', 'index'])) {
             return;
         }
 
