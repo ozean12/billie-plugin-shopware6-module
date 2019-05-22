@@ -73,7 +73,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         // Check response status and save order when everything went fine.
         switch ($response->status) {
             case 'accepted':
-                /** @var \BilliePayment\Components\BilliePayment\Api $api */
+                /** @var \BilliePayment\Components\Api\Api $api */
                 $api = $this->container->get('billie_payment.api');
                 
                 // Call Api for created order

@@ -1,6 +1,6 @@
 <?php
 
-namespace BilliePayment\Components\BilliePayment;
+namespace BilliePayment\Components\Api;
 
 use Shopware\Models\Order\Order;
 use BilliePayment\Components\Utils;
@@ -16,7 +16,7 @@ use Billie\Exception\OrderDecline\RiskPolicyDeclinedException;
  * Helper Class to manage error messages and
  * the local state of orders.
  */
-class ApiHelper
+class Helper
 {
     /**
      * @var \BilliePayment\Components\Utils

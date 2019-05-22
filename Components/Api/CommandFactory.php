@@ -1,6 +1,6 @@
 <?php
 
-namespace BilliePayment\Components\BilliePayment;
+namespace BilliePayment\Components\Api;
 
 use Doctrine\Common\Collections\Criteria;
 use Shopware\Models\Order\Order;

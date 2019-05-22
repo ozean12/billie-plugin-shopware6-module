@@ -3,7 +3,7 @@
 namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
-use BilliePayment\Components\BilliePayment\Api;
+use BilliePayment\Components\Api\Api;
 
 /**
  * Order Cronjob to check order status.

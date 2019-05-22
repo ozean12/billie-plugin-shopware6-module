@@ -25,11 +25,11 @@
         <service id="billie_payment.utils" class="BilliePayment\Components\Utils" />
         
         <!-- API Componenty -->
-        <service id="billie_payment.helper" class="BilliePayment\Components\BilliePayment\ApiHelper">
+        <service id="billie_payment.helper" class="BilliePayment\Components\Api\Helper">
             <argument type="service" id="billie_payment.utils" />
         </service>
-        <service id="billie_payment.factory" class="BilliePayment\Components\BilliePayment\CommandFactory" />
-        <service id="billie_payment.api" class="BilliePayment\Components\BilliePayment\Api">
+        <service id="billie_payment.factory" class="BilliePayment\Components\Api\CommandFactory" />
+        <service id="billie_payment.api" class="BilliePayment\Components\Api\Api">
             <argument type="service" id="billie_payment.helper" />
             <argument type="service" id="billie_payment.utils" />
             <argument type="service" id="billie_payment.factory" />

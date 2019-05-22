@@ -1,6 +1,6 @@
 <?php
 
-namespace BilliePayment\Components\BilliePayment;
+namespace BilliePayment\Components\Api;
 
 use BilliePayment\Components\Utils;
 use Shopware\Models\Order\Order;
@@ -30,7 +30,7 @@ class Api
     protected $factory = null;
 
     /**
-     * @var ApiHelper
+     * @var Helper
      */
     public $helper = null;
 
@@ -43,11 +43,11 @@ class Api
      * Load Plugin config
      * 
      * @SuppressWarnings(PHPMD.StaticAccess)
-     * @param ApiHelper $helper
+     * @param Helper $helper
      * @param Utils $utils
      * @param CommandFactory $factory
      */
-    public function __construct(ApiHelper $helper, Utils $utils, CommandFactory $factory)
+    public function __construct(Helper $helper, Utils $utils, CommandFactory $factory)
     {
         // initialize Billie Client
         $this->config  = $utils->getPluginConfig();
