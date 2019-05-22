@@ -7,7 +7,7 @@ use Shopware\Models\Order\Order;
 
 /**
  * Frontend Controller for Billie.io Payment.
- * Handles the Checkout process with billi.io API.
+ * Handles the Checkout process with billie.io API.
  *
  * @SuppressWarnings(PHPMD.CamelCaseClassName)
  */
