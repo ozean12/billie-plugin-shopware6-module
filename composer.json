@@ -16,5 +16,8 @@
         "guzzlehttp/guzzle": "~5.0",
         "symfony/validator": "3.4.24",
         "symfony/intl": "3.4.24"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^3.4"
     }
 }
