@@ -3,6 +3,7 @@
 namespace BilliePayment\Components;
 
 use Shopware\Models\Shop\Shop;
+use Shopware\Models\Order\Document\Document;
 
 /**
  * Utility Class
@@ -40,6 +41,24 @@ class Utils
         return $container
             ->get('shopware.plugin.cached_config_reader')
             ->getByPluginName('BilliePayment', $shop);
+    }
+
+    /**
+     * Assemble the invoice url
+     *
+     * @param Document $document
+     * @return string
+     */
+    public function getInvoiceUrl(Document $document)
+    {
+        $data = [
+            'controller' => 'BillieInvoice',
+            'action'     => 'invoice',
+            'module'     => 'frontend',
+            'hash'       => $document->getHash()
+        ];
+
+        return Shopware()->Front()->Router()->assemble($data);
     }
 
     /**

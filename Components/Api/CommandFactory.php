@@ -2,6 +2,7 @@
 
 namespace BilliePayment\Components\Api;
 
+use BilliePayment\Components\Utils;
 use Doctrine\Common\Collections\Criteria;
 use Shopware\Models\Order\Order;
 use Billie\Model\Address;
@@ -21,6 +22,21 @@ use Billie\Command\ShipOrder;
  */
 class CommandFactory
 {
+    /**
+     * @var Utils
+     */
+    protected $utils = null;
+
+    /**
+     * Set Utils via DI.
+     *
+     * @param Utils $utils
+     */
+    public function __construct(Utils $utils)
+    {
+        $this->utils = $utils;
+    }
+
     /**
      * Factory method for the CreateOrder Command
      *
@@ -71,7 +87,7 @@ class CommandFactory
 
         if ($invoice) {
             $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
-            $command->invoiceUrl          = 'https://www.example.com/invoice.pdf'; // TODO: required, given by merchant
+            $command->invoiceUrl          = $this->utils->getInvoiceUrl($invoice); // Invoice API Endpoint
             // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
         }
 
@@ -99,7 +115,7 @@ class CommandFactory
 
         if ($invoice) {
             $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
-            $command->invoiceUrl          = 'https://www.example.com/invoice.pdf'; // TODO: required, given by merchant
+            $command->invoiceUrl          = $this->utils->getInvoiceUrl($invoice); // Invoice API Endpoint
             // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
         }
 
@@ -174,7 +190,7 @@ class CommandFactory
         $criteria  = Criteria::create()->where(Criteria::expr()->eq('typeId', '1'));
         $documents = $order->getDocuments()->matching($criteria);
 
-        if ($order->getAttribute()->getBillieState() === 'shipped' && $documents->count()) {
+        if (in_array($order->getAttribute()->getBillieState(), ['shipped', 'created']) && $documents->count()) {
             return $documents->first();
         }
 

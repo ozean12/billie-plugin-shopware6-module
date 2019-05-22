@@ -28,7 +28,9 @@
         <service id="billie_payment.helper" class="BilliePayment\Components\Api\Helper">
             <argument type="service" id="billie_payment.utils" />
         </service>
-        <service id="billie_payment.factory" class="BilliePayment\Components\Api\CommandFactory" />
+        <service id="billie_payment.factory" class="BilliePayment\Components\Api\CommandFactory">
+            <argument type="service" id="billie_payment.utils" />
+        </service>
         <service id="billie_payment.api" class="BilliePayment\Components\Api\Api">
             <argument type="service" id="billie_payment.helper" />
             <argument type="service" id="billie_payment.utils" />
