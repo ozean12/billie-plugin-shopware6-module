@@ -19,7 +19,7 @@
         </service>
 
         <!-- Example Payment Service -->
-        <service id="billie_payment.payment_service" class="BilliePayment\Components\BilliePayment\PaymentService" />
+        <service id="billie_payment.payment_service" class="BilliePayment\Components\Payment\Service" />
         
         <!-- Utils & Helpers -->
         <service id="billie_payment.utils" class="BilliePayment\Components\Utils" />

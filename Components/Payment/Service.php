@@ -1,20 +1,22 @@
 <?php
 
-namespace BilliePayment\Components\BilliePayment;
+namespace BilliePayment\Components\Payment;
+
+use BilliePayment\Components\Api\ApiArguments;
 
 /**
  * For a better overview and a clearer separation between controller and business logic.
  * Handles responses of the proviver and takes care of token generation and validation.
  */
-class PaymentService
+class Service
 {
     /**
      * @param \Enlight_Controller_Request_Request $request
-     * @return PaymentResponse
+     * @return Response
      */
     public function createPaymentResponse(\Enlight_Controller_Request_Request $request)
     {
-        $response                = new PaymentResponse();
+        $response                = new Response();
         $response->transactionId = $request->getParam('transactionId', null);
         $response->status        = $request->getParam('status', null);
         $response->token         = $request->getParam('token', null);
@@ -50,11 +52,11 @@ class PaymentService
     }
 
     /**
-     * @param PaymentResponse $response
+     * @param Response $response
      * @param string $token
      * @return bool
      */
-    public function isValidToken(PaymentResponse $response, $token)
+    public function isValidToken(Response $response, $token)
     {
         return hash_equals($token, $response->token);
     }

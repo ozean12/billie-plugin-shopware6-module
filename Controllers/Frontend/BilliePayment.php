@@ -1,7 +1,7 @@
 <?php
 
-use BilliePayment\Components\BilliePayment\PaymentResponse;
-use BilliePayment\Components\BilliePayment\PaymentService;
+use BilliePayment\Components\Payment\Response;
+use BilliePayment\Components\Payment\Service;
 use Shopware\Models\Order\Order;
 
 
@@ -39,13 +39,13 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
      */
     public function returnAction()
     {
-        /** @var PaymentService $service */
+        /** @var Service $service */
         $service = $this->container->get('billie_payment.payment_service');
         $user    = $this->getUser();
         $billing = $user['billingaddress'];
         $attrs   = $billing['attributes'];
 
-        /** @var PaymentResponse $response */
+        /** @var Response $response */
         $response  = $service->createPaymentResponse($this->Request());
         $signature = $response->signature;
         $token     = $service->createPaymentToken($this->getAmount(), $billing['customernumber']);
@@ -122,7 +122,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
      */
     private function getReturnUrl()
     {
-        /** @var PaymentService $service */
+        /** @var Service $service */
         $service = $this->container->get('billie_payment.payment_service');
         $router  = $this->Front()->Router();
         $user    = $this->getUser();

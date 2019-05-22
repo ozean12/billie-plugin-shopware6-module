@@ -1,11 +1,11 @@
 <?php
 
-namespace BilliePayment\Components\BilliePayment;
+namespace BilliePayment\Components\Payment;
 
 /**
  * Datastructure for the payment response.
  */
-class PaymentResponse
+class Response
 {
     /**
      * @var int
