@@ -21,11 +21,17 @@
         <!-- Example Payment Service -->
         <service id="billie_payment.payment_service" class="BilliePayment\Components\BilliePayment\PaymentService" />
         
+        <!-- Utils & Helpers -->
+        <service id="billie_payment.utils" class="BilliePayment\Components\Utils" />
+        
         <!-- API Componenty -->
-        <service id="billie_payment.helper" class="BilliePayment\Components\BilliePayment\ApiHelper" />
+        <service id="billie_payment.helper" class="BilliePayment\Components\BilliePayment\ApiHelper">
+            <argument type="service" id="billie_payment.utils" />
+        </service>
         <service id="billie_payment.factory" class="BilliePayment\Components\BilliePayment\CommandFactory" />
         <service id="billie_payment.api" class="BilliePayment\Components\BilliePayment\Api">
             <argument type="service" id="billie_payment.helper" />
+            <argument type="service" id="billie_payment.utils" />
             <argument type="service" id="billie_payment.factory" />
         </service>
     </services>

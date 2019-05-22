@@ -3,6 +3,7 @@
 namespace BilliePayment\Components\BilliePayment;
 
 use Shopware\Models\Order\Order;
+use BilliePayment\Components\Utils;
 use Billie\Exception\BillieException;
 use Billie\Exception\InvalidCommandException;
 use Billie\Exception\OrderDecline\OrderDeclinedException;
@@ -18,19 +19,19 @@ use Billie\Exception\OrderDecline\RiskPolicyDeclinedException;
 class ApiHelper
 {
     /**
-     * @var \Shopware\Components\Model\ModelManager
+     * @var \BilliePayment\Components\Utils
      */
-    protected $entityManager = null;
+    protected $utils = null;
 
     /**
-     * @var \Shopware\Components\Logger
+     * Set the utils helper via DI
+     *
+     * @param Utils $utils
      */
-    protected $logger = null;
-
-    /**
-     * @var \Shopware\Components\Model\QueryBuilder
-     */
-    protected $queryBuilder = null;
+    public function __construct(Utils $utils)
+    {
+        $this->utils = $utils;
+    }
 
     /**
      * Update local information
@@ -62,7 +63,7 @@ class ApiHelper
         }
 
         // save item
-        $models = $this->getEnityManager();
+        $models = $this->utils->getEnityManager();
         $models->persist($attr);
         $models->flush($attr);
 
@@ -77,7 +78,7 @@ class ApiHelper
      */
     public function getOrder($order)
     {
-        $models = $this->getEnityManager();
+        $models = $this->utils->getEnityManager();
         $repo   = $models->getRepository(Order::class);
         return $repo->find($order);
     }
@@ -106,7 +107,7 @@ class ApiHelper
      */
     public function errorMessage(BillieException $exc, array $local = [])
     {
-        $this->getLogger()->error(sprintf('[%s]: %s', $exc->getBillieCode(), $exc->getBillieMessage()));
+        $this->utils->getLogger()->error(sprintf('[%s]: %s', $exc->getBillieCode(), $exc->getBillieMessage()));
         return ['success' => false, 'data' => $exc->getBillieCode(), 'local' => $local];
     }
 
@@ -136,7 +137,7 @@ class ApiHelper
                 break;
         }
 
-        $this->getLogger()->error(sprintf('[%s]: %s', $code, $exc->getBillieMessage()));
+        $this->utils->getLogger()->error(sprintf('[%s]: %s', $code, $exc->getBillieMessage()));
         return ['success' => false, 'data' => $code, 'local' => $local];
     }
 
@@ -150,50 +151,7 @@ class ApiHelper
     public function invalidCommandMessage(InvalidCommandException $exc, array $local = [])
     {
         $violations = $exc->getViolations();
-        $this->getLogger()->error('[InvalidCommandException]: ' . implode('; ', $violations));
+        $this->utils->getLogger()->error('[InvalidCommandException]: ' . implode('; ', $violations));
         return ['success' => false, 'data' => 'InvalidCommandException', 'local' => $local];
-    }
-
-
-    /**
-     * Internal helper function to get access to the query builder.
-     *
-     * @return \Shopware\Components\Model\QueryBuilder
-     */
-    public function getQueryBuilder()
-    {
-        if ($this->queryBuilder === null) {
-            $this->queryBuilder = $this->getEnityManager()->createQueryBuilder();
-        }
-        
-        return $this->queryBuilder;
-    }
-
-    /**
-     * Internal helper function to get access the Model Manager.
-     *
-     * @return \Shopware\Components\Model\ModelManager
-     */
-    public function getEnityManager()
-    {
-        if ($this->entityManager === null) {
-            $this->entityManager = Shopware()->Container()->get('models');
-        }
-        
-        return $this->entityManager;
-    }
-
-    /**
-     * Internal helper function to get access the plugin logger
-     *
-     * @return \Shopware\Components\Logger
-     */
-    public function getLogger()
-    {
-        if ($this->logger === null) {
-            $this->logger = Shopware()->Container()->get('pluginlogger');
-        }
-        
-        return $this->logger;
     }
 }

@@ -2,8 +2,8 @@
 
 namespace BilliePayment\Components\BilliePayment;
 
+use BilliePayment\Components\Utils;
 use Shopware\Models\Order\Order;
-use Shopware\Models\Shop\Shop;
 use Billie\HttpClient\BillieClient;
 use Billie\Exception\BillieException;
 use Billie\Exception\OrderDecline\OrderDeclinedException;
@@ -35,26 +35,25 @@ class Api
     public $helper = null;
 
     /**
+     * @var Utils
+     */
+    protected $utils = null;
+
+    /**
      * Load Plugin config
      * 
      * @SuppressWarnings(PHPMD.StaticAccess)
      * @param ApiHelper $helper
+     * @param Utils $utils
      * @param CommandFactory $factory
      */
-    public function __construct(ApiHelper $helper, CommandFactory $factory)
+    public function __construct(ApiHelper $helper, Utils $utils, CommandFactory $factory)
     {
-        $container = Shopware()->Container();
-        $shop      = $container->initialized('shop')
-            ? $container->get('shop')
-            : $container->get('models')->getRepository(Shop::class)->getActiveDefault();
-
-        $this->config = $container
-            ->get('shopware.plugin.cached_config_reader')
-            ->getByPluginName('BilliePayment', $shop);
-        
         // initialize Billie Client
+        $this->config  = $utils->getPluginConfig();
         $this->helper  = $helper;
         $this->factory = $factory;
+        $this->utils   = $utils;
         $this->client  = BillieClient::create($this->config['apikey'], $this->config['sandbox']);
     }
 
@@ -70,7 +69,7 @@ class Api
     public function getList($page = 1, $perPage = 25, $filters = null, $sorting = null)
     {
         // Load Orders
-        $builder = $this->helper->getQueryBuilder();
+        $builder = $this->utils->getQueryBuilder();
         $builder->select(['orders, attribute'])
             ->from(Order::class, 'orders')
             ->leftJoin('orders.attribute', 'attribute')
@@ -85,7 +84,7 @@ class Api
         // Get Query and paginator
         $query = $builder->getQuery();
         $query->setHydrationMode(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
-        $paginator = $this->helper->getEnityManager()->createPaginator($query);
+        $paginator = $this->utils->getEnityManager()->createPaginator($query);
 
         // Return result
         return [
@@ -115,7 +114,7 @@ class Api
             $local['state']     = $order->state;
             $local['iban']      = $order->bankAccount->iban;
             $local['bic']       = $order->bankAccount->bic;
-            $this->helper->getLogger()->info('POST /v1/order');
+            $this->utils->getLogger()->info('POST /v1/order');
         } 
         // Order Declined -> Billie User Error Message
         catch (OrderDeclinedException $exc) {
@@ -154,7 +153,7 @@ class Api
             $this->client->cancelOrder(
                 $this->factory->createCancelCommand($item->getAttribute()->getBillieReferenceid())
             );
-            $this->helper->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
+            $this->utils->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
             $local['state'] = 'canceled';
         }
         // Invalid Command -> Non-technical user error message
@@ -201,7 +200,7 @@ class Api
             /** @var \Billie\Model\Order $response */
             $response       = $this->client->shipOrder($this->factory->createShipCommand($item));
             $local['state'] = $response->state;
-            $this->helper->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
+            $this->utils->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
             // $dueDate = $order->invoice->dueDate;
         } 
         // Invalid Command -> Non-technical user error message
@@ -245,7 +244,7 @@ class Api
             $command        = $this->factory->createReduceAmountCommand($item, $data['amount']);
             $order          = $this->client->reduceOrderAmount($command);
             $local['state'] = $order->state;
-            $this->helper->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $item->getId()));
+            $this->utils->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $item->getId()));
         }
 
         // Postpone Due Date
@@ -299,7 +298,7 @@ class Api
             $command        = $this->factory->createConfirmPaymentCommand($refId, $amount);
             $order          = $this->client->confirmPayment($command);
             $local['state'] = $order->state;
-            $this->helper->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
+            $this->utils->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
         } 
         // Invalid Command -> Non-technical user error message
         catch(InvalidCommandException $exc) {
@@ -336,7 +335,7 @@ class Api
 
         // GET /v1/order/{order_id}
         try {
-            $this->helper->getLogger()->info(sprintf('GET /v1/order/%s', $order));
+            $this->utils->getLogger()->info(sprintf('GET /v1/order/%s', $order));
             $response       = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
             $local['state'] = $response->state; 
             $local['iban']  = $response->bankAccount->iban;
