@@ -23,6 +23,12 @@ use Billie\Command\ShipOrder;
 class CommandFactory
 {
     /**
+     * Document Type for invoices
+     * @var integer
+     */
+    const INVOICE_TYPE = 1;
+
+    /**
      * @var Utils
      */
     protected $utils = null;
@@ -187,7 +193,7 @@ class CommandFactory
      */
     protected function fetchInvoice(Order $order)
     {
-        $criteria  = Criteria::create()->where(Criteria::expr()->eq('typeId', '1'));
+        $criteria  = Criteria::create()->where(Criteria::expr()->eq('typeId', self::INVOICE_TYPE));
         $documents = $order->getDocuments()->matching($criteria);
 
         if (in_array($order->getAttribute()->getBillieState(), ['shipped', 'created']) && $documents->count()) {
