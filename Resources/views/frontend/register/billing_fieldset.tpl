@@ -2,15 +2,15 @@
 {namespace name="frontend/address/index"}
 
 {block name='frontend_register_billing_fieldset_input_vatId' append}
-    <div class="address--regNumber">
+    <div class="register--regNumber">
         <input name="register[personal][address][attribute][billieRegistrationnumber]"
             type="text"
             id="register_billing_registration_numer"
             value="{$form_data.personal.attribute.billieRegistrationnumber|escape}"
             placeholder="{s name="RegNumber/placeholder" namespace="frontend/address/form"}{/s}"
-            class="address--field{if $error_flags.billieRegistrationnumber} has--error{/if}"/>
+            class="register--field{if $error_flags.billieRegistrationnumber} has--error{/if}"/>
     </div>
-    <div class="address--legalform field--select select-field">
+    <div class="register--legalform field--select select-field">
         <select name="register[personal][address][attribute][billieLegalform]"
             id="legalform"
             required="required"
