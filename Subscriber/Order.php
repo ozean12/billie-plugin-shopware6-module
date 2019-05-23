@@ -66,8 +66,8 @@ class Order implements SubscriberInterface
             // Update Amount
             $response = $this->api->updateOrder($order->getId(), [
                 'amount' => [
-                    'net'   => $params['invoiceAmountNet'] + $params['invoiceShippingNet'],
-                    'gross' => $params['invoiceAmount'] + $params['invoiceShipping'],
+                    'net'      => $params['invoiceAmountNet'] + $params['invoiceShippingNet'],
+                    'gross'    => $params['invoiceAmount'] + $params['invoiceShipping'],
                     'currency' => $order->getCurrency(),
                 ]
             ]);
