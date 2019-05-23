@@ -43,7 +43,7 @@ $(function () {
 
     /**
      * Calls the cancel order action.
-     * @param {HTMLElement} $target Button that was clicked
+     * @param {jQuery} $target Button that was clicked
      */
     var callCancelOrderEndpoint = function ($target) {
         $.ajax({
@@ -55,7 +55,8 @@ $(function () {
             success: function (response) {
                 if (response.success) {
                     postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.success, _BILLIE_SNIPPETS_.cancel_order.success);
-                    $target.closest('.wrapper').addClass('danger').find('.state').text(_BILLIE_SNIPPETS_.states.canceled)
+                    $target.closest('.wrapper').addClass('danger').find('.state').text(_BILLIE_SNIPPETS_.states.canceled);
+                    $target.attr('disabled', 'disabled');
                 }
                 else {
                     postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.error, _BILLIE_SNIPPETS_.errorCodes[response.data]);

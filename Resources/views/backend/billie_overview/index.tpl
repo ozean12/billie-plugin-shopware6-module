@@ -57,6 +57,7 @@
                             </button>
                             <button
                                 class="btn btn-danger cancel-order"
+                                {if $order.attribute.billieState eq 'canceled'}disabled="disabled"{/if}
                                 data-order_id="{$order.id}"
                                 data-action="{url controller="BillieOverview" action="cancelOrder" __csrf_token=$csrfToken}"
                             >
