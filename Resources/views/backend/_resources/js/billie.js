@@ -27,7 +27,7 @@ $(function () {
      * @param {Event} event 
      */
     var onConfirmPayment = function (event) {
-        var target = $(event.target);
+        var $target = $(event.target);
         event.preventDefault();
 
         postMessageApi.createPromptMessage(
@@ -35,7 +35,7 @@ $(function () {
             _BILLIE_SNIPPETS_.confirm_payment.desc,
             function (data) {
                 if (data.btn == 'ok') {
-                    callConfirmPaymentEndpoint(target.data('action'), target.data('order_id'), data.text);
+                    callConfirmPaymentEndpoint($target.data('action'), $target.data('order_id'), data.text);
                 }
             }
         );
@@ -43,21 +43,23 @@ $(function () {
 
     /**
      * Calls the cancel order action.
-     * @param {HTMLElement} target Button that was clicked
+     * @param {HTMLElement} $target Button that was clicked
      */
-    var callCancelOrderEndpoint = function (target) {
+    var callCancelOrderEndpoint = function ($target) {
         $.ajax({
-            url: target.data('action'),
+            url: $target.data('action'),
             method: 'POST',
             data: {
-                'order_id': target.data('order_id')
+                'order_id': $target.data('order_id')
             },
             success: function (response) {
-                postMessageApi.createAlertMessage(
-                    response.success ? _BILLIE_SNIPPETS_.errorCodes.success : _BILLIE_SNIPPETS_.errorCodes.error,
-                    response.success ? _BILLIE_SNIPPETS_.cancel_order.success : _BILLIE_SNIPPETS_.errorCodes[response.data]
-                );
-                target.closest('.wrapper').addClass('danger').find('.state').text(_BILLIE_SNIPPETS_.states.canceled)
+                if (response.success) {
+                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.success, _BILLIE_SNIPPETS_.cancel_order.success);
+                    $target.closest('.wrapper').addClass('danger').find('.state').text(_BILLIE_SNIPPETS_.states.canceled)
+                }
+                else {
+                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.error, _BILLIE_SNIPPETS_.errorCodes[response.data]);
+                }
             }
         });
     };
@@ -66,8 +68,8 @@ $(function () {
      * Cancel the order.
      * @param {Event} event
      */
-    var onCancelOrder = function(event) {
-        var target = $(event.target);
+    var onCancelOrder = function (event) {
+        var $target = $(event.$);
         event.preventDefault();
 
         postMessageApi.createConfirmMessage(
@@ -75,13 +77,41 @@ $(function () {
             _BILLIE_SNIPPETS_.cancel_order.desc,
             function (data) {
                 if ('yes' == data) {
-                    callCancelOrderEndpoint(target);
+                    callCancelOrderEndpoint($target);
                 }
             }
         );
     };
 
+    /**
+    * Ship the order.
+    * @param {Event} event
+    */
+    var onShipOrder = function (event) {
+        var $target = $(event.target);
+        event.preventDefault();
+
+        $.ajax({
+            url: $target.data('action'),
+            method: 'POST',
+            data: {
+                'order_id': $target.data('order_id')
+            },
+            success: function (response) {
+                if (response.success) {
+                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.success, _BILLIE_SNIPPETS_.ship_order.success);
+                    $target.closest('.wrapper').removeClass('info').addClass('success').find('.state').text(_BILLIE_SNIPPETS_.states.shipped)
+                    $target.attr('disabled', 'disabled');
+                }
+                else {
+                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.error, _BILLIE_SNIPPETS_.errorCodes[response.data]); 
+                }
+            }
+        });
+    };
+
     // Bind Events
     $('.confirm-payment').on('click', onConfirmPayment);
     $('.cancel-order').on('click', onCancelOrder);
+    $('.ship-order').on('click', onShipOrder);
 });
