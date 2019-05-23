@@ -5,6 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{link file="backend/_resources/css/bootstrap.min.css"}">
+    <style>
+        [disabled] { cursor: not-allowed; }
+    </style>
 </head>
 <body role="document" style="padding-top: 80px">
 
