@@ -73,6 +73,22 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     }
 
     /**
+     * Mark current order as shipped.
+     *
+     * @return void
+     */
+    public function shipOrderAction()
+    {
+        /** @var \BilliePayment\Components\Api\Api $api */
+        $api      = $this->container->get('billie_payment.api');
+        $order    = $this->Request()->getParam('order_id');
+        $response = $api->shipOrder($order);
+
+        $this->Front()->Plugins()->Json()->setRenderer();    
+        $this->View()->assign($response);
+    }
+
+    /**
      * Confirms direct payment by merchent.
      *
      * @return void
