@@ -32,9 +32,6 @@
     {if $errorCode}
         <div class="alert alert-danger" role="alert">{$errorCode|snippet:$errorCode:'backend/billie_overview/errors'}</div>
     {/if}
-    {if $errors}
-        <div class="alert alert-danger" role="alert">{$errors[0]}</div>
-    {/if}
     {block name="content/main"}{/block}
 </div> <!-- /container -->
 
