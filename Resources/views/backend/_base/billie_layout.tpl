@@ -52,6 +52,9 @@
             desc: '{s name="cancel_order/description"}Sind Sie sicher, dass Sie die Bestellung über Billie.io stornieren möchten?{/s}',
             success: '{s name="cancel_order/success"}Die Bestellung wurde erfolgreich über Billie.io storniert.{/s}',
         },
+        ship_order: {
+            success: '{s name="ship_order/success"}Die Bestellung wurde erfolgreich als verschickt markiert.{/s}',
+        },
         states: {
             created: '{s name="order/state/created" namespace="backend/billie_overview/order"}created{/s}',
             declined: '{s name="order/state/declined" namespace="backend/billie_overview/order"}declined{/s}',

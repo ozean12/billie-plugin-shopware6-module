@@ -19,6 +19,15 @@
             >
             {s name="order/cancel_order"}Bestellung stornieren{/s}
         </button>
+        {if $state eq 'created'}
+            <button
+                class="btn btn-primary ship-order"
+                data-order_id="{$order_id}"
+                data-action="{url controller="BillieOverview" action="shipOrder" __csrf_token=$csrfToken}"
+            >
+                {s name="order/ship_order"}Bestellung als verschickt markieren{/s}
+            </button>
+        {/if}
     </div>
 
     <form class="form-horizontal">
