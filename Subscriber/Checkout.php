@@ -3,8 +3,9 @@
 namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
-use BilliePayment\Components\BilliePayment\Api;
+use BilliePayment\Components\Api\Api;
 use Shopware\Models\Attribute\Customer;
+use Shopware\Models\Payment\Payment;
 
 /**
  * Subscriber to assign api messages to the checkout view
@@ -31,13 +32,16 @@ class Checkout implements SubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Action_PostDispatch_Frontend_Checkout' => [ 'addApiMessagesToView', -1 ],
+            'Enlight_Controller_Action_PostDispatch_Frontend_Checkout' => [
+                // ['preAuthPaymentMethod'],
+                ['addApiMessagesToView', -1],
+            ],
             'Enlight_Controller_Action_PreDispatch_Frontend_Address'   => 'extendAddressForm',
             'Enlight_Controller_Action_PreDispatch_Frontend_Register'  => 'extendAddressForm',
-            'Shopware_Modules_Admin_SaveRegister_Successful'           => 'saveRegisterData'
+            'Shopware_Modules_Admin_SaveRegister_Successful'           => 'saveRegisterData',
         ];
     }
-
+ 
     /**
      * Save Custom Register data
      * 
@@ -111,7 +115,10 @@ class Checkout implements SubscriberInterface
         }
         
         // Get API errors from the session and assign them to the view
-        $view->assign('errorCode', $request->getParam('errorCode'));
-        $logger->error("API-Error Code [{$request->getParam('errorCode')}]");
+        $errorCode = $request->getParam('errorCode');
+        if ($errorCode) {
+            $view->assign('errorCode', $errorCode);
+            $logger->error("API-Error Code [{$errorCode}]");
+        }
     }
 }
