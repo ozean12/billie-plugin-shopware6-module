@@ -61,7 +61,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             $this->forward('cancel');
             return;
         }
-        
+
         // Loads basked and verifies if it's still the same.
         try {
             $basket = $this->loadBasketFromSignature($signature);
@@ -69,43 +69,40 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         } catch (\Exception $e) {
             $this->forward('cancel');
         }
-        
+
         // Check response status and save order when everything went fine.
-        switch ($response->status) {
-            case 'accepted':
-                /** @var \BilliePayment\Components\Api\Api $api */
-                $api = $this->container->get('billie_payment.api');
-                
-                // Call Api for created order
-                $apiResp = $api->createOrder($service->createApiArgs($user, $this->getBasket()));
+        if ($response->status === 'accepted') {
+            /** @var \BilliePayment\Components\Api\Api $api */
+            $api = $this->container->get('billie_payment.api');
 
-                // Save Order on success
-                if ($apiResp['success']) {
-                    $orderNumber = $this->saveOrder(
-                        $response->transactionId,
-                        $response->token,
-                        self::PAYMENTSTATUSPAID
-                    );
+            // Call Api for created order
+            $apiResp = $api->createOrder($service->createApiArgs($user, $this->getBasket()));
 
-                    /** @var \Shopware\Components\Model\ModelManager $models */
-                    $models = Shopware()->Container()->get('models');
-                    $repo   = $models->getRepository(Order::class);
-                    $order  = $repo->findOneBy(['number' => $orderNumber]);
-                    $api->helper->updateLocal($order, $apiResp['local']);
-                    
-                    // Finish checkout
-                    $this->redirect(['controller' => 'checkout', 'action' => 'finish']);
-                    break;
-                }
+            // Save Order on success
+            if ($apiResp['success']) {
+                $orderNumber = $this->saveOrder(
+                    $response->transactionId,
+                    $response->token,
+                    self::PAYMENTSTATUSPAID
+                );
 
-                // Error messages
-                $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $apiResp['data']]);
+                /** @var \Shopware\Components\Model\ModelManager $models */
+                $models = Shopware()->Container()->get('models');
+                $repo   = $models->getRepository(Order::class);
+                $order  = $repo->findOneBy(['number' => $orderNumber]);
+                $api->helper->updateLocal($order, $apiResp['local']);
 
-                break;
-            default:
-                $this->forward('cancel');
-                break;
+                // Finish checkout
+                $this->redirect(['controller' => 'checkout', 'action' => 'finish']);
+                return;
+            }
+
+            // Error messages
+            $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $apiResp['data']]);
+            return;
         }
+
+        $this->forward('cancel');
     }
 
     /**
