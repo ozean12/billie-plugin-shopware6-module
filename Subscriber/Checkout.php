@@ -100,18 +100,34 @@ class Checkout implements SubscriberInterface
         $request    = $controller->Request();
         $view       = $controller->View();
 
-        // Only valid actions
+        // Only valid actions.
         if (!in_array($request->getActionName(), ['finish', 'payment', 'confirm'])) {
             return;
         }
 
-        // Display error when legalform is missing
-        $payment   = $view->sPayment['name'];
-        $attrs     = $view->sUserData['billingaddress']['attributes'];
-        $legalForm = array_key_exists('billie_legalform', $attrs) ? $attrs['billie_legalform'] : $attrs['billieLegalform'];
+        // Error Checking
+        if ($view->sPayment['name'] === 'billie_payment_after_delivery') {
+            $errorCode = null;
+            $invalid   = false;
+            $company   = $view->sUserData['billingaddress']['company'];
+            $attrs     = $view->sUserData['billingaddress']['attributes'];
+            $legalForm = array_key_exists('billie_legalform', $attrs) ? $attrs['billie_legalform'] : $attrs['billieLegalform'];
 
-        if ($payment === 'billie_payment_after_delivery' && (!isset($legalForm) || is_null($legalForm))) {
-            $view->assign('invalidBillingAddress', true);
+            // Display error when legalform is missing.
+            if (!isset($legalForm) || is_null($legalForm)) {
+                $invalid   = true;
+                $errorCode = 'MissingLegalForm';
+            }
+
+            // Display Error if not a company.
+            if (!isset($company) || is_null($company)) {
+                $invalid   = true;
+                $errorCode = 'OnlyCompaniesAllowed';
+            }
+
+            // Pass errors to view.
+            $view->assign('invalidInvoiceAddressSnippet', $errorCode);
+            $view->assign('invalidInvoiceAddress', $invalid);
         }
         
         // Get API errors from the session and assign them to the view
