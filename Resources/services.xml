@@ -22,7 +22,10 @@
         <service id="billie_payment.payment_service" class="BilliePayment\Components\Payment\Service" />
         
         <!-- Utils & Helpers -->
-        <service id="billie_payment.utils" class="BilliePayment\Components\Utils" />
+        <service id="billie_payment.utils" class="BilliePayment\Components\Utils">
+            <argument type="service" id="shopware.plugin.cached_config_reader" />
+            <argument>%billie_payment.plugin_name%</argument>
+        </service>
         
         <!-- API Componenty -->
         <service id="billie_payment.helper" class="BilliePayment\Components\Api\Helper">

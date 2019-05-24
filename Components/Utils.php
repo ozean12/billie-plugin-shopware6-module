@@ -2,8 +2,8 @@
 
 namespace BilliePayment\Components;
 
-use Shopware\Models\Shop\Shop;
 use Shopware\Models\Order\Document\Document;
+use Shopware\Components\Plugin\ConfigReader;
 
 /**
  * Utility Class
@@ -26,21 +26,29 @@ class Utils
     protected $queryBuilder = null;
 
     /**
+     * @var array
+     */
+    protected $config = [];
+
+    /**
+     * Load Plugin Config
+     *
+     * @param ConfigReader $configReader
+     * @param string $pluginName
+     */
+    public function __construct(ConfigReader $configReader, $pluginName)
+    {
+        $this->config = $configReader->getByPluginName($pluginName);
+    }
+
+    /**
      * Get the plugin Configuration
      *
      * @return array
      */
     public function getPluginConfig()
     {
-        // Get Plugin Config
-        $container = Shopware()->Container();
-        $shop      = $container->initialized('shop')
-            ? $container->get('shop')
-            : $container->get('models')->getRepository(Shop::class)->getActiveDefault();
-
-        return $container
-            ->get('shopware.plugin.cached_config_reader')
-            ->getByPluginName('BilliePayment', $shop);
+        return $this->config;
     }
 
     /**
