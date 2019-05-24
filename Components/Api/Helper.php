@@ -93,8 +93,8 @@ class Helper
     {
         return [
             'success' => false,
-            'title'   => 'Fehler',
-            'data'    => sprintf('Bestellung mit ID %s konnte nicht gefunden werden', $order)
+            'title'   => $this->utils->getSnippet('backend/billie_overview/errors', 'error'),
+            'data'    => sprintf($this->utils->getSnippet('backend/billie_overview/errors', 'ORDER_NOT_FOUND'), $order)
         ];
     }
 

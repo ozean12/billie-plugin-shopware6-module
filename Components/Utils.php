@@ -52,6 +52,21 @@ class Utils
     }
 
     /**
+     * Get a snippet via the snippet mananger
+     *
+     * @param string $namespace
+     * @param string $snippet
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getSnippet($namespace, $snippet, $default=null)
+    {
+        /** @var \Shopware_Components_Snippet_Manager $snippets */
+        $snippets = Shopware()->Container()->get('snippets');
+        return $snippets->getNamespace($namespace)->get($snippet, $default);
+    }
+
+    /**
      * Assemble the invoice url
      *
      * @param Document $document
