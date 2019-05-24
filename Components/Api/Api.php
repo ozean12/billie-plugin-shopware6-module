@@ -153,7 +153,7 @@ class Api
             $this->client->cancelOrder(
                 $this->factory->createCancelCommand($item->getAttribute()->getBillieReferenceid())
             );
-            $this->utils->getLogger()->info(sprintf('POST /v1/order/%s/cancel', $order));
+            $this->utils->getLogger()->info("POST /v1/order/{$order}/cancel");
             $local['state'] = 'canceled';
         }
         // Invalid Command -> Non-technical user error message
@@ -164,9 +164,9 @@ class Api
         catch(BillieException $exc) {
             return $this->helper->errorMessage($exc, $local);
         }
-        
+
         // Update local state
-        if (($localUpdate = $this->helper->updateLocal($order, $local)) !== true) {
+        if (($localUpdate = $this->helper->updateLocal($item, $local)) !== true) {
             return $localUpdate;
         }
         
@@ -200,7 +200,7 @@ class Api
             /** @var \Billie\Model\Order $response */
             $response       = $this->client->shipOrder($this->factory->createShipCommand($item));
             $local['state'] = $response->state;
-            $this->utils->getLogger()->info(sprintf('POST /v1/order/{order_id}/ship', $order));
+            $this->utils->getLogger()->info("POST /v1/order/{$order}/ship");
             // $dueDate = $order->invoice->dueDate;
         } 
         // Invalid Command -> Non-technical user error message
@@ -213,7 +213,7 @@ class Api
         }
 
         // Update local state
-        if (($localUpdate = $this->helper->updateLocal($order, $local)) !== true) {
+        if (($localUpdate = $this->helper->updateLocal($item, $local)) !== true) {
             return $localUpdate;
         }
 
@@ -244,7 +244,7 @@ class Api
             $command        = $this->factory->createReduceAmountCommand($item, $data['amount']);
             $order          = $this->client->reduceOrderAmount($command);
             $local['state'] = $order->state;
-            $this->utils->getLogger()->info(sprintf('PATCH /v1/order/{order_id}', $item->getId()));
+            $this->utils->getLogger()->info("PATCH /v1/order/{$order}");
         }
 
         // Postpone Due Date
@@ -268,7 +268,7 @@ class Api
         }
 
         // Update local state
-        if (($localUpdate = $this->helper->updateLocal($order, $local)) !== true) {
+        if (($localUpdate = $this->helper->updateLocal($item, $local)) !== true) {
             return $localUpdate;
         }
 
@@ -298,7 +298,7 @@ class Api
             $command        = $this->factory->createConfirmPaymentCommand($refId, $amount);
             $order          = $this->client->confirmPayment($command);
             $local['state'] = $order->state;
-            $this->utils->getLogger()->info(sprintf('POST /v1/order/%s/confirm-payment', $order));
+            $this->utils->getLogger()->info("POST /v1/order/{$order}/confirm-payment");
         } 
         // Invalid Command -> Non-technical user error message
         catch(InvalidCommandException $exc) {
@@ -310,7 +310,7 @@ class Api
         }
 
         // Update local state
-        if (($localUpdate = $this->helper->updateLocal($item->getId(), $local)) !== true) {
+        if (($localUpdate = $this->helper->updateLocal($item, $local)) !== true) {
             return $localUpdate;
         }
         
@@ -335,7 +335,7 @@ class Api
 
         // GET /v1/order/{order_id}
         try {
-            $this->utils->getLogger()->info(sprintf('GET /v1/order/%s', $order));
+            $this->utils->getLogger()->info("GET /v1/order/{$order}");
             $response       = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
             $local['state'] = $response->state; 
             $local['iban']  = $response->bankAccount->iban;
@@ -371,7 +371,7 @@ class Api
         ];
 
         // Update order details in database with new ones from billie
-        if (($localUpdate = $this->helper->updateLocal($order, $local)) !== true) {
+        if (($localUpdate = $this->helper->updateLocal($item, $local)) !== true) {
             return $localUpdate;
         }
         

@@ -20,7 +20,7 @@ class Shopware_Controllers_Frontend_BillieInvoice extends Enlight_Controller_Act
         $invoiceNumber = $this->Request()->getParam('invoiceNumber');
         $apikey        = $this->Request()->getParam('apikey');
         $hash          = $this->Request()->getParam('hash');
-        
+
         // Return 401 Error if not authenticated or not a post request.
         if (!$this->Request()->isPost() || !$this->authenticateRequest($invoiceNumber, $hash, $apikey)) {
             $this->Response()->setHttpResponseCode(401);

@@ -10,7 +10,7 @@
             <tag name="shopware.event_subscriber" />
         </service>
         <service id="billie_payment.subscriber.checkout" class="BilliePayment\Subscriber\Checkout">
-            <tag name="shopware.event_subscriber"/>
+            <tag name="shopware.event_subscriber" />
             <argument type="service" id="billie_payment.api" />
         </service>
         <service id="billie_payment.subscriber.order" class="BilliePayment\Subscriber\Order">
@@ -18,7 +18,7 @@
             <argument type="service" id="billie_payment.api" />
         </service>
 
-        <!-- Example Payment Service -->
+        <!-- Billie Payment Service -->
         <service id="billie_payment.payment_service" class="BilliePayment\Components\Payment\Service" />
         
         <!-- Utils & Helpers -->
@@ -26,8 +26,8 @@
             <argument type="service" id="shopware.plugin.cached_config_reader" />
             <argument>%billie_payment.plugin_name%</argument>
         </service>
-        
-        <!-- API Componenty -->
+
+        <!-- API Components -->
         <service id="billie_payment.helper" class="BilliePayment\Components\Api\Helper">
             <argument type="service" id="billie_payment.utils" />
         </service>

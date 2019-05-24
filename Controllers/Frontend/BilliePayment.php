@@ -130,7 +130,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             'status'        => 'accepted',
             'token'         => $service->createPaymentToken($this->getAmount(), $billing['customernumber']),
             'signature'     => $this->persistBasket(),
-            'transactionId' => random_int(0, 1000)
+            'transactionId' => bin2hex(random_bytes(16))
         ];
 
         return $url . '?' . http_build_query($parameter);

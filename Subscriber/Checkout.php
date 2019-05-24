@@ -107,27 +107,24 @@ class Checkout implements SubscriberInterface
 
         // Error Checking
         if ($view->sPayment['name'] === 'billie_payment_after_delivery') {
-            $errorCode = null;
-            $invalid   = false;
+            $error     = ['code' => null, 'invalid' => false];
             $company   = $view->sUserData['billingaddress']['company'];
             $attrs     = $view->sUserData['billingaddress']['attributes'];
             $legalForm = array_key_exists('billie_legalform', $attrs) ? $attrs['billie_legalform'] : $attrs['billieLegalform'];
 
             // Display error when legalform is missing.
             if (!isset($legalForm) || is_null($legalForm)) {
-                $invalid   = true;
-                $errorCode = 'MissingLegalForm';
+                $error = ['code' => 'MissingLegalForm', 'invalid' => true];
             }
 
             // Display Error if not a company.
             if (!isset($company) || is_null($company)) {
-                $invalid   = true;
-                $errorCode = 'OnlyCompaniesAllowed';
+                $error = ['code' => 'OnlyCompaniesAllowed', 'invalid' => true];
             }
 
             // Pass errors to view.
-            $view->assign('invalidInvoiceAddressSnippet', $errorCode);
-            $view->assign('invalidInvoiceAddress', $invalid);
+            $view->assign('invalidInvoiceAddressSnippet', $error['code']);
+            $view->assign('invalidInvoiceAddress', $error['invalid']);
         }
         
         // Get API errors from the session and assign them to the view

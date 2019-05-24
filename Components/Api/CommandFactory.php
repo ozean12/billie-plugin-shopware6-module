@@ -68,13 +68,13 @@ class CommandFactory
         $command->debtorPerson->firstname = $args->billing['firstname'];
         $command->debtorPerson->lastname  = $args->billing['lastname'];
         $command->debtorPerson->phone     = $args->billing['phone'];
-        
+
         // amounts are in cent!
         $command->amount          = new Amount($args->amountNet * 100, $args->currency, $args->taxAmount * 100);
         $command->deliveryAddress = $address; // or: new \Billie\Model\Address();
         $command->duration        = $duration; // duration=14 meaning: when the order is shipped on the 1st May, the due date is the 15th May
 
-        return  $command;
+        return $command;
     }
 
     /**
@@ -139,7 +139,7 @@ class CommandFactory
     {
         $command           = new PostponeOrderDueDate($refId);
         $command->duration = $duration;
-        
+
         return $command;
     }
 

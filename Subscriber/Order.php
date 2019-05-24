@@ -6,7 +6,8 @@ use Enlight\Event\SubscriberInterface;
 use BilliePayment\Components\Api\Api;
 
 /**
- * Order Cronjob to check order status.
+ * Order Subscriber which calls the billie api when an
+ * order is saved to send the updated informations.
  */
 class Order implements SubscriberInterface
 {
@@ -14,7 +15,7 @@ class Order implements SubscriberInterface
      * @var Api $api
      */
     private $api;
-        
+
     /**
      * Canceled Order Code
      * @var integer
@@ -59,11 +60,10 @@ class Order implements SubscriberInterface
         $request    = $controller->Request();
         $params     = $request->getParams();
 
+        // Update Amount.
         if ($request->getActionName() == 'save') {
             /** @var \Shopware\Models\Order\Order $order */
-            $order  = Shopware()->Models()->find('Shopware\Models\Order\Order', $params['id']);
-
-            // Update Amount
+            $order    = Shopware()->Models()->find('Shopware\Models\Order\Order', $params['id']);
             $response = $this->api->updateOrder($order->getId(), [
                 'amount' => [
                     'net'      => $params['invoiceAmountNet'] + $params['invoiceShippingNet'],
@@ -100,7 +100,6 @@ class Order implements SubscriberInterface
             // Process Single Order.
             case 'save':
                 $this->processOrder($params, $view);
-                // $args->stop();
                 break;
 
             // Extend order details overview.
