@@ -70,7 +70,7 @@ $(function () {
      * @param {Event} event
      */
     var onCancelOrder = function (event) {
-        var $target = $(event.$);
+        var $target = $(event.target);
         event.preventDefault();
 
         postMessageApi.createConfirmMessage(
