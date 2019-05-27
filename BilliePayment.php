@@ -111,6 +111,17 @@ class BilliePayment extends Plugin
         $service->update('s_order_attributes', 'billie_state', 'string');
         $service->update('s_order_attributes', 'billie_iban', 'string');
         $service->update('s_order_attributes', 'billie_bic', 'string');
+        $service->update('s_user_attributes', 'billie_iban', 'string', [
+            'label'            => 'IBAN',
+            'translatable'     => true,
+            'displayInBackend' => true,
+        ]);
+        $service->update('s_user_attributes', 'billie_bic', 'string',[
+            'label'            => 'BIC',
+            'translatable'     => true,
+            'displayInBackend' => true,
+            'custom' => false,
+        ]);
         $service->update('s_user_addresses_attributes', 'billie_registrationNumber', 'string', [
             'label'            => 'Registration Number',
             'translatable'     => true,
@@ -125,7 +136,7 @@ class BilliePayment extends Plugin
 
         $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
         $metaDataCache->deleteAll();
-        Shopware()->Models()->generateAttributeModels(['s_order_attributes', 's_user_addresses_attributes']);
+        Shopware()->Models()->generateAttributeModels(['s_order_attributes', 's_user_attributes', 's_user_addresses_attributes']);
     }
 
     /**
@@ -141,6 +152,8 @@ class BilliePayment extends Plugin
         $service->delete('s_order_attributes', 'billie_state');
         $service->delete('s_order_attributes', 'billie_iban');
         $service->delete('s_order_attributes', 'billie_bic');
+        $service->delete('s_user_attributes', 'billie_iban');
+        $service->delete('s_user_attributes', 'billie_bic');
         $service->delete('s_user_addresses_attributes', 'billie_registrationNumber');
         $service->delete('s_user_addresses_attributes', 'billie_legalform');
     }
@@ -152,6 +165,7 @@ class BilliePayment extends Plugin
     {
         return [
             'Enlight_Controller_Dispatcher_ControllerPath_Backend_BillieOverview' => 'onGetBackendController',
+            'Enlight_Controller_Action_PostDispatch_Backend_Base' => 'extendExtJS',
             'Enlight_Controller_Front_StartDispatch'                              => 'autoload',
         ];
     }
@@ -162,6 +176,20 @@ class BilliePayment extends Plugin
     public function onGetBackendController()
     {
         return __DIR__ . '/Controllers/Backend/BillieOverview.php';
+    }
+
+    /**
+     * Extend Attribute Form to make BIC/IBAN readonly
+     *
+     * @param \Enlight_Event_EventArgs $args
+     * @return void
+     */
+    public function extendExtJS(\Enlight_Event_EventArgs $args)
+    {
+        /** @var \Enlight_View_Default $view */
+        $view = $args->getSubject()->View();
+        $view->addTemplateDir($this->getPath() . '/Resources/views/');
+        $view->extendsTemplate('backend/billie_payment/Shopware.attribute.Form.js');
     }
 
     /**

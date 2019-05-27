@@ -53,19 +53,26 @@ class Helper
         }
 
         // set values
-        $attr = $item->getAttribute();
-        $methods = ['state' => 'setBillieState', 'iban' => 'setBillieIban', 'bic' => 'setBillieBic', 'reference' => 'setBillieReferenceId'];
+        $orderAttr    = $item->getAttribute();
+        $customerAttr = $item->getCustomer()->getAttribute();
+        $methods      = ['state' => 'setBillieState', 'iban' => 'setBillieIban', 'bic' => 'setBillieBic', 'reference' => 'setBillieReferenceId'];
 
         foreach ($data as $key => $value) {
-            if (array_key_exists($key, $methods) && method_exists($attr, $methods[$key])) {
-                $attr->{$methods[$key]}($value);
+            if (array_key_exists($key, $methods)) {
+                if (method_exists($orderAttr, $methods[$key])) {
+                    $orderAttr->{$methods[$key]}($value);
+                }
+                if (method_exists($customerAttr, $methods[$key])) {
+                    $customerAttr->{$methods[$key]}($value);
+                }
             }
         }
 
         // save item
         $models = $this->utils->getEnityManager();
-        $models->persist($attr);
-        $models->flush($attr);
+        $models->persist($orderAttr);
+        $models->persist($customerAttr);
+        $models->flush([$orderAttr, $customerAttr]);
 
         return true;
     }
