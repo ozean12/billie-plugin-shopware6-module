@@ -33,7 +33,7 @@ class BilliePayment extends Plugin
             'additionalDescription' =>
                 '<div id="payment_desc">'
                 . ' <img src="https://www.billie.io/assets/images/favicons/favicon-16x16.png" width="16" height="16" style="display: inline-block;" />'
-                . '  Billie.io - Payment After Delivery'
+                . '  Billie - Payment After Delivery'
                 . '</div>'
         ];
         $installer->createOrUpdate($context->getPlugin(), $options);

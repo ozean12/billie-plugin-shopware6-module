@@ -22,7 +22,7 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="navbar-brand" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">
-                <img class="img-responsive" src="{link file="backend/_resources/images/plugin.png"}" style="display: inline-block" /> {s name="overview/title"}Billie.io Overview{/s}
+                <img class="img-responsive" src="{link file="backend/_resources/images/plugin.png"}" style="display: inline-block" /> {s name="overview/title"}Billie PaD Overview{/s}
             </a>
         </div>
     </div>
@@ -45,12 +45,12 @@
         confirm_payment: {
             title: '{s name="confirm_payment/title"}Zahlungsbetrag{/s}',
             desc: '{s name="confirm_payment/description"}Bitte geben Sie Zahlungsbetrag an.{/s}',
-            success: '{s name="confirm_payment/success"}Billie.io wurde über den angegebenen Zahlungsbetrag informiert.{/s}',
+            success: '{s name="confirm_payment/success"}Billie PaD wurde über den angegebenen Zahlungsbetrag informiert.{/s}',
         },
         cancel_order: {
             title: '{s name="cancel_order/title"}Bestellung abbrechen{/s}',
-            desc: '{s name="cancel_order/description"}Sind Sie sicher, dass Sie die Bestellung über Billie.io stornieren möchten?{/s}',
-            success: '{s name="cancel_order/success"}Die Bestellung wurde erfolgreich über Billie.io storniert.{/s}',
+            desc: '{s name="cancel_order/description"}Sind Sie sicher, dass Sie die Bestellung über Billie PaD stornieren möchten?{/s}',
+            success: '{s name="cancel_order/success"}Die Bestellung wurde erfolgreich über Billie PaD storniert.{/s}',
         },
         ship_order: {
             success: '{s name="ship_order/success"}Die Bestellung wurde erfolgreich als verschickt markiert.{/s}',

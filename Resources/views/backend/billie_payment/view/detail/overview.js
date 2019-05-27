@@ -8,7 +8,7 @@ Ext.define('Shopware.apps.BilliePayment.view.detail.Overview', {
     override: 'Shopware.apps.Order.view.detail.Overview',
 
     /**
-     * Add a Button to display a window with billie.io informations.
+     * Add a Button to display a window with Billie PaD informations.
      * 
      * @returns Array - Contains the cancel button and the save button
      */
@@ -18,11 +18,11 @@ Ext.define('Shopware.apps.BilliePayment.view.detail.Overview', {
 
         if (me.record.raw.payment.action == 'BilliePayment') {
             var billieBtn = Ext.create('Ext.button.Button', {
-                text: '{s name="overview/title" namespace="backend/billie_overview/index"}Billie.io Übersicht{/s}',
+                text: '{s name="overview/title" namespace="backend/billie_overview/index"}Billie PaD Übersicht{/s}',
                 scope: me,
                 cls: 'secondary',
                 onClick: function() {
-                    Shopware.ModuleManager.createSimplifiedModule("BillieOverview/order/?order_id=" + me.record.data.id, { "order_id": me.record.id, "title": "{s name='overview/title' namespace='backend/billie_overview/index'}Billie.io Übersicht{/s}" })
+                    Shopware.ModuleManager.createSimplifiedModule("BillieOverview/order/?order_id=" + me.record.data.id, { "order_id": me.record.id, "title": "{s name='overview/title' namespace='backend/billie_overview/index'}Billie PaD Übersicht{/s}" })
                 },
             });
 

@@ -7,8 +7,8 @@
             <label lang="de">API-Schlüssel</label>
             <label lang="en">API-Key</label>
             <value>AAA-BBB-CCC</value>
-            <description lang="de">Ihr billie.io API-Schlüssel</description>
-            <description lang="en">Your billie.io API key.</description>
+            <description lang="de">Ihr Billie PaD API-Schlüssel</description>
+            <description lang="en">Your Billie PaD API key.</description>
         </element>
         <element type="boolean" scope="locale">
             <name>sandbox</name>
