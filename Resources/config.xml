@@ -20,8 +20,8 @@
         </element>
         <element required="true" type="number" scope="locale">
             <name>duration</name>
-            <label lang="de">Dauer</label>
-            <label lang="en">Duration</label>
+            <label lang="de">Zahlungsziel</label>
+            <label lang="en">Term of Payment</label>
             <value>30</value>
             <description lang="de">Anzahl der Tage bis der Kunde die Rechnung zahlen muss.</description>
             <description lang="en">Number of days until the customer has to pay the invoice.</description>
