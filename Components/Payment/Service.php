@@ -45,8 +45,9 @@ class Service
         $args->amountNet     = $basket['AmountNetNumeric'];
         $args->currency      = $basket['sCurrencyName'];
         $args->taxAmount     = $basket['sAmountTax'];
-        $args->customerEmail = $user['additional']['user']['email']; 
+        $args->customerEmail = $user['additional']['user']['email'];
         $args->country       = $user['additional']['country'];
+        $args->duration      = (int) $user['additional']['payment']['attributes']['core']['billie_duration'];
         
         return $args;
     }

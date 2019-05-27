@@ -109,7 +109,7 @@ class Api
         // Call API Endpoint to create order -> POST /v1/order
         try {
             /** @var \Billie\Model\Order $order */
-            $order              = $this->client->createOrder($this->factory->createOrderCommand($args, $this->config['duration']));
+            $order              = $this->client->createOrder($this->factory->createOrderCommand($args));
             $local['reference'] = $order->referenceId;
             $local['state']     = $order->state;
             $local['iban']      = $order->bankAccount->iban;

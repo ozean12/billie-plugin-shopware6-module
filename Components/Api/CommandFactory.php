@@ -47,10 +47,9 @@ class CommandFactory
      * Factory method for the CreateOrder Command
      *
      * @param ApiArguments $args
-     * @param int $duration
      * @return CreateOrder
      */
-    public function createOrderCommand(ApiArguments $args, $duration)
+    public function createOrderCommand(ApiArguments $args)
     {
         // Create command and fill it, prepend id wiht 'CUSTOMER_ID_' or api will deny it!
         $customer = isset($args->billing['customer']) && array_key_exists('id', $args->billing['customer']) ? 'CUSTOMER_ID_' . $args->billing['customer']['id'] : null;
@@ -72,7 +71,7 @@ class CommandFactory
         // amounts are in cent!
         $command->amount          = new Amount($args->amountNet * 100, $args->currency, $args->taxAmount * 100);
         $command->deliveryAddress = $address; // or: new \Billie\Model\Address();
-        $command->duration        = $duration; // duration=14 meaning: when the order is shipped on the 1st May, the due date is the 15th May
+        $command->duration        = $args->duration; // duration=14 meaning: when the order is shipped on the 1st May, the due date is the 15th May
 
         return $command;
     }

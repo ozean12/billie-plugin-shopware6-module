@@ -18,7 +18,7 @@
             <description lang="de">Aktivieren des API Sandbox Modus</description>
             <description lang="en">Activate the API Sandbox mode.</description>
         </element>
-        <element required="true" type="number" scope="locale">
+        <!-- <element required="true" type="number" scope="locale">
             <name>duration</name>
             <label lang="de">Zahlungsziel</label>
             <label lang="en">Term of Payment</label>
@@ -29,6 +29,6 @@
                 <minValue>0</minValue>
                 <maxValue>120</maxValue>
             </options>
-        </element>
+        </element> -->
     </elements>
 </config>

@@ -48,4 +48,11 @@ class ApiArguments
      * @var array
      */
     public $country;
+
+    /**
+     * Duration information
+     *
+     * @var integer
+     */
+    public $duration;
 }
