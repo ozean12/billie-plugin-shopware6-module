@@ -97,12 +97,20 @@ class Checkout implements SubscriberInterface
 
         // Assign error messages and legal forms to shipping/payment checkout view
         if ($request->getActionName() === 'shippingPayment') {
+            // Default form data
+            $addressAttrs                           = $view->sUserData['billingaddress']['attributes'];
+            $sFormData                              = $view->sFormData;
+            $sFormData['sBillieLegalForm']          = $addressAttrs['billie_legalform'];
+            $sFormData['sBillieRegistrationnumber'] = $addressAttrs['billie_registrationnumber'];
+
+            // Assign form data and errors
+            $view->assign('sFormData', $sFormData);
             $view->assign('sErrorFlag', $session->sErrorFlag);
             $view->assign('sErrorMessages', $session->sErrorMessages);
+            $view->assign('legalForms', \Billie\Util\LegalFormProvider::all());
+            
             unset($session->sErrorFlag);
             unset($session->sErrorMessages);
-
-            $view->assign('legalForms', \Billie\Util\LegalFormProvider::all());
         }
     }
 
