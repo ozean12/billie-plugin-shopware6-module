@@ -5,8 +5,6 @@ namespace BilliePayment\Subscriber;
 use Enlight\Event\SubscriberInterface;
 use BilliePayment\Components\Api\Api;
 use BilliePayment\Components\Payment\Service;
-use Shopware\Models\Attribute\Customer;
-use Shopware\Models\Payment\Payment;
 
 /**
  * Subscriber to assign api messages to the checkout view
