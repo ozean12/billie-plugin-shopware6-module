@@ -66,10 +66,7 @@ class Checkout implements SubscriberInterface
         // Save additional info needed by billie
         if ($request->getActionName() === 'saveShippingPayment' && $this->service->isBilliePayment(['id' => $request->getParam('sPayment')])) {
             // Validate input
-            $validated = $this->service->validate([
-                'sBillieRegistrationnumber',
-                'sBillieLegalForm',
-            ], $request->getParams());
+            $validated = $this->service->validate(['sBillieLegalForm'], $request->getParams());
 
             if ($validated !== true) {
                 $session->sErrorFlag     = $validated['errorFlag'];
