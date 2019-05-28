@@ -30,6 +30,7 @@ class BilliePayment extends Plugin
             'action'                => 'BilliePayment',
             'active'                => 1,
             'position'              => 0,
+            'template'              => 'billie_change_payment.tpl',
             'additionalDescription' =>
                 '<div id="payment_desc">'
                 . ' <img src="https://www.billie.io/assets/images/favicons/favicon-16x16.png" width="16" height="16" style="display: inline-block;" />'

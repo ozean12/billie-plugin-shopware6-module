@@ -4,6 +4,7 @@ namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
 use BilliePayment\Components\Api\Api;
+use BilliePayment\Components\Payment\Service;
 use Shopware\Models\Attribute\Customer;
 use Shopware\Models\Payment\Payment;
 
@@ -19,11 +20,17 @@ class Checkout implements SubscriberInterface
     private $api;
 
     /**
+     * @var Service
+     */
+    private $service;
+
+    /**
      * @param Api $api Api
      */
-    public function __construct(Api $api)
+    public function __construct(Api $api, Service $service)
     {
-        $this->api = $api;
+        $this->api     = $api;
+        $this->service = $service;
     }
 
     /**
@@ -36,10 +43,71 @@ class Checkout implements SubscriberInterface
                 // ['preAuthPaymentMethod'],
                 ['addApiMessagesToView', -1],
             ],
-            'Enlight_Controller_Action_PreDispatch_Frontend_Address'   => 'extendAddressForm',
-            'Enlight_Controller_Action_PreDispatch_Frontend_Register'  => 'extendAddressForm',
-            'Shopware_Modules_Admin_SaveRegister_Successful'           => 'saveRegisterData',
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onShippingPayment',
+            'Enlight_Controller_Action_PreDispatch_Frontend_Address'         => 'extendAddressForm',
+            'Enlight_Controller_Action_PreDispatch_Frontend_Register'        => 'extendAddressForm',
+            'Shopware_Modules_Admin_SaveRegister_Successful'                 => 'saveRegisterData',
         ];
+    }
+
+
+    /**
+     * Save Additional Informations required by billie.
+     *
+     * @param \Enlight_Event_EventArgs $args
+     * @return void
+     */
+    public function onShippingPayment(\Enlight_Event_EventArgs $args)
+    {
+        /** @var \Enlight_Controller_Action $controller */
+        $controller = $args->getSubject();
+        $request    = $controller->Request();
+        $view       = $controller->View();
+        $session    = Shopware()->Session();
+
+        // Save additional info needed by billie
+        if ($request->getActionName() === 'saveShippingPayment' && $this->service->isBilliePayment(['id' => $request->getParam('sPayment')])) {
+            // Validate input
+            $validated = $this->service->validate([
+                'sBillieRegistrationnumber',
+                'sBillieLegalForm',
+            ], $request->getParams());
+
+            if ($validated !== true) {
+                $session->sErrorFlag     = $validated['errorFlag'];
+                $session->sErrorMessages = $validated['messages'];
+
+                return $controller->redirect([
+                    'controller'    => 'checkout',
+                    'action'        => 'shippingPayment',
+                    'sTarget'       => 'controller',
+                    'sTargetAction' => 'index',
+                ]);
+            }
+
+            // Save additional payment info
+            $models = Shopware()->Container()->get('models');
+            $user = $models->getRepository(Customer::class)->find($session->sUserId);
+            $attr = $user->getCustomer()->getDefaultBillingAddress()->getAttribute();
+
+            $attr->setBillieLegalform($request->getParam('sBillieLegalForm'));
+            $attr->setBillieRegistrationnumber($request->getParam('sBillieRegistrationnumber'));
+
+            $models->persist($attr);
+            $models->flush($attr);
+
+            return;
+        }
+
+        // Assign error messages and legal forms to shipping/payment checkout view
+        if ($request->getActionName() === 'shippingPayment') {
+            $view->assign('sErrorFlag', $session->sErrorFlag);
+            $view->assign('sErrorMessages', $session->sErrorMessages);
+            unset($session->sErrorFlag);
+            unset($session->sErrorMessages);
+
+            $view->assign('legalForms', \Billie\Util\LegalFormProvider::all());
+        }
     }
  
     /**
