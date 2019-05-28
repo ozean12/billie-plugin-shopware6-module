@@ -4,6 +4,7 @@ namespace BilliePayment\Components\Payment;
 
 use BilliePayment\Components\Api\ApiArguments;
 use Doctrine\ORM\AbstractQuery;
+use Shopware\Models\Attribute\Customer;
 
 /**
  * For a better overview and a clearer separation between controller and business logic.
@@ -62,6 +63,30 @@ class Service
         }
 
         return false;
+    }
+
+    /**
+     * Saves addtional payment data like legal form and registration number.
+     *
+     * @param integer $userId
+     * @param string $legalForm
+     * @param string $regNumber
+     * @return void
+     */
+    public function saveAdditionalPaymentData($userId, $legalForm, $regNumber)
+    {
+        // Fetch User
+        $models = Shopware()->Container()->get('models');
+        $user   = $models->getRepository(Customer::class)->find($userId);
+
+        if ($user) {
+            // Save attributes
+            $attr = $user->getCustomer()->getDefaultBillingAddress()->getAttribute();
+            $attr->setBillieLegalform($legalForm);
+            $attr->setBillieRegistrationnumber($regNumber);
+            $models->persist($attr);
+            $models->flush($attr);
+        }
     }
 
     /**

@@ -86,15 +86,11 @@ class Checkout implements SubscriberInterface
             }
 
             // Save additional payment info
-            $models = Shopware()->Container()->get('models');
-            $user = $models->getRepository(Customer::class)->find($session->sUserId);
-            $attr = $user->getCustomer()->getDefaultBillingAddress()->getAttribute();
-
-            $attr->setBillieLegalform($request->getParam('sBillieLegalForm'));
-            $attr->setBillieRegistrationnumber($request->getParam('sBillieRegistrationnumber'));
-
-            $models->persist($attr);
-            $models->flush($attr);
+            $this->service->saveAdditionalPaymentData(
+                $session->sUserId,
+                $request->getParam('sBillieLegalForm'),
+                $request->getParam('sBillieRegistrationnumber')
+            );
 
             return;
         }
@@ -109,26 +105,22 @@ class Checkout implements SubscriberInterface
             $view->assign('legalForms', \Billie\Util\LegalFormProvider::all());
         }
     }
- 
+
     /**
      * Save Custom Register data
      * 
+     * @SuppressWarnings(PHPMD.Superglobals)
      * @param \Enlight_Event_EventArgs $args
      * @return void
      */
     public function saveRegisterData(\Enlight_Event_EventArgs $args)
     {
-        // Get Customer
-        $models = Shopware()->Container()->get('models');
-        $data   = $_POST['register']['personal']['address']['attribute'];
-        $user   = $models->getRepository(Customer::class)->find($args->id);
-        $attr   = $user->getCustomer()->getDefaultBillingAddress()->getAttribute();
-
-        // Save Data
-        $attr->setBillieLegalform($data['billieLegalform']);
-        $attr->setBillieRegistrationnumber($data['billieRegistrationnumber']);
-        $models->persist($attr);
-        $models->flush($attr);
+        $data = $_POST['register']['personal']['address']['attribute'];
+        $this->service->saveAdditionalPaymentData(
+            $args->id,
+            $data['billieLegalform'],
+            $data['billieRegistrationnumber']
+        );
     }
 
     /**
