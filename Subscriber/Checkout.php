@@ -169,7 +169,7 @@ class Checkout implements SubscriberInterface
         }
 
         // Error Checking
-        if ($view->sPayment['name'] === 'billie_payment_after_delivery') {
+        if ($this->service->isBilliePayment(['name' => $view->sPayment['name']])) {
             $error     = ['code' => null, 'invalid' => false];
             $company   = $view->sUserData['billingaddress']['company'];
             $attrs     = $view->sUserData['billingaddress']['attributes'];

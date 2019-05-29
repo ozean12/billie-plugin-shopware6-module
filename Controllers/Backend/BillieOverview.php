@@ -1,6 +1,7 @@
 <?php
 
 use Shopware\Components\CSRFWhitelistAware;
+use BilliePayment\Components\Payment\Service;
 
 /**
  * Backend Controller for lightweight backend module.
@@ -28,12 +29,16 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function indexAction()
     {
+        // Build Filters
+        $filters = [];
+        foreach (Service::PAYMENT_MEANS as $name) {
+            $filters[] = ['property' => 'payment.name', 'value' => $name, 'operator' => 'or'];
+        }
+        unset($filters[0]['operator']);
+
         /** @var \BilliePayment\Components\Api\Api $api */
         $api     = $this->container->get('billie_payment.api');
         $sort    = [['property' => 'orders.orderTime', 'direction' => 'DESC']];
-        $filters = [
-            ['property' => 'payment.name', 'value' => 'billie_payment_after_delivery']
-        ];
         $orders = $api->getList(intval($this->Request()->getParam('page', 1)), 25, $filters, $sort);
         
         // Assign view data

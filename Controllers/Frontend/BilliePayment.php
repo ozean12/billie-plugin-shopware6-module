@@ -26,8 +26,11 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
      */
     public function indexAction()
     {
+        /** @var Service $service */
+        $service = $this->container->get('billie_payment.payment_service');
+
         // Check if the payment method is selected, otherwise return to default controller.
-        if ('billie_payment_after_delivery' === $this->getPaymentShortName()) {
+        if ($service->isBilliePayment(['name' => $this->getPaymentShortName()])) {
             return $this->redirect($this->getReturnUrl());
         }
         

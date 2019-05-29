@@ -7,6 +7,7 @@ use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
 use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
+use BilliePayment\Components\Payment\Service;
 
 /**
  * Main Plugin Class with plugin options.
@@ -25,7 +26,7 @@ class BilliePayment extends Plugin
         $installer = $this->container->get('shopware.plugin_payment_installer');
 
         $options = [
-            'name'                  => 'billie_payment_after_delivery',
+            'name'                  => Service::PAYMENT_MEANS[0],
             'description'           => 'Billie Payment After Delivery',
             'action'                => 'BilliePayment',
             'active'                => 1,
