@@ -38,5 +38,11 @@ Return:
 
 Example Call to get an invoice pdf:
 ```bash
-curl -d "invoiceNumber=20007&apikey=test-ralph" -X POST http://billie.test/BillieInvoice/invoice/hash/8b192ddef8ef1a32f9cf44c871712b30 > test.pdf
+$ curl -d "invoiceNumber=20007&apikey=test-ralph" -X POST http://billie.test/BillieInvoice/invoice/hash/8b192ddef8ef1a32f9cf44c871712b30 > test.pdf
+```
+
+Example Call to of an invalid request *(returns statuscode `401`)*:
+```bash
+$ curl -d "invoiceNumber=20007&apikey=INVALID_KEY" -X POST http://billie.test/BillieInvoice/invoice/hash/8b192ddef8ef1a32f9cf44c871712b30 -sL -w "%{http_code}" -o /dev/null
+401
 ```
