@@ -3,7 +3,6 @@
 namespace BilliePayment\Components\Payment;
 
 use BilliePayment\Components\Api\ApiArguments;
-use Doctrine\ORM\AbstractQuery;
 use Shopware\Models\Attribute\Customer;
 
 /**
@@ -12,6 +11,14 @@ use Shopware\Models\Attribute\Customer;
  */
 class Service
 {
+    /**
+     * Names of differnt billie payment means
+     * @var array
+     */
+    const PAYMENT_MEANS = [
+        'billie_payment_after_delivery'
+    ];
+
     /**
      * Validate payment data. If successful return true,
      * otherwise return an array with errorflags and messages.
@@ -52,14 +59,27 @@ class Service
      */
     public function isBilliePayment(array $payment)
     {
-        $paymentMean = Shopware()->Models()
-            ->getRepository('\Shopware\Models\Payment\Payment')
-            ->getActivePaymentsQuery(['name' => 'billie_payment_after_delivery'])
-            ->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
+        // Check by name if $payment is a billie payment
+        if (array_key_exists('name', $payment) && in_array($payment['name'], self::PAYMENT_MEANS)) {
+            return true;
+        }
 
-
+        // Check by id if $payment is a billie payment
         if (array_key_exists('id', $payment)) {
-            return $paymentMean && $payment['id'] == $paymentMean['id'];
+            // Build filter for payment names
+            $filters = [];
+            foreach (self::PAYMENT_MEANS as $name) {
+                $filters[] = ['property' => 'name', 'value' => $name, 'operator' => 'or'];
+            }
+            unset($filters[0]['operator']);
+
+            // Query all payments for their ids
+            $paymentMean = Shopware()->Models()
+                ->getRepository('\Shopware\Models\Payment\Payment')
+                ->getActivePaymentsQuery($filters)
+                ->getArrayResult();
+
+            return $paymentMean && in_array($payment['id'], array_column($paymentMean, 'id'));
         }
 
         return false;
