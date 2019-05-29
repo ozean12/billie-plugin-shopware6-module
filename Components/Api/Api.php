@@ -74,10 +74,10 @@ class Api
             ->from(Order::class, 'orders')
             ->leftJoin('orders.attribute', 'attribute')
             ->leftJoin('orders.payment', 'payment')
-            ->andWhere('orders.number IS NOT NULL')
+            ->addFilter($filters)
+            ->andWhere('orders.number != 0')
             ->andWhere('orders.status != -1')
             ->addOrderBy($sorting)
-            ->addFilter($filters)
             ->setFirstResult(($page - 1) * $perPage)
             ->setMaxResults($perPage);
         
