@@ -59,7 +59,7 @@ class Utils
      * @param mixed $default
      * @return mixed
      */
-    public function getSnippet($namespace, $snippet, $default=null)
+    public function getSnippet($namespace, $snippet, $default = null)
     {
         /** @var \Shopware_Components_Snippet_Manager $snippets */
         $snippets = Shopware()->Container()->get('snippets');

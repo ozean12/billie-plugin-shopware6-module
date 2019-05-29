@@ -55,7 +55,12 @@ class Helper
         // set values
         $orderAttr    = $item->getAttribute();
         $customerAttr = $item->getCustomer()->getAttribute();
-        $methods      = ['state' => 'setBillieState', 'iban' => 'setBillieIban', 'bic' => 'setBillieBic', 'reference' => 'setBillieReferenceId'];
+        $methods      = [
+            'state'     => 'setBillieState',
+            'iban'      => 'setBillieIban',
+            'bic'       => 'setBillieBic',
+            'reference' => 'setBillieReferenceId'
+        ];
 
         foreach ($data as $key => $value) {
             if (array_key_exists($key, $methods)) {
@@ -132,13 +137,13 @@ class Helper
         switch (get_class($exc)) {
             case DebtorAddressException::class:
                 $code = 'DEBTOR_ADDRESS';
-                break; 
+                break;
             case DebtorNotIdentifiedException::class:
                 $code = 'DEBTOR_NOT_IDENTIFIED';
-                break; 
+                break;
             case RiskPolicyDeclinedException::class:
                 $code = 'RISK_POLICY';
-                break; 
+                break;
             case DebtorLimitExceededException::class:
                 $code = 'DEBTOR_LIMIT_EXCEEDED';
                 break;

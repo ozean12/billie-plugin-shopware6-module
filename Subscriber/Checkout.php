@@ -62,9 +62,10 @@ class Checkout implements SubscriberInterface
         $request    = $controller->Request();
         $view       = $controller->View();
         $session    = Shopware()->Session();
+        $isBillie   = $this->service->isBilliePayment(['id' => $request->getParam('sPayment')]);
 
         // Save additional info needed by billie
-        if ($request->getActionName() === 'saveShippingPayment' && $this->service->isBilliePayment(['id' => $request->getParam('sPayment')])) {
+        if ($request->getActionName() === 'saveShippingPayment' && $isBillie) {
             // Validate input
             $validated = $this->service->validate(['sBillieLegalForm'], $request->getParams());
 
@@ -111,7 +112,7 @@ class Checkout implements SubscriberInterface
 
     /**
      * Save Custom Register data
-     * 
+     *
      * @SuppressWarnings(PHPMD.Superglobals)
      * @param \Enlight_Event_EventArgs $args
      * @return void
@@ -128,7 +129,7 @@ class Checkout implements SubscriberInterface
 
     /**
      * Add Legalforms to address form
-     * 
+     *
      * @param \Enlight_Event_EventArgs $args
      * @return void
      */
@@ -173,7 +174,9 @@ class Checkout implements SubscriberInterface
             $error     = ['code' => null, 'invalid' => false];
             $company   = $view->sUserData['billingaddress']['company'];
             $attrs     = $view->sUserData['billingaddress']['attributes'];
-            $legalForm = array_key_exists('billie_legalform', $attrs) ? $attrs['billie_legalform'] : $attrs['billieLegalform'];
+            $legalForm = array_key_exists('billie_legalform', $attrs)
+                ? $attrs['billie_legalform']
+                : $attrs['billieLegalform'];
 
             // Display error when legalform is missing.
             if (!isset($legalForm) || is_null($legalForm)) {

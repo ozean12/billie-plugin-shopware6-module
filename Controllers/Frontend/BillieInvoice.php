@@ -5,6 +5,10 @@ use Shopware\Models\Order\Document\Document;
 
 /**
  * Controller to send invoice pdf if authenticated.
+ *
+ * @phpcs:disable PSR1.Classes.ClassDeclaration
+ * @phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
+ * @phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
  * @SuppressWarnings(PHPMD.CamelCaseClassName)
  */
 class Shopware_Controllers_Frontend_BillieInvoice extends Enlight_Controller_Action implements CSRFWhitelistAware

@@ -6,7 +6,10 @@ use BilliePayment\Components\Payment\Service;
 /**
  * Backend Controller for lightweight backend module.
  * Manages Billie Order Details and States.
- * 
+ *
+ * @phpcs:disable PSR1.Classes.ClassDeclaration
+ * @phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
+ * @phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
  * @SuppressWarnings(PHPMD.CamelCaseClassName)
  */
 class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Action implements CSRFWhitelistAware
@@ -89,7 +92,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $order    = $this->Request()->getParam('order_id');
         $response = $api->shipOrder($order);
 
-        $this->Front()->Plugins()->Json()->setRenderer();    
+        $this->Front()->Plugins()->Json()->setRenderer();
         $this->View()->assign($response);
     }
 
@@ -124,7 +127,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $response = $api->cancelOrder($order);
 
         // Return result message
-        $this->Front()->Plugins()->Json()->setRenderer();        
+        $this->Front()->Plugins()->Json()->setRenderer();
         $this->View()->assign($response);
     }
 

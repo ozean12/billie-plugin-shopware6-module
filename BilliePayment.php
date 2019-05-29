@@ -12,7 +12,7 @@ use BilliePayment\Components\Payment\Service;
 /**
  * Main Plugin Class with plugin options.
  * Handles (un-)installation and (de-)activation.
- * 
+ *
  * @SuppressWarnings(PHPMD.StaticAccess)
  */
 class BilliePayment extends Plugin
@@ -122,7 +122,7 @@ class BilliePayment extends Plugin
             'label'            => 'IBAN',
             'displayInBackend' => true,
         ]);
-        $service->update('s_user_attributes', 'billie_bic', 'string',[
+        $service->update('s_user_attributes', 'billie_bic', 'string', [
             'label'            => 'BIC',
             'displayInBackend' => true,
             'custom' => false,
@@ -136,10 +136,16 @@ class BilliePayment extends Plugin
             'displayInBackend' => true,
             'arrayStore'       => $legalData
         ]);
-
+        
+        // Generate Attribute Models
         $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
         $metaDataCache->deleteAll();
-        Shopware()->Models()->generateAttributeModels(['s_order_attributes', 's_user_attributes', 's_user_addresses_attributes', 's_core_paymentmeans_attributes']);
+        Shopware()->Models()->generateAttributeModels([
+            's_order_attributes',
+            's_user_attributes',
+            's_user_addresses_attributes',
+            's_core_paymentmeans_attributes'
+        ]);
     }
 
     /**

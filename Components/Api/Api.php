@@ -41,7 +41,7 @@ class Api
 
     /**
      * Load Plugin config
-     * 
+     *
      * @SuppressWarnings(PHPMD.StaticAccess)
      * @param Helper $helper
      * @param Utils $utils
@@ -104,7 +104,7 @@ class Api
      */
     public function createOrder(ApiArguments $args)
     {
-        $local  = [];
+        $local = [];
 
         // Call API Endpoint to create order -> POST /v1/order
         try {
@@ -115,17 +115,17 @@ class Api
             $local['iban']      = $order->bankAccount->iban;
             $local['bic']       = $order->bankAccount->bic;
             $this->utils->getLogger()->info('POST /v1/order');
-        } 
+        }
         // Order Declined -> Billie User Error Message
         catch (OrderDeclinedException $exc) {
             return $this->helper->declinedErrorMessage($exc, ['state' => 'declined']);
         }
         // Invalid Command -> Non-technical user error message
-        catch(InvalidCommandException $exc) {
+        catch (InvalidCommandException $exc) {
             return $this->helper->invalidCommandMessage($exc);
         }
         // Catch other billie exceptions
-        catch(BillieException $exc) {
+        catch (BillieException $exc) {
             return $this->helper->errorMessage($exc, $local);
         }
  
@@ -157,11 +157,11 @@ class Api
             $local['state'] = 'canceled';
         }
         // Invalid Command -> Non-technical user error message
-        catch(InvalidCommandException $exc) {
+        catch (InvalidCommandException $exc) {
             return $this->helper->invalidCommandMessage($exc);
         }
         // Catch other billie exceptions
-        catch(BillieException $exc) {
+        catch (BillieException $exc) {
             return $this->helper->errorMessage($exc, $local);
         }
 
@@ -202,13 +202,13 @@ class Api
             $local['state'] = $response->state;
             $this->utils->getLogger()->info("POST /v1/order/{$order}/ship");
             // $dueDate = $order->invoice->dueDate;
-        } 
+        }
         // Invalid Command -> Non-technical user error message
-        catch(InvalidCommandException $exc) {
+        catch (InvalidCommandException $exc) {
             return $this->helper->invalidCommandMessage($exc);
         }
         // Catch other billie exceptions
-        catch(BillieException $exc) {
+        catch (BillieException $exc) {
             return $this->helper->errorMessage($exc, $local);
         }
 
@@ -256,13 +256,13 @@ class Api
                 $response       = $this->client->postponeOrderDueDate($command);
                 $local['state'] = $response->state;
                 // $dueDate = $order->invoice->dueDate;
-            } 
+            }
             // Invalid Command -> Non-technical user error message
-            catch(InvalidCommandException $exc) {
+            catch (InvalidCommandException $exc) {
                 return $this->helper->invalidCommandMessage($exc);
             }
             // Catch other billie exceptions
-            catch(BillieException $exc) {
+            catch (BillieException $exc) {
                 return $this->helper->errorMessage($exc, $local);
             }
         }
@@ -299,13 +299,13 @@ class Api
             $order          = $this->client->confirmPayment($command);
             $local['state'] = $order->state;
             $this->utils->getLogger()->info("POST /v1/order/{$order}/confirm-payment");
-        } 
+        }
         // Invalid Command -> Non-technical user error message
-        catch(InvalidCommandException $exc) {
+        catch (InvalidCommandException $exc) {
             return $this->helper->invalidCommandMessage($exc);
         }
         // Catch other billie exceptions
-        catch(BillieException $exc) {
+        catch (BillieException $exc) {
             return $this->helper->errorMessage($exc, $local);
         }
 
@@ -337,16 +337,16 @@ class Api
         try {
             $this->utils->getLogger()->info("GET /v1/order/{$order}");
             $response       = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
-            $local['state'] = $response->state; 
+            $local['state'] = $response->state;
             $local['iban']  = $response->bankAccount->iban;
             $local['bic']   = $response->bankAccount->bic;
-        } 
+        }
         // Invalid Command -> Non-technical user error message
-        catch(InvalidCommandException $exc) {
+        catch (InvalidCommandException $exc) {
             return $this->helper->invalidCommandMessage($exc);
         }
         // Catch other billie exceptions
-        catch(BillieException $exc) {
+        catch (BillieException $exc) {
             return $this->helper->errorMessage($exc, $local);
         }
  

@@ -39,7 +39,7 @@ class ApiArguments
      * Currency string, e.g. EUR
      *
      * @var string
-     */ 
+     */
     public $currency;
 
     /**
