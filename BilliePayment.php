@@ -32,7 +32,7 @@ class BilliePayment extends Plugin
             'position'              => 0,
             'template'              => 'billie_change_payment.tpl',
             'additionalDescription' =>
-                '<div id="payment_desc">'
+            '<div id="payment_desc">'
                 . ' <img src="https://www.billie.io/assets/images/favicons/favicon-16x16.png" width="16" height="16" style="display: inline-block;" />'
                 . '  Billie - Payment After Delivery'
                 . '</div>'
@@ -112,7 +112,6 @@ class BilliePayment extends Plugin
         $service->update('s_core_paymentmeans_attributes', 'billie_duration', 'integer', [
             'label'            => 'Term of Payment',
             'helpText'         => 'Number of days until the customer has to pay the invoice',
-            'translatable'     => true,
             'displayInBackend' => true,
         ]);
         $service->update('s_order_attributes', 'billie_state', 'string');
@@ -120,23 +119,19 @@ class BilliePayment extends Plugin
         $service->update('s_order_attributes', 'billie_bic', 'string');
         $service->update('s_user_attributes', 'billie_iban', 'string', [
             'label'            => 'IBAN',
-            'translatable'     => true,
             'displayInBackend' => true,
         ]);
         $service->update('s_user_attributes', 'billie_bic', 'string',[
             'label'            => 'BIC',
-            'translatable'     => true,
             'displayInBackend' => true,
             'custom' => false,
         ]);
         $service->update('s_user_addresses_attributes', 'billie_registrationNumber', 'string', [
             'label'            => 'Registration Number',
-            'translatable'     => true,
             'displayInBackend' => true,
         ]);
         $service->update('s_user_addresses_attributes', 'billie_legalform', 'combobox', [
             'label'            => 'Legalform',
-            'translatable'     => true,
             'displayInBackend' => true,
             'arrayStore'       => $legalData
         ]);
