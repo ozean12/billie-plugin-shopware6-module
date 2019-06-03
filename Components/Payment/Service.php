@@ -4,6 +4,7 @@ namespace BilliePayment\Components\Payment;
 
 use BilliePayment\Components\Api\ApiArguments;
 use Shopware\Models\Attribute\Customer;
+use Shopware\Models\Payment\Payment;
 
 /**
  * For a better overview and a clearer separation between controller and business logic.
@@ -75,7 +76,7 @@ class Service
 
             // Query all payments for their ids
             $paymentMean = Shopware()->Models()
-                ->getRepository('\Shopware\Models\Payment\Payment')
+                ->getRepository(Payment::class)
                 ->getActivePaymentsQuery($filters)
                 ->getArrayResult();
 
@@ -127,9 +128,10 @@ class Service
     /**
      * @param array $user
      * @param array $basket
+     * @param string $shortName
      * @return ApiArguments
      */
-    public function createApiArgs($user, $basket)
+    public function createApiArgs($user, $basket, $shortName)
     {
         // fix inconsistend camelcase
         $attrs = $user['billingaddress']['attributes'];
@@ -139,6 +141,17 @@ class Service
         }
         $user['billingaddress']['attributes'] = $attrs;
 
+        // Payment Duration
+        $duration = null;
+        if (!array_key_exists('payment', $user['additional'])) {
+            $models  = Shopware()->Container()->get('models');
+            $payment = $models->getRepository(Payment::class)
+                    ->findOneBy(['name' => $shortName]);
+            $duration = $payment->getAttribute()->getBillieDuration();
+        }
+        $duration = $duration ?: $user['additional']['payment']['attributes']['core']['billie_duration'];
+
+        // Build Args
         $args                = new ApiArguments();
         $args->billing       = $user['billingaddress'];
         $args->amountNet     = $basket['AmountNetNumeric'];
@@ -146,7 +159,7 @@ class Service
         $args->taxAmount     = $basket['sAmountTax'];
         $args->customerEmail = $user['additional']['user']['email'];
         $args->country       = $user['additional']['country'];
-        $args->duration      = (int) $user['additional']['payment']['attributes']['core']['billie_duration'];
+        $args->duration      = (int) $duration;
         
         return $args;
     }

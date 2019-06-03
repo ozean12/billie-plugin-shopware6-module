@@ -81,7 +81,9 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             $api = $this->container->get('billie_payment.api');
 
             // Call Api for created order
-            $apiResp = $api->createOrder($service->createApiArgs($user, $this->getBasket()));
+            $apiResp = $api->createOrder(
+                $service->createApiArgs($user, $this->getBasket(), $this->getPaymentShortName())
+            );
 
             // Save Order on success
             if ($apiResp['success']) {
