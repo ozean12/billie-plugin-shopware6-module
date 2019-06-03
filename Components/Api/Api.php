@@ -192,7 +192,7 @@ class Api
         // Already shipped/canceled
         $state = $item->getAttribute()->getBillieState();
         if ($state == 'shipped' || $state == 'canceled') {
-            return;
+            return ['success' => false, 'data' => 'ORDER_CANNOT_BE_SHIPPED'];
         }
 
         // run POST /v1/order/{order_id}/ship

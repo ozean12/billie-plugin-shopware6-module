@@ -72,7 +72,8 @@
             NOT_ALLOWED: '{s name="NOT_ALLOWED" namespace="backend/billie_overview/errors"}{/s}',
             NOT_AUTHORIZED: '{s name="NOT_AUTHORIZED" namespace="backend/billie_overview/errors"}{/s}',
             SERVER_ERROR: '{s name="SERVER_ERROR" namespace="backend/billie_overview/errors"}{/s}',
-            ORDER_NOT_CANCELLED: '{s name="ORDER_NOT_CANCELLED" namespace="backend/billie_overview/errors"}{/s}'
+            ORDER_NOT_CANCELLED: '{s name="ORDER_NOT_CANCELLED" namespace="backend/billie_overview/errors"}{/s}',
+            ORDER_CANNOT_BE_SHIPPED: '{s name="ORDER_CANNOT_BE_SHIPPED" namespace="backend/billie_overview/errors"}{/s}'
         }
     };
 </script>
