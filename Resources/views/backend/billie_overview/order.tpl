@@ -28,6 +28,9 @@
                 {s name="order/ship_order"}Bestellung als verschickt markieren{/s}
             </button>
         {/if}
+        <a class="btn btn-primary pull-right" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">
+            {s name="back"}Back to Overview{/s}
+        </a>
     </div>
 
     <form class="form-horizontal">
@@ -118,5 +121,11 @@
             </div>
         </div> *}
     </form>
+
+    <p>
+        <a class="btn btn-link pull-right" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">
+            <small>{s name="back"}Back to Overview{/s}</small>
+        </a>
+    </p>
 </div>
 {/block}
