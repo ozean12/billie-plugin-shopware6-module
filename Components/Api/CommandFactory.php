@@ -15,6 +15,7 @@ use Billie\Command\ConfirmPayment;
 use Billie\Command\PostponeOrderDueDate;
 use Billie\Command\ReduceOrderAmount;
 use Billie\Command\ShipOrder;
+use BilliePayment\Components\MissingDocumentsException;
 
 /**
  * Factory class to create billie sdk commands
@@ -92,11 +93,15 @@ class CommandFactory
         // Get Invoice if exists
         $invoice = $this->fetchInvoice($order);
 
-        if ($invoice) {
-            $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
-            $command->invoiceUrl          = $this->utils->getInvoiceUrl($invoice); // Invoice API Endpoint
-            // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
+        if (!$invoice) {
+            throw new MissingDocumentsException(
+                'The Invoice Document is missing. Please generate the documents before marking the order as shipped.'
+            );
         }
+
+        // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
+        $command->invoiceUrl          = $this->utils->getInvoiceUrl($invoice); // Invoice API Endpoint
+        $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
 
         return $command;
     }
@@ -120,11 +125,15 @@ class CommandFactory
         // Get Invoice if exists
         $invoice = $this->fetchInvoice($order);
 
-        if ($invoice) {
-            $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
-            $command->invoiceUrl          = $this->utils->getInvoiceUrl($invoice); // Invoice API Endpoint
-            // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
+        if (!$invoice) {
+            throw new MissingDocumentsException(
+                'The Invoice Document is missing. Please generate the documents before marking the order as shipped.'
+            );
         }
+
+        $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
+        $command->invoiceUrl          = $this->utils->getInvoiceUrl($invoice); // Invoice API Endpoint
+        // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
 
         return $command;
     }

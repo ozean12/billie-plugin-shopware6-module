@@ -4,6 +4,7 @@ namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
 use BilliePayment\Components\Api\Api;
+use BilliePayment\Components\Utils;
 
 /**
  * Order Subscriber which calls the billie api when an
@@ -15,6 +16,11 @@ class Order implements SubscriberInterface
      * @var Api $api
      */
     private $api;
+
+    /**
+     * @var Utils $utils
+     */
+    private $utils;
 
     /**
      * Canceled Order Code
@@ -30,10 +36,12 @@ class Order implements SubscriberInterface
 
     /**
      * @param Api $api
+     * @param Utils $utils
      */
-    public function __construct(Api $api)
+    public function __construct(Api $api, Utils $utils)
     {
-        $this->api = $api;
+        $this->api   = $api;
+        $this->utils = $utils;
     }
 
     /**
@@ -71,6 +79,7 @@ class Order implements SubscriberInterface
                     'currency' => $order->getCurrency(),
                 ]
             ]);
+
             $controller->View()->assign([
                 'success' => $response['success'],
                 'title'   => $response['title'],
@@ -126,7 +135,14 @@ class Order implements SubscriberInterface
             // Order is canceled.
             case self::ORDER_CANCELED:
                 $response = $this->api->cancelOrder($order['id']);
-                $view->assign(['success' => $response['success'], 'message' => $response['data']]);
+                $view->assign([
+                    'success' => $response['success'],
+                    'message' => $this->utils->getSnippet(
+                        'backend/billie_overview/errors',
+                        $response['data'],
+                        $response['data']
+                    )
+                ]);
                 break;
 
             // Order is shipped
@@ -135,7 +151,11 @@ class Order implements SubscriberInterface
                 $view->assign([
                     'success' => $response['success'],
                     'title'   => $response['title'],
-                    'message' => $response['data']
+                    'message' => $this->utils->getSnippet(
+                        'backend/billie_overview/errors',
+                        $response['data'],
+                        $response['data']
+                    )
                 ]);
                 break;
         }

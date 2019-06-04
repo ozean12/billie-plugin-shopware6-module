@@ -3,6 +3,7 @@
 namespace BilliePayment\Components\Api;
 
 use BilliePayment\Components\Utils;
+use BilliePayment\Components\MissingDocumentsException;
 use Shopware\Models\Order\Order;
 use Billie\HttpClient\BillieClient;
 use Billie\Exception\BillieException;
@@ -202,6 +203,10 @@ class Api
             $local['state'] = $response->state;
             $this->utils->getLogger()->info("POST /v1/order/{$order}/ship");
             // $dueDate = $order->invoice->dueDate;
+        }
+        // Missing Documents
+        catch (MissingDocumentsException $exc) {
+            return $this->helper->errorMessage($exc, $local);
         }
         // Invalid Command -> Non-technical user error message
         catch (InvalidCommandException $exc) {
