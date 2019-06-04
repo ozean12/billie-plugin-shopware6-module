@@ -131,6 +131,12 @@ class Order implements SubscriberInterface
      */
     protected function processOrder(array $order, \Enlight_View_Default $view)
     {
+        /** @var \BilliePayment\Components\Payment\Service $service */
+        $service = Shopware()->Container()->get('billie_payment.payment_service');
+        if (!$service->isBilliePayment(['id' => $order['paymentId']])) {
+            return;
+        }
+
         switch ($order['status']) {
             // Order is canceled.
             case self::ORDER_CANCELED:
