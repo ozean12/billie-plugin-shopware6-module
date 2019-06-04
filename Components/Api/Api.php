@@ -9,6 +9,7 @@ use Billie\HttpClient\BillieClient;
 use Billie\Exception\BillieException;
 use Billie\Exception\OrderDecline\OrderDeclinedException;
 use Billie\Exception\InvalidCommandException;
+use BilliePayment\Components\MissingLegalFormException;
 
 /**
  * Service Wrapper for billie API sdk
@@ -116,6 +117,14 @@ class Api
             $local['iban']      = $order->bankAccount->iban;
             $local['bic']       = $order->bankAccount->bic;
             $this->utils->getLogger()->info('POST /v1/order');
+        }
+        // Missing Legal Form attributes
+        catch (MissingLegalFormException $exc) {
+            return [
+                'success' => false,
+                'title'   => $this->utils->getSnippet('backend/billie_overview/errors', 'error'),
+                'data'    => $exc->getErrorCodes()[0]
+            ];
         }
         // Order Declined -> Billie User Error Message
         catch (OrderDeclinedException $exc) {

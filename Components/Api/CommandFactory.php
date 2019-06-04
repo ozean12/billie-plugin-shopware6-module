@@ -16,6 +16,7 @@ use Billie\Command\PostponeOrderDueDate;
 use Billie\Command\ReduceOrderAmount;
 use Billie\Command\ShipOrder;
 use BilliePayment\Components\MissingDocumentsException;
+use BilliePayment\Components\MissingLegalFormException;
 
 /**
  * Factory class to create billie sdk commands
@@ -63,6 +64,7 @@ class CommandFactory
         $command->debtorCompany                     = new Company($customer, $args->billing['company'], $address);
         $command->debtorCompany->legalForm          = $args->billing['attributes']['billieLegalform'];
         $command->debtorCompany->registrationNumber = $args->billing['attributes']['billieRegistrationnumber'];
+        $command->debtorCompany->taxId              = $args->billing['ustid'];
 
         // Debtor Person data
         $command->debtorPerson            = new Person($args->customerEmail);
@@ -75,6 +77,9 @@ class CommandFactory
         $command->amount          = new Amount($args->amountNet * 100, $args->currency, $args->taxAmount * 100);
         $command->deliveryAddress = $address; // or: new \Billie\Model\Address();
         $command->duration        = $args->duration; // duration=14 => due date = shipping date + 14
+
+        // Check what fields are required based on legal form
+        $this->validateLegalForm($command->debtorCompany);
 
         return $command;
     }
@@ -211,5 +216,30 @@ class CommandFactory
         }
 
         return false;
+    }
+
+    /**
+     * Validate the legal form attributes
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     * @param Company $company
+     * @return void
+     * @throws MissingLegalFormException if some attributes are missing
+     */
+    protected function validateLegalForm(Company $company)
+    {
+        $errors    = [];
+        $legalForm = \Billie\Util\LegalFormProvider::get($company->legalForm);
+        if ($legalForm && $legalForm['vat_id_required'] && !$company->taxId) {
+            $errors[] = 'MISSING_VAT_ID';
+        }
+        
+        if ($legalForm && $legalForm['registration_id_required'] && !$company->registrationNumber) {
+            $errors[] = 'MISSING_REGISTRATION_ID';
+        }
+
+        if (!empty($errors)) {
+            throw new MissingLegalFormException($errors);
+        }
     }
 }
