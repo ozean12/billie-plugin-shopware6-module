@@ -22,7 +22,7 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="navbar-brand" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">
-                <img class="img-responsive" src="{link file="backend/_resources/images/billie_logo_horizontal.png"}" style="display: inline-block" /> {s name="overview/title"}Billie PaD Overview{/s}
+                <img class="img-responsive" src="{link file="backend/_resources/images/billie_logo_horizontal.png"}" style="display: inline-block" /> {s name="navbar/title"}Overview{/s}
             </a>
         </div>
     </div>
