@@ -1,5 +1,7 @@
 {namespace name='frontend/plugins/payment/billie'}
 
+{* Only show form inputs if payment is selected to not mess with different billie payment options *}
+{if $payment_mean.id == $form_data.payment}
 <div class="payment--form-group">
     <input name="sBillieRegistrationnumber"
         type="text"
@@ -34,3 +36,4 @@
         </div>
     {/block}
 </div>
+{/if}
