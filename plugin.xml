@@ -13,7 +13,7 @@
 
      <description lang="de"><![CDATA[
         <div style="text-align: center">
-            <img src="https://www.billie.io/assets/images/logo/billie_logo_large.svg" width="54" height="76" />
+            <img src="/custom/plugins/BilliePayment/Resources/views/backend/_resources/images/billie_logo_vertical.png" width="69" height="96">
         </div>
         <h1>Liquidität auf Knopfdruck</h1>
         <p>Billie begleicht Ihre offenen Rechnungen sofort - bereits ab 0,7% Einmalgebühr auf den Rechnungsbetrag.</p>

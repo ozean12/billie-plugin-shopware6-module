@@ -12,7 +12,7 @@
 <body role="document" style="padding-top: 80px">
 
 <!-- Fixed navbar -->
-<nav class="navbar navbar-inverse navbar-fixed-top">
+<nav class="navbar navbar-inverse navbar-fixed-top" style="min-height: 64px;">
     <div class="container">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -22,7 +22,7 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="navbar-brand" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">
-                <img class="img-responsive" src="{link file="backend/_resources/images/plugin.png"}" style="display: inline-block" /> {s name="overview/title"}Billie PaD Overview{/s}
+                <img class="img-responsive" src="{link file="backend/_resources/images/billie_logo_horizontal.png"}" style="display: inline-block" /> {s name="overview/title"}Billie PaD Overview{/s}
             </a>
         </div>
     </div>
