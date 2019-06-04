@@ -67,7 +67,7 @@ class Checkout implements SubscriberInterface
         // Save additional info needed by billie
         if ($request->getActionName() === 'saveShippingPayment' && $isBillie) {
             // Validate input
-            $validated = $this->service->validate(['sBillieLegalForm'], $request->getParams());
+            $validated = $this->service->validate(['sBillieLegalForm'], $request);
 
             if ($validated !== true) {
                 $session->sErrorFlag     = $validated['errorFlag'];
@@ -85,7 +85,8 @@ class Checkout implements SubscriberInterface
             $this->service->saveAdditionalPaymentData(
                 $session->sUserId,
                 $request->getParam('sBillieLegalForm'),
-                $request->getParam('sBillieRegistrationnumber')
+                $request->getParam('sBillieRegistrationnumber'),
+                $request->getParam('sBillieVatId')
             );
 
             return;
@@ -96,8 +97,11 @@ class Checkout implements SubscriberInterface
             // Default form data
             $addressAttrs                           = $view->sUserData['billingaddress']['attributes'];
             $sFormData                              = $view->sFormData;
-            $sFormData['sBillieLegalForm']          = $addressAttrs['billie_legalform'];
-            $sFormData['sBillieRegistrationnumber'] = $addressAttrs['billie_registrationnumber'];
+            $sFormData['sBillieVatId']              = $view->sUserData['billingaddress']['ustid'];
+            $sFormData['sBillieLegalForm']          = $addressAttrs['billie_legalform']
+                                                        ?: $addressAttrs['billieLegalform'];
+            $sFormData['sBillieRegistrationnumber'] = $addressAttrs['billie_registrationnumber']
+                                                        ?: $addressAttrs['billieRegistrationnumber'];
 
             // Assign form data and errors
             $view->assign('sFormData', $sFormData);

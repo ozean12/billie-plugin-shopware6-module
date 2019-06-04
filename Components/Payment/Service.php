@@ -21,20 +21,35 @@ class Service
     ];
 
     /**
-     * Validate payment data. If successful return true,
+     * Validate payment data based on legal form. If successful return true,
      * otherwise return an array with errorflags and messages.
      *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      * @param array $fields
-     * @param array $data
+     * @param \Enlight_Controller_Request_Request $request
      * @return array|bool
      */
-    public function validate(array $fields, array $data)
+    public function validate(array $fields, \Enlight_Controller_Request_Request $request)
     {
+        // Error Bags
         $errorMessages = [];
         $errorFlag     = [];
 
+        // Check what fields are required based on legal form
+        $legalForm = \Billie\Util\LegalFormProvider::get($request->getParam('sBillieLegalForm'));
+        if (!empty($legalForm)) {
+            if ($legalForm['vat_id_required']) {
+                $fields[] = 'sBillieVatId';
+            }
+
+            if ($legalForm['registration_id_required']) {
+                $fields[] = 'sBillieRegistrationnumber';
+            }
+        }
+
+        // validate Fields and return error if there are any
         foreach ($fields as $field) {
-            if (!array_key_exists($field, $data) || empty(trim($data[$field]))) {
+            if (!$request->has($field) || empty(trim($request->getParam($field)))) {
                 $errorFlag[$field] = true;
             }
         }
@@ -92,21 +107,31 @@ class Service
      * @param integer $userId
      * @param string $legalForm
      * @param string $regNumber
+     * @param string|null $vatId
      * @return void
      */
-    public function saveAdditionalPaymentData($userId, $legalForm, $regNumber)
+    public function saveAdditionalPaymentData($userId, $legalForm, $regNumber, $vatId=null)
     {
         // Fetch User
         $models = Shopware()->Container()->get('models');
         $user   = $models->getRepository(Customer::class)->find($userId);
 
         if ($user) {
-            // Save attributes
-            $attr = $user->getCustomer()->getDefaultBillingAddress()->getAttribute();
+            // Set vat id
+            $billing = $user->getCustomer()->getDefaultBillingAddress();
+            if (!is_null($vatId)) {
+                $billing->setVatId($vatId);
+            }
+
+            // Set attrs
+            $attr = $billing->getAttribute();
             $attr->setBillieLegalform($legalForm);
             $attr->setBillieRegistrationnumber($regNumber);
+
+            // Save
+            $models->persist($billing);
             $models->persist($attr);
-            $models->flush($attr);
+            $models->flush([$billing, $attr]);
         }
     }
 

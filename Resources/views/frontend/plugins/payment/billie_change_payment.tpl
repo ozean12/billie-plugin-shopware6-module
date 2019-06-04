@@ -3,6 +3,13 @@
 {* Only show form inputs if payment is selected to not mess with different billie payment options *}
 {if $payment_mean.id == $form_data.payment}
 <div class="payment--form-group">
+    <input name="sBillieVatId"
+        type="text"
+        id="vat_id"
+        placeholder="{s name="VatId/placeholder" namespace="frontend/address/form"}{/s}"
+        value="{$form_data.sBillieVatId|escape}"
+        class="payment--field{if $error_flags.sBillieVatId} has--error{/if}" />
+
     <input name="sBillieRegistrationnumber"
         type="text"
         id="registration_number"
