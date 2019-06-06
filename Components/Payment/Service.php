@@ -164,14 +164,9 @@ class Service
         $user['billingaddress']['attributes'] = $attrs;
 
         // Payment Duration
-        $duration = null;
-        if (!array_key_exists('payment', $user['additional'])) {
-            $models  = Shopware()->Container()->get('models');
-            $payment = $models->getRepository(Payment::class)
-                    ->findOneBy(['name' => $shortName]);
-            $duration = $payment->getAttribute()->getBillieDuration();
-        }
-        $duration = $duration ?: $user['additional']['payment']['attributes']['core']['billie_duration'];
+        $models   = Shopware()->Container()->get('models');
+        $payment  = $models->getRepository(Payment::class)->findOneBy(['name' => $shortName]);
+        $duration = $payment->getAttribute()->getBillieDuration();
 
         // Build Args
         $args                = new ApiArguments();
