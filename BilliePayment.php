@@ -114,7 +114,7 @@ class BilliePayment extends Plugin
             'label'            => 'Term of Payment',
             'helpText'         => 'Number of days until the customer has to pay the invoice',
             'displayInBackend' => true,
-        ]);
+        ], null, false, 14);
         $service->update('s_order_attributes', 'billie_state', 'string');
         $service->update('s_order_attributes', 'billie_iban', 'string');
         $service->update('s_order_attributes', 'billie_bic', 'string');
