@@ -36,15 +36,12 @@ class Service
         $errorFlag     = [];
 
         // Check what fields are required based on legal form
-        $legalForm = \Billie\Util\LegalFormProvider::get($request->getParam('sBillieLegalForm'));
-        if (!empty($legalForm)) {
-            if ($legalForm['vat_id_required']) {
-                $fields[] = 'sBillieVatId';
-            }
+        if (\Billie\Util\LegalFormProvider::isVatIdRequired($request->getParam('sBillieLegalForm'))) {
+            $fields[] = 'sBillieVatId';
+        }
 
-            if ($legalForm['registration_id_required']) {
-                $fields[] = 'sBillieRegistrationnumber';
-            }
+        if (\Billie\Util\LegalFormProvider::isRegistrationIdRequired($request->getParam('sBillieLegalForm'))) {
+            $fields[] = 'sBillieRegistrationnumber';
         }
 
         // validate Fields and return error if there are any

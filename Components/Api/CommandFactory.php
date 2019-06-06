@@ -15,6 +15,7 @@ use Billie\Command\ConfirmPayment;
 use Billie\Command\PostponeOrderDueDate;
 use Billie\Command\ReduceOrderAmount;
 use Billie\Command\ShipOrder;
+use Billie\Util\LegalFormProvider;
 use BilliePayment\Components\MissingDocumentsException;
 use BilliePayment\Components\MissingLegalFormException;
 
@@ -229,12 +230,12 @@ class CommandFactory
     protected function validateLegalForm(Company $company)
     {
         $errors    = [];
-        $legalForm = \Billie\Util\LegalFormProvider::get($company->legalForm);
-        if ($legalForm && $legalForm['vat_id_required'] && !$company->taxId) {
+
+        if (LegalFormProvider::isVatIdRequired($company->legalForm) && !$company->taxId) {
             $errors[] = 'MISSING_VAT_ID';
         }
-        
-        if ($legalForm && $legalForm['registration_id_required'] && !$company->registrationNumber) {
+
+        if (LegalFormProvider::isRegistrationIdRequired($company->legalForm) && !$company->registrationNumber) {
             $errors[] = 'MISSING_REGISTRATION_ID';
         }
 
