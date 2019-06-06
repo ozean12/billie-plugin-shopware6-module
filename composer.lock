@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:ozean12/billie-shop-plugin-sdk.git",
-                "reference": "562f01124a719e737b3d4e8208d83fe6f72abf96"
+                "reference": "5ed3fa4844bf358f023c7ca6958deac3a51c6525"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ozean12/billie-shop-plugin-sdk/zipball/562f01124a719e737b3d4e8208d83fe6f72abf96",
-                "reference": "562f01124a719e737b3d4e8208d83fe6f72abf96",
+                "url": "https://api.github.com/repos/ozean12/billie-shop-plugin-sdk/zipball/5ed3fa4844bf358f023c7ca6958deac3a51c6525",
+                "reference": "5ed3fa4844bf358f023c7ca6958deac3a51c6525",
                 "shasum": ""
             },
             "require": {
@@ -62,7 +62,7 @@
                 "source": "https://github.com/ozean12/billie-shop-plugin-sdk/tree/master",
                 "issues": "https://github.com/ozean12/billie-shop-plugin-sdk/issues"
             },
-            "time": "2019-05-21T11:47:03+00:00"
+            "time": "2019-06-05T19:16:45+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
