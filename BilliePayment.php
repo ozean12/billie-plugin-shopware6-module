@@ -166,6 +166,16 @@ class BilliePayment extends Plugin
         $service->delete('s_core_paymentmeans_attributes', 'billie_duration');
         $service->delete('s_user_addresses_attributes', 'billie_registrationNumber');
         $service->delete('s_user_addresses_attributes', 'billie_legalform');
+
+        // Regenerate Attribute Models
+        $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
+        $metaDataCache->deleteAll();
+        Shopware()->Models()->generateAttributeModels([
+            's_order_attributes',
+            's_user_attributes',
+            's_user_addresses_attributes',
+            's_core_paymentmeans_attributes'
+        ]);
     }
 
     /**
