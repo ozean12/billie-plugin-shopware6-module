@@ -5,6 +5,8 @@ namespace BilliePayment\Subscriber;
 use Enlight\Event\SubscriberInterface;
 use BilliePayment\Components\Api\Api;
 use BilliePayment\Components\Utils;
+use Shopware\Models\Order\Order as OrderModel;
+use Shopware\Models\Order\Status;
 
 /**
  * Order Subscriber which calls the billie api when an
@@ -34,6 +36,12 @@ class Order implements SubscriberInterface
      */
     const ORDER_SHIPPED = 7;
 
+    /**
+     * Clarification required order code
+     * @var integer
+     */
+    const ORDER_STATE_CLARIFICATION_REQUIRED = 8;
+    
     /**
      * @param Api $api
      * @param Utils $utils
@@ -67,6 +75,7 @@ class Order implements SubscriberInterface
         $controller = $args->getSubject();
         $request    = $controller->Request();
         $params     = $request->getParams();
+        $view       = $controller->View();
 
         // Update Amount.
         if ($request->getActionName() == 'save') {
@@ -80,7 +89,7 @@ class Order implements SubscriberInterface
                 ]
             ]);
 
-            $controller->View()->assign([
+            $view->assign([
                 'success' => $response['success'],
                 'title'   => $response['title'],
                 'message' => $response['data']
@@ -163,6 +172,22 @@ class Order implements SubscriberInterface
                         $response['data']
                     )
                 ]);
+
+                // Set Satus to clarification required in api error
+                if ($view->success == false) {
+                    $models = $this->utils->getEnityManager();
+                    $status = $models->getRepository(Status::class)->find(self::ORDER_STATE_CLARIFICATION_REQUIRED);
+                    $_order = $models->getRepository(OrderModel::class)->find($order['id']);
+
+                    if ($status !== null) {
+                        $_order->setOrderStatus($status);
+                        $models->persist($_order);
+                        $models->flush($_order);
+                    }
+
+                    $view->data['status'] = self::ORDER_STATE_CLARIFICATION_REQUIRED;
+                }
+
                 break;
         }
     }
