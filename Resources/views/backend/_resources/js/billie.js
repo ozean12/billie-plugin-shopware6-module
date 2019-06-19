@@ -27,7 +27,7 @@ $(function () {
      * @param {Event} event 
      */
     var onConfirmPayment = function (event) {
-        var $target = $(event.target);
+        var $target = $(this);
         event.preventDefault();
 
         postMessageApi.createPromptMessage(
@@ -70,7 +70,7 @@ $(function () {
      * @param {Event} event
      */
     var onCancelOrder = function (event) {
-        var $target = $(event.target);
+        var $target = $(this);
         event.preventDefault();
 
         postMessageApi.createConfirmMessage(
@@ -89,7 +89,7 @@ $(function () {
     * @param {Event} event
     */
     var onShipOrder = function (event) {
-        var $target = $(event.target);
+        var $target = $(this);
         event.preventDefault();
 
         $.ajax({
