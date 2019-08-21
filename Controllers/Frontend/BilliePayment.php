@@ -79,11 +79,13 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         if ($response->status === 'accepted') {
             /** @var \BilliePayment\Components\Api\Api $api */
             $api = $this->container->get('billie_payment.api');
+            $session = $this->container->get('session');
 
             // Call Api for created order
             $apiResp = $api->createOrder(
                 $service->createApiArgs($user, $this->getBasket(), $this->getPaymentShortName())
             );
+            $session['billie_api_response'] = $apiResp;
 
             // Save Order on success
             if ($apiResp['success']) {

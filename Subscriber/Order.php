@@ -59,8 +59,32 @@ class Order implements SubscriberInterface
     {
         return [
             'Enlight_Controller_Action_PostDispatchSecure_Backend_Order' => 'onSaveOrder',
-            'Enlight_Controller_Action_PreDispatch_Backend_Order'        => 'onBeforeSaveOrder'
+            'Enlight_Controller_Action_PreDispatch_Backend_Order'        => 'onBeforeSaveOrder',
+            'Shopware_Modules_Order_SaveOrder_FilterAttributes'          => 'onBeforeSendMail'
         ];
+    }
+
+    /**
+     * Filter to add billie api response to order attributes before mail is send.
+     *
+     * @param \Enlight_Event_EventArgs $args
+     * @return void
+     */
+    public function onBeforeSendMail(\Enlight_Event_EventArgs $args)
+    {
+        /** @var \Shopware\Models\Order\Order $order */
+        $session = Shopware()->Session()['billie_api_response'];
+        $value = $args->getReturn();
+
+        if (!empty($session) && $session['success']) {
+            $value['billie_state'] = $session['local']['state'];
+            $value['billie_referenceid'] = $session['local']['reference'];
+            $value['billie_iban'] = $session['local']['iban'];
+            $value['billie_bic'] = $session['local']['bic'];
+        }
+
+        unset($session);
+        return $value;
     }
 
     /**
