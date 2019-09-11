@@ -3,6 +3,7 @@
 use BilliePayment\Components\Payment\Response;
 use BilliePayment\Components\Payment\Service;
 use Shopware\Models\Order\Order;
+use Shopware\Models\Payment\Payment;
 
 /**
  * Frontend Controller for Billie.io Payment.
@@ -81,10 +82,21 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             $api = $this->container->get('billie_payment.api');
             $session = $this->container->get('session');
 
+            /** @var \Shopware\Components\Model\ModelManager $models */
+            $models = Shopware()->Container()->get('models');
+
             // Call Api for created order
             $apiResp = $api->createOrder(
                 $service->createApiArgs($user, $this->getBasket(), $this->getPaymentShortName())
             );
+
+            // Update Email templates
+            $payment  = $models->getRepository(Payment::class)->findOneBy(['name' => $this->getPaymentShortName()]);
+            $duration = $payment->getAttribute()->getBillieDuration();
+            $date = new \DateTime();
+            $date->add(new \DateInterval('P' . $duration . 'D'));
+            $apiResp['local']['duration'] = $duration;
+            $apiResp['local']['duration_date'] = $date->format('d.m.Y');
             $session['billie_api_response'] = $apiResp;
 
             // Save Order on success
@@ -95,8 +107,6 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     self::PAYMENTSTATUSPAID
                 );
 
-                /** @var \Shopware\Components\Model\ModelManager $models */
-                $models = Shopware()->Container()->get('models');
                 $repo   = $models->getRepository(Order::class);
                 $order  = $repo->findOneBy(['number' => $orderNumber]);
                 $api->helper->updateLocal($order, $apiResp['local']);

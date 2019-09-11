@@ -118,6 +118,8 @@ class BilliePayment extends Plugin
         $service->update('s_order_attributes', 'billie_state', 'string');
         $service->update('s_order_attributes', 'billie_iban', 'string');
         $service->update('s_order_attributes', 'billie_bic', 'string');
+        $service->update('s_order_attributes', 'billie_duration', 'integer');
+        $service->update('s_order_attributes', 'billie_duration_date', 'string');
         $service->update('s_user_attributes', 'billie_iban', 'string', [
             'label'            => 'IBAN',
             'displayInBackend' => true,
@@ -161,6 +163,8 @@ class BilliePayment extends Plugin
         $service->delete('s_order_attributes', 'billie_state');
         $service->delete('s_order_attributes', 'billie_iban');
         $service->delete('s_order_attributes', 'billie_bic');
+        $service->delete('s_order_attributes', 'billie_duration');
+        $service->delete('s_order_attributes', 'billie_duration_date');
         $service->delete('s_user_attributes', 'billie_iban');
         $service->delete('s_user_attributes', 'billie_bic');
         $service->delete('s_core_paymentmeans_attributes', 'billie_duration');

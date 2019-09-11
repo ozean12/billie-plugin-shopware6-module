@@ -4,7 +4,10 @@ namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
 use BilliePayment\Components\Api\Api;
+use BilliePayment\Components\Payment\Service;
 use BilliePayment\Components\Utils;
+use DateInterval;
+use DateTime;
 use Shopware\Models\Order\Order as OrderModel;
 use Shopware\Models\Order\Status;
 
@@ -23,6 +26,11 @@ class Order implements SubscriberInterface
      * @var Utils $utils
      */
     private $utils;
+
+    /**
+     * @var Service $service
+     */
+    private $service;
 
     /**
      * Canceled Order Code
@@ -45,11 +53,14 @@ class Order implements SubscriberInterface
     /**
      * @param Api $api
      * @param Utils $utils
+     * @param Service $service
      */
-    public function __construct(Api $api, Utils $utils)
+    public function __construct(Api $api, Utils $utils, Service $service)
     {
         $this->api   = $api;
         $this->utils = $utils;
+        $this->service = $service;
+
     }
 
     /**
@@ -60,8 +71,44 @@ class Order implements SubscriberInterface
         return [
             'Enlight_Controller_Action_PostDispatchSecure_Backend_Order' => 'onSaveOrder',
             'Enlight_Controller_Action_PreDispatch_Backend_Order'        => 'onBeforeSaveOrder',
-            'Shopware_Modules_Order_SaveOrder_FilterAttributes'          => 'onBeforeSendMail'
+            'Shopware_Modules_Order_SaveOrder_FilterAttributes'          => 'onBeforeSendMail',
+            'Enlight_Controller_Action_PreDispatch_Backend_Order'        => 'onDocumentCreate'
         ];
+    }
+
+    /**
+     * Calcuate Duration
+     *
+     * @param \Enlight_Event_EventArgs $args
+     * @return void
+     */
+    public function onDocumentCreate(\Enlight_Event_EventArgs $args)
+    {
+        /** @var \Enlight_Controller_Action $controller */
+        $controller = $args->getSubject();
+        $request    = $controller->Request();
+        $params     = $request->getParams();
+
+        if ($request->getActionName() == 'createDocument') {
+            /** @var \Shopware\Models\Order\Order $order */
+            $order  = Shopware()->Models()->find('Shopware\Models\Order\Order', $params['orderId']);
+
+            if (empty($order) || !$this->service->isBilliePayment(['id' => $order->getPayment()->getId()])) {
+                return;
+            }
+            
+            $duration = $order->getPayment()->getAttribute()->getBillieDuration();
+            $attrs = $order->getAttribute();
+            $date = array_key_exists('displayDate', $params) ? new DateTime($params['displayDate']) : new DateTime();
+            $date->add(new DateInterval('P' . $duration . 'D'));
+    
+            $attrs->setBillieDuration($duration);
+            $attrs->setBillieDurationDate($date->format('d.m.Y'));
+
+            $models = $this->utils->getEnityManager();
+            $models->persist($attrs);
+            $models->flush([$attrs]);
+        }
     }
 
     /**
@@ -81,6 +128,8 @@ class Order implements SubscriberInterface
             $value['billie_referenceid'] = $session['local']['reference'];
             $value['billie_iban'] = $session['local']['iban'];
             $value['billie_bic'] = $session['local']['bic'];
+            $value['billie_duration'] = $session['local']['duration'];
+            $value['billie_duration_date'] = $session['local']['duration_date'];
         }
 
         unset($session);

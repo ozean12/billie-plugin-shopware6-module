@@ -56,10 +56,12 @@ class Helper
         $orderAttr    = $item->getAttribute();
         $customerAttr = $item->getCustomer()->getAttribute();
         $methods      = [
-            'state'     => 'setBillieState',
-            'iban'      => 'setBillieIban',
-            'bic'       => 'setBillieBic',
-            'reference' => 'setBillieReferenceId'
+            'state'         => 'setBillieState',
+            'iban'          => 'setBillieIban',
+            'bic'           => 'setBillieBic',
+            'reference'     => 'setBillieReferenceId',
+            'duration'      => 'setBillieDuration',
+            'duration_date' => 'setBillieDurationDate'
         ];
 
         foreach ($data as $key => $value) {

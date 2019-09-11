@@ -18,6 +18,7 @@
             <tag name="shopware.event_subscriber" />
             <argument type="service" id="billie_payment.api" />
             <argument type="service" id="billie_payment.utils" />
+            <argument type="service" id="billie_payment.payment_service" />
         </service>
         <service id="billie_payment.subscriber.payment" class="BilliePayment\Subscriber\Payment">
             <tag name="shopware.event_subscriber" />
