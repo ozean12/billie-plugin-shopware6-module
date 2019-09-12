@@ -201,8 +201,7 @@ class CommandFactory
     public function createAddress(array $billing, array $country)
     {
         $address              = new Address();
-        $address->street      = $billing['street'];
-        $address->houseNumber = $billing['additionalAddressLine1'];
+        $address->fullAddress = $billing['street'];
         $address->postalCode  = $billing['zipcode'];
         $address->city        = $billing['city'];
         $address->countryCode = $country['countryiso'];
