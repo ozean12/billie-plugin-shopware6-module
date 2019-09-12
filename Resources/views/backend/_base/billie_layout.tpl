@@ -54,6 +54,10 @@
         },
         ship_order: {
             success: '{s name="ship_order/success"}Die Bestellung wurde erfolgreich als verschickt markiert.{/s}',
+            external_invoice_placeholder: '{s name="ship_order/external_invoice_placeholder"}Externe Rechnungsnummer{/s}',
+            external_url_placeholder: '{s name="ship_order/external_url_placeholder"}URL/ Link zum PDF-Rechnungsdokument{/s}',
+            add_external_invoice: '{s name="ship_order/add_external_invoice"}Bitte erzeugen Sie zuerst eine Rechnung in Shopware (Bestellung -> Dokumente -> Rechnung...) oder geben Sie nachfolgend die Rechnungsnummer ein, falls Sie die Rechnung bereits extern (bspw. in einer Warenwirtschaft) erzeugt haben.{/s}',
+            missing_invoice_number: '{s name="ship_order/missing_invoice_number"}Die Bestellung konnte nicht als verschickt markieren, da die Rechnungsnummer fehlt! Bitte erstellen Sie eine Rechnung oder geben Sie eine externe Rechnungsnummer ein.{/s}',
         },
         states: {
             created: '{s name="order/state/created" namespace="backend/billie_overview/order"}created{/s}',

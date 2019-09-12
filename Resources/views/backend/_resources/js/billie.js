@@ -1,4 +1,8 @@
 $(function () {
+    window.events.subscribe('create-prompt-message', function() {
+        $('.external-invoice-number', this.parent.document).closest('table').next().find('input').parent().hide();
+    });
+
     /**
      * Calls the confirm payment endpoint.
      * @param {string} url URL to endpoint
@@ -92,17 +96,27 @@ $(function () {
         var $target = $(this);
         event.preventDefault();
 
+        shipOrderRequest($target, {'order_id': $target.data('order_id')});
+    };
+
+    /**
+     * Shipping Ajax Requst
+     * @param {jQuery<HTMLElement>} $target
+     * @param {Object} data
+     */
+    var shipOrderRequest = function($target, data) {
         $.ajax({
             url: $target.data('action'),
             method: 'POST',
-            data: {
-                'order_id': $target.data('order_id')
-            },
+            data: data,
             success: function (response) {
                 if (response.success) {
                     postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.success, _BILLIE_SNIPPETS_.ship_order.success);
                     $target.closest('.wrapper').removeClass('info').addClass('success').find('.state').text(_BILLIE_SNIPPETS_.states.shipped)
                     $target.attr('disabled', 'disabled');
+                }
+                else if (response.data === 'MISSING_DOCUMENTS') {
+                    missingShippingDocuments($target);
                 }
                 else {
                     postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.error, _BILLIE_SNIPPETS_.errorCodes[response.data]); 
@@ -110,6 +124,41 @@ $(function () {
             }
         });
     };
+
+    /**
+     * Error Handling missing documents
+     * @param {jQuery<HTMLElement>} $target
+     */
+    var missingShippingDocuments = function($target) {
+        postMessageApi.createPromptMessage(
+            _BILLIE_SNIPPETS_.errorCodes.error,
+            _BILLIE_SNIPPETS_.ship_order.add_external_invoice +
+            '<div style="margin-top: 8px;"><input type="text" class="x-form-field x-form-text external-invoice-number" name="external-invoice-number" style="width: 100%;" placeholder="' + _BILLIE_SNIPPETS_.ship_order.external_invoice_placeholder + '" autofocus required></div>' + 
+            '<div style="margin-top: 8px;"><input type="text" class="x-form-field x-form-text external-invoice-url" name="external-invoice-url" style="width: 100%;" placeholder="' + _BILLIE_SNIPPETS_.ship_order.external_url_placeholder + '"></div>',
+            function (data) {
+                if (data.btn === 'ok') {
+                    var invoice = $('.external-invoice-number', window.parent.document).val();
+                    var url = $('.external-invoice-url', window.parent.document).val();
+
+                    if (invoice.trim() == '') {
+                        postMessageApi.createGrowlMessage(
+                            _BILLIE_SNIPPETS_.errorCodes.error,
+                            _BILLIE_SNIPPETS_.ship_order.missing_invoice_number,
+                            true,
+                            false
+                        );
+                        return;
+                    }
+
+                    shipOrderRequest($target, {
+                        'order_id': $target.data('order_id'),
+                        'invoice': invoice,
+                        'url': url
+                    });
+                }
+            },
+        );
+    }
 
     // Bind Events
     $('.confirm-payment').on('click', onConfirmPayment);

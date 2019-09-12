@@ -187,9 +187,11 @@ class Api
      * Mark order as shipped
      *
      * @param integer $order
+     * @param string|null $invoice
+     * @param string|null $url
      * @return array
      */
-    public function shipOrder($order)
+    public function shipOrder($order, $invoice = null, $url = null)
     {
         // Get Order
         $local = [];
@@ -208,7 +210,7 @@ class Api
         // run POST /v1/order/{order_id}/ship
         try {
             /** @var \Billie\Model\Order $response */
-            $response       = $this->client->shipOrder($this->factory->createShipCommand($item));
+            $response       = $this->client->shipOrder($this->factory->createShipCommand($item, $invoice, $url));
             $local['state'] = $response->state;
             $this->utils->getLogger()->info("POST /v1/order/{$order}/ship");
             // $dueDate = $order->invoice->dueDate;

@@ -89,12 +89,21 @@ class CommandFactory
      * Factory method for the ShipOrder Command
      *
      * @param Order $order
+     * @param string|null $invoice
+     * @param string|null $url
      * @return ShipOrder
      */
-    public function createShipCommand(Order $order)
+    public function createShipCommand(Order $order, $invoice = null, $url = null)
     {
         $command          = new ShipOrder($order->getAttribute()->getBillieReferenceId());
         $command->orderId = $order->getNumber();
+
+        // Get External Invoice Info
+        if (!empty($invoice)) {
+            $command->invoiceUrl    = empty($url) || trim($url) === '' ? 'MISSING' : $url; // required!
+            $command->invoiceNumber = $invoice;
+            return $command;
+        }
 
         // Get Invoice if exists
         $invoice = $this->fetchInvoice($order);

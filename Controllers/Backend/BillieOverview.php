@@ -90,7 +90,9 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         /** @var \BilliePayment\Components\Api\Api $api */
         $api      = $this->container->get('billie_payment.api');
         $order    = $this->Request()->getParam('order_id');
-        $response = $api->shipOrder($order);
+        $invoice  = $this->Request()->getParam('invoice', null);
+        $url      = $this->Request()->getParam('url', null);
+        $response = $api->shipOrder($order, $invoice, $url);
 
         $this->Front()->Plugins()->Json()->setRenderer();
         $this->View()->assign($response);
