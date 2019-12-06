@@ -4,7 +4,7 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
         <!-- Event Subscribers -->
-        <service id="billie_payment.subscriber.template_registration" class="BilliePayment\Subscriber\TemplateRegistration">
+        <service id="BilliePayment\Subscriber\TemplateRegistration">
             <argument>%billie_payment.plugin_dir%</argument>
             <argument type="service" id="template" />
             <tag name="shopware.event_subscriber" />
@@ -27,7 +27,7 @@
 
         <!-- Billie Payment Service -->
         <service id="billie_payment.payment_service" class="BilliePayment\Components\Payment\Service" />
-        
+
         <!-- Utils & Helpers -->
         <service id="billie_payment.utils" class="BilliePayment\Components\Utils">
             <argument type="service" id="shopware.plugin.cached_config_reader" />
@@ -46,5 +46,23 @@
             <argument type="service" id="billie_payment.utils" />
             <argument type="service" id="billie_payment.factory" />
         </service>
+
+
+        <service id="BilliePayment\Subscriber\Backend\BaseSubscriber">
+            <argument>%billie_payment.plugin_dir%</argument>
+            <tag name="shopware.event_subscriber"/>
+        </service>
+
+
+        <service id="BilliePayment\Helper\SessionHelper">
+            <argument id="models" type="service"/>
+            <argument id="session" type="service"/>
+        </service>
+
+        <service id="BilliePayment\Subscriber\Frontend\PaymentFilterSubscriber">
+            <tag name="shopware.event_subscriber"/>
+            <argument id="BilliePayment\Helper\SessionHelper" type="service"/>
+        </service>
+
     </services>
 </container>

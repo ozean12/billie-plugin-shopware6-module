@@ -2,228 +2,149 @@
 
 namespace BilliePayment;
 
+use BilliePayment\Bootstrap\AbstractBootstrap;
+use BilliePayment\Bootstrap\Attributes\OrderAttributes;
+use BilliePayment\Bootstrap\Attributes\PaymentMethodAttributes;
+use BilliePayment\Bootstrap\Attributes\UserAddressAttributes;
+use BilliePayment\Bootstrap\Attributes\UserAttributes;
+use BilliePayment\Bootstrap\PaymentMethods;
+use BilliePayment\Services\Logger\FileLogger;
 use Shopware\Components\Plugin;
-use Shopware\Components\Plugin\Context\ActivateContext;
-use Shopware\Components\Plugin\Context\DeactivateContext;
-use Shopware\Components\Plugin\Context\InstallContext;
-use Shopware\Components\Plugin\Context\UninstallContext;
-use BilliePayment\Components\Payment\Service;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Main Plugin Class with plugin options.
  * Handles (un-)installation and (de-)activation.
- *
- * @SuppressWarnings(PHPMD.StaticAccess)
  */
 class BilliePayment extends Plugin
 {
-    /**
-     * @param InstallContext $context
-     */
-    public function install(InstallContext $context)
-    {
-        /** @var \Shopware\Components\Plugin\PaymentInstaller $installer */
-        $installer = $this->container->get('shopware.plugin_payment_installer');
 
-        $options = [
-            'name'                  => Service::PAYMENT_MEANS[0],
-            'description'           => 'Billie Payment After Delivery',
-            'action'                => 'BilliePayment',
-            'active'                => 1,
-            'position'              => 0,
-            'template'              => 'billie_change_payment.tpl',
-            'additionalDescription' =>
-            '<div id="payment_desc">'
-                . ' <img src="https://www.billie.io/assets/images/favicons/favicon-16x16.png" width="16" height="16" style="display: inline-block;" />'
-                . '  Billie - Payment After Delivery'
-                . '</div>'
+    public static function isPackage()
+    {
+        return file_exists(self::getPackageVendorAutoload());
+    }
+
+    public static function getPackageVendorAutoload()
+    {
+        return __DIR__ . '/vendor/autoload.php';
+    }
+
+
+    public function build(ContainerBuilder $container)
+    {
+        parent::build($container);
+
+        $loggerServiceName = $this->getContainerPrefix() . '.logger';
+        if ($container->has($loggerServiceName) === false) {
+            // SW 5.6 auto register a logger for each plugin - so if service not found
+            // (cause lower sw-version than 5.6), we will register our own logger
+            $container->register($loggerServiceName, FileLogger::class)
+                ->addArgument($container->getParameter('kernel.logs_dir'));
+        }
+    }
+
+    public function install(Plugin\Context\InstallContext $context)
+    {
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->preInstall();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->install();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->postInstall();
+        }
+        parent::install($context);
+        $context->scheduleClearCache($context::CACHE_LIST_ALL);
+    }
+
+    /**
+     * @param Plugin\Context\InstallContext $context
+     * @return AbstractBootstrap[]
+     */
+    protected function getBootstrapClasses(Plugin\Context\InstallContext $context)
+    {
+        /** @var AbstractBootstrap[] $bootstrapper */
+        $bootstrapper = [
+            new PaymentMethods(),
+            new OrderAttributes(),
+            new PaymentMethodAttributes(),
+            new UserAddressAttributes(),
+            new UserAttributes()
         ];
-        $installer->createOrUpdate($context->getPlugin(), $options);
 
-        $this->autoload();
-        $this->createDatabase();
-        $context->scheduleClearCache(InstallContext::CACHE_LIST_DEFAULT);
-    }
-
-    /**
-     * @param UninstallContext $context
-     */
-    public function uninstall(UninstallContext $context)
-    {
-        // Set to inactive on uninstall to not mess with previous orders!
-        $this->setActiveFlag($context->getPlugin()->getPayments(), false);
-
-        if (!$context->keepUserData()) {
-            $this->removeDatabase();
+        $logger = new FileLogger($this->container->getParameter('kernel.logs_dir'));
+        // initialize all bootstraps
+        foreach ($bootstrapper as $bootstrap) {
+            $bootstrap->setContext($context);
+            $bootstrap->setLogger($logger);
+            $bootstrap->setContainer($this->container);
+            $bootstrap->setPluginDir($this->getPath());
         }
-
-        $context->scheduleClearCache(UninstallContext::CACHE_LIST_DEFAULT);
+        return $bootstrapper;
     }
 
-    /**
-     * @param DeactivateContext $context
-     */
-    public function deactivate(DeactivateContext $context)
+    public function update(Plugin\Context\UpdateContext $context)
     {
-        $this->setActiveFlag($context->getPlugin()->getPayments(), false);
-        $context->scheduleClearCache(DeactivateContext::CACHE_LIST_DEFAULT);
-    }
-
-    /**
-     * @param ActivateContext $context
-     */
-    public function activate(ActivateContext $context)
-    {
-        $this->setActiveFlag($context->getPlugin()->getPayments(), true);
-        $context->scheduleClearCache(ActivateContext::CACHE_LIST_DEFAULT);
-    }
-
-    /**
-     * @param \Shopware\Models\Payment\Payment[] $payments
-     * @param $active bool
-     */
-    private function setActiveFlag($payments, $active)
-    {
-        /** @var \Shopware\Components\Model\ModelManager $models */
-        $models = $this->container->get('models');
-
-        foreach ($payments as $payment) {
-            $payment->setActive($active);
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->preUpdate();
         }
-        $models->flush();
-    }
-
-    /**
-     * Create the database tables/columns.
-     *
-     * @return void
-     */
-    private function createDatabase()
-    {
-        // Get all legal forms.
-        $allLegalForms = \Billie\Util\LegalFormProvider::all();
-        $legalData     = [];
-        foreach ($allLegalForms as $legal) {
-            $legalData[] = ['key' => $legal['code'], 'value' => $legal['label']];
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->update();
         }
-
-        /** @var \Shopware\Bundle\AttributeBundle\Service\CrudService $service */
-        $service = $this->container->get('shopware_attribute.crud_service');
-        $service->update('s_order_attributes', 'billie_referenceId', 'string');
-        $service->update('s_core_paymentmeans_attributes', 'billie_duration', 'integer', [
-            'label'            => 'Term of Payment',
-            'helpText'         => 'Number of days until the customer has to pay the invoice',
-            'displayInBackend' => true,
-        ], null, false, 14);
-        $service->update('s_order_attributes', 'billie_state', 'string');
-        $service->update('s_order_attributes', 'billie_iban', 'string');
-        $service->update('s_order_attributes', 'billie_bic', 'string');
-        $service->update('s_order_attributes', 'billie_duration', 'integer');
-        $service->update('s_order_attributes', 'billie_duration_date', 'string');
-        $service->update('s_user_attributes', 'billie_iban', 'string', [
-            'label'            => 'IBAN',
-            'displayInBackend' => true,
-        ]);
-        $service->update('s_user_attributes', 'billie_bic', 'string', [
-            'label'            => 'BIC',
-            'displayInBackend' => true,
-            'custom' => false,
-        ]);
-        $service->update('s_user_addresses_attributes', 'billie_registrationNumber', 'string', [
-            'label'            => 'Registration Number',
-            'displayInBackend' => true,
-        ]);
-        $service->update('s_user_addresses_attributes', 'billie_legalform', 'combobox', [
-            'label'            => 'Legalform',
-            'displayInBackend' => true,
-            'arrayStore'       => $legalData
-        ]);
-        
-        // Generate Attribute Models
-        $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
-        $metaDataCache->deleteAll();
-        Shopware()->Models()->generateAttributeModels([
-            's_order_attributes',
-            's_user_attributes',
-            's_user_addresses_attributes',
-            's_core_paymentmeans_attributes'
-        ]);
-    }
-
-    /**
-     * Remove the database tables.
-     *
-     * @return void
-     */
-    private function removeDatabase()
-    {
-        /** @var \Shopware\Bundle\AttributeBundle\Service\CrudService $service */
-        $service = $this->container->get('shopware_attribute.crud_service');
-        $service->delete('s_order_attributes', 'billie_referenceId');
-        $service->delete('s_order_attributes', 'billie_state');
-        $service->delete('s_order_attributes', 'billie_iban');
-        $service->delete('s_order_attributes', 'billie_bic');
-        $service->delete('s_order_attributes', 'billie_duration');
-        $service->delete('s_order_attributes', 'billie_duration_date');
-        $service->delete('s_user_attributes', 'billie_iban');
-        $service->delete('s_user_attributes', 'billie_bic');
-        $service->delete('s_core_paymentmeans_attributes', 'billie_duration');
-        $service->delete('s_user_addresses_attributes', 'billie_registrationNumber');
-        $service->delete('s_user_addresses_attributes', 'billie_legalform');
-
-        // Regenerate Attribute Models
-        $metaDataCache = Shopware()->Models()->getConfiguration()->getMetadataCacheImpl();
-        $metaDataCache->deleteAll();
-        Shopware()->Models()->generateAttributeModels([
-            's_order_attributes',
-            's_user_attributes',
-            's_user_addresses_attributes',
-            's_core_paymentmeans_attributes'
-        ]);
-    }
-
-    /**
-     * @return array
-     */
-    public static function getSubscribedEvents()
-    {
-        return [
-            'Enlight_Controller_Dispatcher_ControllerPath_Backend_BillieOverview' => 'onGetBackendController',
-            'Enlight_Controller_Action_PostDispatch_Backend_Base'                 => 'extendExtJS',
-            'Enlight_Controller_Front_StartDispatch'                              => 'autoload',
-        ];
-    }
-
-    /**
-     * @return string
-     */
-    public function onGetBackendController()
-    {
-        return __DIR__ . '/Controllers/Backend/BillieOverview.php';
-    }
-
-    /**
-     * Extend Attribute Form to make BIC/IBAN readonly
-     *
-     * @param \Enlight_Event_EventArgs $args
-     * @return void
-     */
-    public function extendExtJS(\Enlight_Event_EventArgs $args)
-    {
-        /** @var \Enlight_Controller_Action $controller */
-        $controller = $args->getSubject();
-        $view       = $controller->View();
-        $view->addTemplateDir($this->getPath() . '/Resources/views/');
-        $view->extendsTemplate('backend/billie_payment/Shopware.attribute.Form.js');
-    }
-
-    /**
-     * Include composer autoloader
-     */
-    public function autoload()
-    {
-        if (file_exists(__DIR__ . '/vendor/autoload.php')) {
-            require_once __DIR__ . '/vendor/autoload.php';
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->postUpdate();
         }
+        parent::update($context);
+        $context->scheduleClearCache($context::CACHE_LIST_ALL);
     }
+
+    public function uninstall(Plugin\Context\UninstallContext $context)
+    {
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->preUninstall();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->uninstall($context->keepUserData());
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->postUninstall();
+        }
+        parent::uninstall($context);
+        $context->scheduleClearCache($context::CACHE_LIST_ALL);
+    }
+
+    public function deactivate(Plugin\Context\DeactivateContext $context)
+    {
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->preDeactivate();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->deactivate();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->postDeactivate();
+        }
+        parent::deactivate($context);
+        $context->scheduleClearCache($context::CACHE_LIST_ALL);
+    }
+
+    public function activate(Plugin\Context\ActivateContext $context)
+    {
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->preActivate();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->activate();
+        }
+        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+            $bootstrap->postActivate();
+        }
+        parent::activate($context);
+        $context->scheduleClearCache($context::CACHE_LIST_ALL);
+    }
+}
+
+if (BilliePayment::isPackage()) {
+    require_once BilliePayment::getPackageVendorAutoload();
 }

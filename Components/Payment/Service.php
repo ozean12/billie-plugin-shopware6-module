@@ -2,7 +2,9 @@
 
 namespace BilliePayment\Components\Payment;
 
+use Billie\Util\LegalFormProvider;
 use BilliePayment\Components\Api\ApiArguments;
+use BilliePayment\Enum\PaymentMethods;
 use Shopware\Models\Attribute\Customer;
 use Shopware\Models\Payment\Payment;
 
@@ -15,6 +17,7 @@ class Service
     /**
      * Names of differnt billie payment means
      * @var array
+     * @deprecated
      */
     const PAYMENT_MEANS = [
         'billie_payment_after_delivery'
@@ -36,11 +39,11 @@ class Service
         $errorFlag     = [];
 
         // Check what fields are required based on legal form
-        if (\Billie\Util\LegalFormProvider::isVatIdRequired($request->getParam('sBillieLegalForm'))) {
+        if (LegalFormProvider::isVatIdRequired($request->getParam('sBillieLegalForm'))) {
             $fields[] = 'sBillieVatId';
         }
 
-        if (\Billie\Util\LegalFormProvider::isRegistrationIdRequired($request->getParam('sBillieLegalForm'))) {
+        if (LegalFormProvider::isRegistrationIdRequired($request->getParam('sBillieLegalForm'))) {
             $fields[] = 'sBillieRegistrationnumber';
         }
 
@@ -54,7 +57,7 @@ class Service
         if (count($errorFlag)) {
             $errorMessages[] = Shopware()->Snippets()->getNamespace('frontend/account/internalMessages')
                 ->get('ErrorFillIn', 'Please fill in all red fields');
-            
+
             return [
                 'errorFlag' => $errorFlag,
                 'messages'  => $errorMessages
@@ -73,7 +76,7 @@ class Service
     public function isBilliePayment(array $payment)
     {
         // Check by name if $payment is a billie payment
-        if (array_key_exists('name', $payment) && in_array($payment['name'], self::PAYMENT_MEANS)) {
+        if (array_key_exists('name', $payment) && PaymentMethods::exists($payment['name'])) {
             return true;
         }
 
@@ -81,7 +84,7 @@ class Service
         if (array_key_exists('id', $payment)) {
             // Build filter for payment names
             $filters = [];
-            foreach (self::PAYMENT_MEANS as $name) {
+            foreach (PaymentMethods::getNames() as $name) {
                 $filters[] = ['property' => 'name', 'value' => $name, 'operator' => 'or'];
             }
             unset($filters[0]['operator']);
@@ -177,7 +180,7 @@ class Service
         $args->customerEmail = $user['additional']['user']['email'];
         $args->country       = $user['additional']['country'];
         $args->duration      = (int) $duration;
-        
+
         return $args;
     }
 

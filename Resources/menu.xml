@@ -10,8 +10,9 @@
             <controller>BillieOverview</controller>
             <action>index</action>
             <class>sprite-billie-menu</class>
-            <parent identifiedBy="controller">Order</parent>
-            <onclick>Shopware.ModuleManager.createSimplifiedModule("BillieOverview", { "title": "Billie PaD Übersicht" })</onclick>
+            <parent identifiedBy="controller">Payments</parent>
+            <onclick>Shopware.ModuleManager.createSimplifiedModule("BillieOverview", { "title": "Billie PaD Übersicht" })
+            </onclick>
         </entry>
     </entries>
 </menu>
