@@ -2,6 +2,7 @@
 
 use BilliePayment\Components\Payment\Response;
 use BilliePayment\Components\Payment\Service;
+use BilliePayment\Enum\PaymentMethods;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Payment\Payment;
 
@@ -29,14 +30,12 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
      */
     public function indexAction()
     {
-        /** @var Service $service */
-        $service = $this->container->get('billie_payment.payment_service');
 
         // Check if the payment method is selected, otherwise return to default controller.
-        if ($service->isBilliePayment(['name' => $this->getPaymentShortName()])) {
+        if (PaymentMethods::exists($this->getPaymentShortName())) {
             return $this->redirect($this->getReturnUrl());
         }
-        
+
         return $this->redirect(['controller' => 'checkout']);
     }
 
@@ -130,7 +129,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     public function cancelAction()
     {
     }
-    
+
     /**
      * Generate the url for the return action.
      *

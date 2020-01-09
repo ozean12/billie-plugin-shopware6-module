@@ -45,14 +45,13 @@
             <argument type="service" id="billie_payment.helper" />
             <argument type="service" id="billie_payment.utils" />
             <argument type="service" id="billie_payment.factory" />
+            <argument type="service" id="BilliePayment\Services\ConfigService" />
         </service>
-
 
         <service id="BilliePayment\Subscriber\Backend\BaseSubscriber">
             <argument>%billie_payment.plugin_dir%</argument>
             <tag name="shopware.event_subscriber"/>
         </service>
-
 
         <service id="BilliePayment\Helper\SessionHelper">
             <argument id="models" type="service"/>
@@ -62,6 +61,16 @@
         <service id="BilliePayment\Subscriber\Frontend\PaymentFilterSubscriber">
             <tag name="shopware.event_subscriber"/>
             <argument id="BilliePayment\Helper\SessionHelper" type="service"/>
+        </service>
+
+        <service id="BilliePayment\Services\ConfigService">
+            <argument id="shopware.plugin.cached_config_reader" type="service"/>
+            <argument id="models" type="service"/>
+            <argument>%billie_payment.plugin_name%</argument>
+        </service>
+        <service id="BilliePayment\Subscriber\Frontend\CheckoutSubscriber">
+            <argument id="BilliePayment\Services\ConfigService" type="service"/>
+            <tag name="shopware.event_subscriber"/>
         </service>
 
     </services>

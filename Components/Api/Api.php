@@ -4,6 +4,7 @@ namespace BilliePayment\Components\Api;
 
 use BilliePayment\Components\Utils;
 use BilliePayment\Components\MissingDocumentsException;
+use BilliePayment\Services\ConfigService;
 use Shopware\Models\Order\Order;
 use Billie\HttpClient\BillieClient;
 use Billie\Exception\BillieException;
@@ -17,7 +18,7 @@ use BilliePayment\Components\MissingLegalFormException;
 class Api
 {
     /**
-     * @var array
+     * @var ConfigService
      */
     protected $config = [];
 
@@ -48,15 +49,21 @@ class Api
      * @param Helper $helper
      * @param Utils $utils
      * @param CommandFactory $factory
+     * @param ConfigService $config
      */
-    public function __construct(Helper $helper, Utils $utils, CommandFactory $factory)
+    public function __construct(
+        Helper $helper,
+        Utils $utils,
+        CommandFactory $factory,
+        ConfigService $config
+)
     {
         // initialize Billie Client
-        $this->config  = $utils->getPluginConfig();
+        $this->config = $config;
         $this->helper  = $helper;
         $this->factory = $factory;
         $this->utils   = $utils;
-        $this->client  = BillieClient::create($this->config['apikey'], $this->config['sandbox']);
+        $this->client  = BillieClient::create($config->getClientId(), $config->getClientSecret(), $config->isSandbox());
     }
 
     /**
@@ -82,7 +89,7 @@ class Api
             ->addOrderBy($sorting)
             ->setFirstResult(($page - 1) * $perPage)
             ->setMaxResults($perPage);
-        
+
         // Get Query and paginator
         $query = $builder->getQuery();
         $query->setHydrationMode(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
@@ -138,7 +145,7 @@ class Api
         catch (BillieException $exc) {
             return $this->helper->errorMessage($exc, $local);
         }
- 
+
         return ['success' => true, 'local' => $local];
     }
 
@@ -153,7 +160,7 @@ class Api
         // Get Order
         $local = [];
         $item  = $this->helper->getOrder($order);
-        
+
         if (!$item) {
             return $this->helper->orderNotFoundMessage($order);
         }
@@ -179,7 +186,7 @@ class Api
         if (($localUpdate = $this->helper->updateLocal($item, $local)) !== true) {
             return $localUpdate;
         }
-        
+
         return ['success' => true];
     }
 
@@ -196,7 +203,7 @@ class Api
         // Get Order
         $local = [];
         $item  = $this->helper->getOrder($order);
-        
+
         if (!$item) {
             return $this->helper->orderNotFoundMessage($order);
         }
@@ -248,7 +255,7 @@ class Api
         // Get Order
         $local = [];
         $item  = $this->helper->getOrder($order);
-        
+
         if (!$item) {
             return $this->helper->orderNotFoundMessage($order);
         }
@@ -266,7 +273,7 @@ class Api
         // Postpone Due Date
         if (in_array('duration', $data)) {
             $command = $this->factory->createPostponeDueDateCommand($refId, $data['duration']);
-        
+
             try {
                 /** @var \Billie\Model\Order $response */
                 $response       = $this->client->postponeOrderDueDate($command);
@@ -303,7 +310,7 @@ class Api
         // Get Order
         $local = [];
         $item  = $this->helper->getOrder($order);
-        
+
         if (!$item) {
             return $this->helper->orderNotFoundMessage($order);
         }
@@ -329,7 +336,7 @@ class Api
         if (($localUpdate = $this->helper->updateLocal($item, $local)) !== true) {
             return $localUpdate;
         }
-        
+
         return ['success' => true];
     }
 
@@ -344,7 +351,7 @@ class Api
         // Get Order
         $local = [];
         $item  = $this->helper->getOrder($order);
-        
+
         if (!$item) {
             return $this->helper->orderNotFoundMessage($order);
         }
@@ -365,7 +372,7 @@ class Api
         catch (BillieException $exc) {
             return $this->helper->errorMessage($exc, $local);
         }
- 
+
         // Retrieved Data
         $response = [
             'success'      => true,
@@ -390,7 +397,7 @@ class Api
         if (($localUpdate = $this->helper->updateLocal($item, $local)) !== true) {
             return $localUpdate;
         }
-        
+
         return $response;
     }
 }

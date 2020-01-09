@@ -1,5 +1,6 @@
 <?php
 
+use BilliePayment\Enum\PaymentMethods;
 use Shopware\Components\CSRFWhitelistAware;
 use BilliePayment\Components\Payment\Service;
 
@@ -34,7 +35,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     {
         // Build Filters
         $filters = [];
-        foreach (Service::PAYMENT_MEANS as $name) {
+        foreach (PaymentMethods::getNames() as $name) {
             $filters[] = ['property' => 'payment.name', 'value' => $name, 'operator' => 'or'];
         }
         unset($filters[0]['operator']);
@@ -43,7 +44,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $api     = $this->container->get('billie_payment.api');
         $sort    = [['property' => 'orders.orderTime', 'direction' => 'DESC']];
         $orders = $api->getList(intval($this->Request()->getParam('page', 1)), 25, $filters, $sort);
-        
+
         // Assign view data
         $this->View()->assign('errorCode', $this->Request()->getParam('errorCode'));
         $this->View()->assign($orders);
