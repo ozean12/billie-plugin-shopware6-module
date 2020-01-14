@@ -19,7 +19,6 @@ final class PaymentMethods extends Enum
             'position' => 0,
             'template' => 'billie_change_payment.tpl',
             'additionalDescription' => 'Bezahlen Sie bequem und sicher auf Rechnung - innerhalb von {$payment_mean.attributes.core->get(\'billie_duration\')} Tagen nach Erhalt der Ware.'
-
         ],
         self::PAYMENT_BILLIE_2 => [
             'name' => self::PAYMENT_BILLIE_2,

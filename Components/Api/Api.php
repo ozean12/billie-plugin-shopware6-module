@@ -2,9 +2,12 @@
 
 namespace BilliePayment\Components\Api;
 
+use Billie\Command\CheckoutSessionConfirm;
+use Billie\Mapper\CreateOrderMapper;
 use BilliePayment\Components\Utils;
 use BilliePayment\Components\MissingDocumentsException;
 use BilliePayment\Services\ConfigService;
+use Shopware\Models\Customer\Customer;
 use Shopware\Models\Order\Order;
 use Billie\HttpClient\BillieClient;
 use Billie\Exception\BillieException;
@@ -64,6 +67,15 @@ class Api
         $this->factory = $factory;
         $this->utils   = $utils;
         $this->client  = BillieClient::create($config->getClientId(), $config->getClientSecret(), $config->isSandbox());
+    }
+
+    public function createCheckoutSession(Customer $customer) {
+        return $this->client->checkoutSessionCreate($customer->getId());
+    }
+
+    public function confirmCheckoutSession(CheckoutSessionConfirm $confirmModel)
+    {
+        return $this->client->checkoutSessionConfirm($confirmModel); // TODO does not work - 2020-01-10
     }
 
     /**
@@ -399,5 +411,13 @@ class Api
         }
 
         return $response;
+    }
+
+    /**
+     * @return BillieClient
+     */
+    public function getClient()
+    {
+        return $this->client;
     }
 }

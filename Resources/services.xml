@@ -24,6 +24,15 @@
             <tag name="shopware.event_subscriber" />
             <argument type="service" id="billie_payment.payment_service" />
         </service>
+        <service id="BilliePayment\Subscriber\Frontend\CheckoutSubscriber">
+            <argument id="session" type="service"/>
+            <argument id="BilliePayment\Services\WidgetService" type="service"/>
+            <tag name="shopware.event_subscriber"/>
+        </service>
+        <service id="BilliePayment\Subscriber\Frontend\PaymentFilterSubscriber">
+            <tag name="shopware.event_subscriber"/>
+            <argument id="BilliePayment\Services\SessionService" type="service"/>
+        </service>
 
         <!-- Billie Payment Service -->
         <service id="billie_payment.payment_service" class="BilliePayment\Components\Payment\Service" />
@@ -33,6 +42,17 @@
             <argument type="service" id="shopware.plugin.cached_config_reader" />
             <argument>%billie_payment.plugin_name%</argument>
         </service>
+        <service id="BilliePayment\Services\ConfigService">
+            <argument id="shopware.plugin.cached_config_reader" type="service"/>
+            <argument id="models" type="service"/>
+            <argument>%billie_payment.plugin_name%</argument>
+        </service>
+        <service id="BilliePayment\Services\SessionService">
+            <argument id="session" type="service"/>
+            <argument id="models" type="service"/>
+            <argument id="billie_payment.api" type="service"/>
+        </service>
+
 
         <!-- API Components -->
         <service id="billie_payment.helper" class="BilliePayment\Components\Api\Helper">
@@ -53,25 +73,20 @@
             <tag name="shopware.event_subscriber"/>
         </service>
 
-        <service id="BilliePayment\Helper\SessionHelper">
-            <argument id="models" type="service"/>
-            <argument id="session" type="service"/>
-        </service>
-
-        <service id="BilliePayment\Subscriber\Frontend\PaymentFilterSubscriber">
-            <tag name="shopware.event_subscriber"/>
-            <argument id="BilliePayment\Helper\SessionHelper" type="service"/>
-        </service>
-
-        <service id="BilliePayment\Services\ConfigService">
-            <argument id="shopware.plugin.cached_config_reader" type="service"/>
-            <argument id="models" type="service"/>
-            <argument>%billie_payment.plugin_name%</argument>
-        </service>
-        <service id="BilliePayment\Subscriber\Frontend\CheckoutSubscriber">
+        <service id="BilliePayment\Services\WidgetService">
+            <argument id="shopware_storefront.product_service" type="service"/>
             <argument id="BilliePayment\Services\ConfigService" type="service"/>
-            <tag name="shopware.event_subscriber"/>
+            <argument id="BilliePayment\Services\SessionService" type="service"/>
+            <argument id="shopware_storefront.context_service" type="service"/>
         </service>
+
+        <service id="BilliePayment\Services\AddressService">
+            <argument id="models" type="service"/>
+            <argument id="BilliePayment\Services\ConfigService" type="service"/>
+            <argument id="BilliePayment\Services\SessionService" type="service"/>
+        </service>
+
+
 
     </services>
 </container>

@@ -3,20 +3,20 @@
 namespace BilliePayment\Subscriber\Frontend;
 
 use BilliePayment\Enum\PaymentMethods;
-use BilliePayment\Helper\SessionHelper;
+use BilliePayment\Services\SessionService;
 use Enlight\Event\SubscriberInterface;
 
 class PaymentFilterSubscriber implements SubscriberInterface
 {
 
     /**
-     * @var SessionHelper
+     * @var SessionService
      */
-    private $sessionHelper;
+    private $sessionService;
 
-    public function __construct(SessionHelper $sessionHelper)
+    public function __construct(SessionService $sessionService)
     {
-        $this->sessionHelper = $sessionHelper;
+        $this->sessionService = $sessionService;
     }
 
     public static function getSubscribedEvents()
@@ -30,13 +30,13 @@ class PaymentFilterSubscriber implements SubscriberInterface
     {
         $paymentMethods = $args->getReturn();
 
-        $billingAddress = $this->sessionHelper->getBillingAddress();
+        $billingAddress = $this->sessionService->getBillingAddress();
 
-        if($billingAddress && empty($billingAddress->getCompany())) {
+        if ($billingAddress && empty($billingAddress->getCompany())) {
             // remove all payment methods cause, the customer is not a B2B customer.
-            foreach(PaymentMethods::getNames() as $name) {
-                foreach($paymentMethods as $i => $paymentMethod) {
-                    if($name == $paymentMethod['name']) {
+            foreach (PaymentMethods::getNames() as $name) {
+                foreach ($paymentMethods as $i => $paymentMethod) {
+                    if ($name == $paymentMethod['name']) {
                         unset($paymentMethods[$i]);
                     }
                 }

@@ -36,20 +36,20 @@ class Order implements SubscriberInterface
      * Canceled Order Code
      * @var integer
      */
-    const ORDER_CANCELED = 4;
+    const ORDER_CANCELED = 4; // TODO config
 
     /**
      * Shipped Order Code
      * @var integer
      */
-    const ORDER_SHIPPED = 7;
+    const ORDER_SHIPPED = 7; // TODO config
 
     /**
      * Clarification required order code
      * @var integer
      */
-    const ORDER_STATE_CLARIFICATION_REQUIRED = 8;
-    
+    const ORDER_STATE_CLARIFICATION_REQUIRED = 8; // TODO config
+
     /**
      * @param Api $api
      * @param Utils $utils
@@ -70,9 +70,9 @@ class Order implements SubscriberInterface
     {
         return [
             'Enlight_Controller_Action_PostDispatchSecure_Backend_Order' => 'onSaveOrder',
-            'Enlight_Controller_Action_PreDispatch_Backend_Order'        => 'onBeforeSaveOrder',
+            'Enlight_Controller_Action_PreDispatch_Backend_Order'        => 'onBeforeSaveOrder', // TODO fix key duplicate
             'Shopware_Modules_Order_SaveOrder_FilterAttributes'          => 'onBeforeSendMail',
-            'Enlight_Controller_Action_PreDispatch_Backend_Order'        => 'onDocumentCreate'
+            'Enlight_Controller_Action_PreDispatch_Backend_Order'        => 'onDocumentCreate' // TODO fix key duplicate
         ];
     }
 

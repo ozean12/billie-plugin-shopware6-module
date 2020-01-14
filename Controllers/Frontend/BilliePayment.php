@@ -1,8 +1,16 @@
 <?php
 
+use BilliePayment\Components\Api\Api;
 use BilliePayment\Components\Payment\Response;
 use BilliePayment\Components\Payment\Service;
 use BilliePayment\Enum\PaymentMethods;
+use BilliePayment\Services\AddressService;
+use BilliePayment\Services\ConfigService;
+use BilliePayment\Services\SessionService;
+use Monolog\Logger;
+use Shopware\Components\DependencyInjection\Container;
+use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Country\Country;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Payment\Payment;
 
@@ -17,11 +25,44 @@ use Shopware\Models\Payment\Payment;
  */
 class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_Frontend_Payment
 {
+
+    /**
+     * @var Api
+     */
+    private $billieApi;
+    /**
+     * @var SessionService
+     */
+    private $sessionService;
+    /**
+     * @var Logger
+     */
+    private $logger;
+    /**
+     * @var ConfigService
+     */
+    private $configService;
+    /**
+     * @var AddressService
+     */
+    private $addressService;
+
+    public function setContainer(Container $loader = null)
+    {
+        parent::setContainer($loader);
+        $this->configService = $this->container->get(ConfigService::class);
+        $this->addressService = $this->container->get(AddressService::class);
+        $this->sessionService = $this->container->get(SessionService::class);
+        $this->billieApi = $this->container->get('billie_payment.api');
+        $this->logger = $this->container->get('billie_payment.logger');
+
+    }
+
     /**
      * Payment Status Paid Code
      * @var integer
      */
-    const PAYMENTSTATUSPAID = 12;
+    const PAYMENTSTATUSPAID = 12; // TODO config
 
     /**
      * Index action method.
@@ -30,13 +71,62 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
      */
     public function indexAction()
     {
-
         // Check if the payment method is selected, otherwise return to default controller.
         if (PaymentMethods::exists($this->getPaymentShortName())) {
-            return $this->redirect($this->getReturnUrl());
+            $sessionId = $this->sessionService->getCheckoutSessionId(false);
+            if ($sessionId !== null) {
+
+                try {
+                    $confirmModel = $this->sessionService->getSessionConfirmModel();
+                    $orderId = $this->billieApi->confirmCheckoutSession($confirmModel);
+                } catch (Exception $e) {
+                    $this->logger->addCritical($e->getMessage());
+                    return $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
+                }
+                if ($orderId) {
+                    $billieOrder = $this->billieApi->getClient()->getOrder($orderId);
+                    if($this->configService->isOverrideCustomerAddress()) {
+                        $this->addressService->updateBillingAddress($billieOrder->debtorCompany);
+                    }
+
+                    $this->addressService->updateSessionAddress($billieOrder->debtorCompany);
+
+                    $orderNumber = $this->saveOrder(
+                        $orderId,
+                        $orderId,
+                        self::PAYMENTSTATUSPAID //TODO replace by config
+                    );
+
+                    $repo = $this->getModelManager()->getRepository(Order::class);
+                    /** @var Order $order */
+                    $order = $repo->findOneBy(['number' => $orderNumber]);
+
+                    // write determined address to shopware order address
+                    $billingAddress = $order->getBilling();
+
+
+
+                    $orderAttribute = $order->getAttribute();
+                    $orderAttribute->setBillieBic($billieOrder->bankAccount->bic);
+                    $orderAttribute->setBillieIban($billieOrder->bankAccount->iban);
+                    $orderAttribute->setBillieReferenceid($billieOrder->referenceId);
+                    $orderAttribute->setBillieState($billieOrder->state);
+                    $orderAttribute->setBillieDuration($confirmModel->duration);
+                    $date = new DateTime();
+                    $date->modify('+' . $confirmModel->duration . ' days');
+                    $orderAttribute->setBillieDurationDate($date->format('d.m.Y'));
+
+                    $this->getModelManager()->flush([$orderAttribute, $billingAddress]);
+
+                    // remove all billie payment data from session
+                    $this->sessionService->clearData();
+
+                    return $this->redirect(['controller' => 'checkout', 'action' => 'finish']);
+                }
+            }
         }
 
-        return $this->redirect(['controller' => 'checkout']);
+        return $this->redirect(['controller' => 'checkout', 'action' => 'confirm']);
     }
 
     /**
@@ -46,14 +136,14 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     {
         /** @var Service $service */
         $service = $this->container->get('billie_payment.payment_service');
-        $user    = $this->getUser();
+        $user = $this->getUser();
         $billing = $user['billingaddress'];
-        $attrs   = $billing['attributes'];
+        $attrs = $billing['attributes'];
 
         /** @var Response $response */
-        $response  = $service->createPaymentResponse($this->Request());
+        $response = $service->createPaymentResponse($this->Request());
         $signature = $response->signature;
-        $token     = $service->createPaymentToken($this->getAmount(), $billing['customernumber']);
+        $token = $service->createPaymentToken($this->getAmount(), $billing['customernumber']);
 
         // Make sure that a legalform is selected, otherwise display error message.
         if (!isset($attrs['billieLegalform']) && !isset($attrs['billie_legalform'])) {
@@ -71,17 +161,17 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         try {
             $basket = $this->loadBasketFromSignature($signature);
             $this->verifyBasketSignature($signature, $basket);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->forward('cancel');
         }
 
         // Check response status and save order when everything went fine.
         if ($response->status === 'accepted') {
-            /** @var \BilliePayment\Components\Api\Api $api */
+            /** @var Api $api */
             $api = $this->container->get('billie_payment.api');
             $session = $this->container->get('session');
 
-            /** @var \Shopware\Components\Model\ModelManager $models */
+            /** @var ModelManager $models */
             $models = Shopware()->Container()->get('models');
 
             // Call Api for created order
@@ -90,10 +180,10 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             );
 
             // Update Email templates
-            $payment  = $models->getRepository(Payment::class)->findOneBy(['name' => $this->getPaymentShortName()]);
+            $payment = $models->getRepository(Payment::class)->findOneBy(['name' => $this->getPaymentShortName()]);
             $duration = $payment->getAttribute()->getBillieDuration();
-            $date = new \DateTime();
-            $date->add(new \DateInterval('P' . $duration . 'D'));
+            $date = new DateTime();
+            $date->add(new DateInterval('P' . $duration . 'D'));
             $apiResp['local']['duration'] = $duration;
             $apiResp['local']['duration_date'] = $date->format('d.m.Y');
             $session['billie_api_response'] = $apiResp;
@@ -106,8 +196,8 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     self::PAYMENTSTATUSPAID
                 );
 
-                $repo   = $models->getRepository(Order::class);
-                $order  = $repo->findOneBy(['number' => $orderNumber]);
+                $repo = $models->getRepository(Order::class);
+                $order = $repo->findOneBy(['number' => $orderNumber]);
                 $api->helper->updateLocal($order, $apiResp['local']);
 
                 // Finish checkout
@@ -115,12 +205,41 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                 return;
             }
 
-            // Error messages
             $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $apiResp['data']]);
             return;
         }
 
         $this->forward('cancel');
+    }
+
+    public function validateAddressAction()
+    {
+        $response = [];
+        $billingAddress = $this->sessionService->getBillingAddress();
+
+        $params = $this->Request()->getParams();
+        $errorCode = null;
+        if ($billingAddress && $params['state'] === 'authorized' && is_array($params['debtor_company'])) {
+            /** @var Country $country */
+            $country = $this->getModelManager()->getRepository(Country::class)
+                ->findOneBy(['iso' => $params['debtor_company']['address_country']]);
+
+            if($country === null) {
+                $errorCode = '_SwCountryNotAvailable';
+            }
+        } else {
+            $errorCode = '_UnknownError';
+        }
+
+        $response['status'] = $errorCode === null;
+        if ($errorCode) {
+            $response['redirect'] = $this->Front()->Router()->assemble(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $errorCode]);
+        }
+        $this->Response()->setStatusCode(200, 'OK');
+        $this->Response()->setHeader('Content-Typ', 'application/json');
+        $this->Response()->sendHeaders();
+        echo json_encode($response);
+        exit;
     }
 
     /**
@@ -130,27 +249,4 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     {
     }
 
-    /**
-     * Generate the url for the return action.
-     *
-     * @return string
-     */
-    private function getReturnUrl()
-    {
-        /** @var Service $service */
-        $service = $this->container->get('billie_payment.payment_service');
-        $router  = $this->Front()->Router();
-        $user    = $this->getUser();
-        $billing = $user['billingaddress'];
-        $url     = $router->assemble(['action' => 'return', 'forceSecure' => true]);
-
-        $parameter = [
-            'status'        => 'accepted',
-            'token'         => $service->createPaymentToken($this->getAmount(), $billing['customernumber']),
-            'signature'     => $this->persistBasket(),
-            'transactionId' => bin2hex(random_bytes(16))
-        ];
-
-        return $url . '?' . http_build_query($parameter);
-    }
 }
