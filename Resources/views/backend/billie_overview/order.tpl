@@ -72,7 +72,7 @@
         <div class="form-group">
             <label class="col-sm-2 control-label">{s name="order/amount/billie"}{/s}</label>
             <div class="col-sm-10">
-                <span>{$amount_net} {s name="order/amount/net"}{/s}</span><br>
+                <span>{$amountNet} {s name="order/amount/net"}{/s}</span><br>
                 <span>{$amount} {s name="order/amount/gross"}{/s}</span>
             </div>
         </div>
