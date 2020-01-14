@@ -28,7 +28,7 @@ $(function () {
 
     /**
      * Confirm (partial) payment by merchant.
-     * @param {Event} event 
+     * @param {Event} event
      */
     var onConfirmPayment = function (event) {
         var $target = $(this);
@@ -70,6 +70,30 @@ $(function () {
     };
 
     /**
+     * Calls the cancel order action.
+     * @param {jQuery} $target Button that was clicked
+     * @param amount
+     */
+    var callRefundOrderEndpoint = function ($target, amount) {
+        $.ajax({
+            url: $target.data('action'),
+            method: 'POST',
+            data: {
+                'order_id': $target.data('order_id'),
+                'amount': amount
+            },
+            success: function (response) {
+                if (response.success === true) {
+                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.success, _BILLIE_SNIPPETS_.refund_order.success);
+                    window.location.reload();
+                } else {
+                    postMessageApi.createAlertMessage(response.title, response.data);
+                }
+            }
+        });
+    };
+
+    /**
      * Cancel the order.
      * @param {Event} event
      */
@@ -83,6 +107,21 @@ $(function () {
             function (data) {
                 if ('yes' == data) {
                     callCancelOrderEndpoint($target);
+                }
+            }
+        );
+    };
+
+    var onRefundOrder = function (event) {
+        var $target = $(this);
+        event.preventDefault();
+
+        postMessageApi.createPromptMessage(
+            _BILLIE_SNIPPETS_.refund_order.title,
+            _BILLIE_SNIPPETS_.refund_order.desc,
+            function (data) {
+                if (data.btn === 'ok') {
+                    callRefundOrderEndpoint($target, data.text);
                 }
             }
         );
@@ -119,7 +158,7 @@ $(function () {
                     missingShippingDocuments($target);
                 }
                 else {
-                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.error, _BILLIE_SNIPPETS_.errorCodes[response.data]); 
+                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.error, _BILLIE_SNIPPETS_.errorCodes[response.data]);
                 }
             }
         });
@@ -133,7 +172,7 @@ $(function () {
         postMessageApi.createPromptMessage(
             _BILLIE_SNIPPETS_.errorCodes.error,
             _BILLIE_SNIPPETS_.ship_order.add_external_invoice +
-            '<div style="margin-top: 8px;"><input type="text" class="x-form-field x-form-text external-invoice-number" name="external-invoice-number" style="width: 100%;" placeholder="' + _BILLIE_SNIPPETS_.ship_order.external_invoice_placeholder + '" autofocus required></div>' + 
+            '<div style="margin-top: 8px;"><input type="text" class="x-form-field x-form-text external-invoice-number" name="external-invoice-number" style="width: 100%;" placeholder="' + _BILLIE_SNIPPETS_.ship_order.external_invoice_placeholder + '" autofocus required></div>' +
             '<div style="margin-top: 8px;"><input type="text" class="x-form-field x-form-text external-invoice-url" name="external-invoice-url" style="width: 100%;" placeholder="' + _BILLIE_SNIPPETS_.ship_order.external_url_placeholder + '"></div>',
             function (data) {
                 if (data.btn === 'ok') {
@@ -163,5 +202,6 @@ $(function () {
     // Bind Events
     $('.confirm-payment').on('click', onConfirmPayment);
     $('.cancel-order').on('click', onCancelOrder);
+    $('.refund-order').on('click', onRefundOrder);
     $('.ship-order').on('click', onShipOrder);
 });

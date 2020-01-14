@@ -12,13 +12,25 @@
             >
             {s name="order/confirm_payment"}Zahlung bestätigen{/s}
         </button>
-        <button
+        <!--button
             class="btn btn-primary cancel-order"
             data-order_id="{$order_id}"
             data-action="{url controller="BillieOverview" action="cancelOrder" __csrf_token=$csrfToken}"
             >
             {s name="order/cancel_order"}Bestellung stornieren{/s}
-        </button>
+        </button-->
+        {if $state != 'canceled'}
+            <button
+                class="btn btn-primary refund-order"
+                data-order_id="{$order_id}"
+                data-amount-net="{$amountNet}"
+                data-amount-gross="{$amount}"
+                data-amount-tax="{$amountTax}"
+                data-action="{url controller="BillieOverview" action="refundOrder" __csrf_token=$csrfToken}"
+                >
+                {s name="order/refund_order"}{/s}
+            </button>
+        {/if}
         {if $state eq 'created'}
             <button
                 class="btn btn-primary ship-order"

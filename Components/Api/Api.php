@@ -3,17 +3,18 @@
 namespace BilliePayment\Components\Api;
 
 use Billie\Command\CheckoutSessionConfirm;
-use Billie\Mapper\CreateOrderMapper;
-use BilliePayment\Components\Utils;
+use Billie\Command\ReduceOrderAmount;
+use Billie\Exception\BillieException;
+use Billie\Exception\InvalidCommandException;
+use Billie\Exception\OrderDecline\OrderDeclinedException;
+use Billie\HttpClient\BillieClient;
 use BilliePayment\Components\MissingDocumentsException;
+use BilliePayment\Components\MissingLegalFormException;
+use BilliePayment\Components\Utils;
 use BilliePayment\Services\ConfigService;
 use Shopware\Models\Customer\Customer;
+use Shopware\Models\Order\Document\Document;
 use Shopware\Models\Order\Order;
-use Billie\HttpClient\BillieClient;
-use Billie\Exception\BillieException;
-use Billie\Exception\OrderDecline\OrderDeclinedException;
-use Billie\Exception\InvalidCommandException;
-use BilliePayment\Components\MissingLegalFormException;
 
 /**
  * Service Wrapper for billie API sdk
@@ -160,6 +161,50 @@ class Api
         }
 
         return ['success' => true, 'local' => $local];
+    }
+
+    /**
+     * refunds partly or completly the order. if the amount is greater or equal than the actual open amount on
+     * billie PaD, the order will canceled
+     * @param $orderId
+     * @param $amount
+     * @return array
+     * @throws BillieException
+     * @throws InvalidCommandException
+     */
+    public function partlyRefund($orderId, $amount)
+    {
+        $shopwareOrder = $this->utils->getEnityManager()->find(Order::class, $orderId);
+        $order = $this->client->getOrder($shopwareOrder->getTransactionId());
+        if ($amount >= $order->amount) {
+            $return = $this->cancelOrder($shopwareOrder->getId());
+        } else {
+            $newAmount = ($order->amount - $amount) * 100;
+            $taxRate = round(($order->amount / $order->amountNet), 2);
+
+            $model = $this->factory->createReduceAmountCommand($shopwareOrder, [
+                'net' => round($newAmount / $taxRate, 0),
+                'gross' => round($newAmount, 0),
+                'currency' => $shopwareOrder->getCurrency(),
+            ]);
+            $return = $this->client->reduceOrderAmount($model);
+        }
+        if (is_array($return)) {
+            if (isset($return['success'])) {
+                return $return;
+            } else if (isset($return['uuid'])) {
+                return [
+                    'success' => true
+                ];
+            }
+        } else if ($return instanceof \Billie\Model\Order) {
+            return [
+                'success' => true
+            ];
+        }
+        return [
+            'success' => true
+        ];
     }
 
     /**

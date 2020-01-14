@@ -52,6 +52,11 @@
             desc: '{s name="cancel_order/description"}Sind Sie sicher, dass Sie die Bestellung über Billie PaD stornieren möchten?{/s}',
             success: '{s name="cancel_order/success"}Die Bestellung wurde erfolgreich über Billie PaD storniert.{/s}',
         },
+        refund_order: {
+            title: '{s name="refund_order/title"}{/s}',
+            desc: '{s name="refund_order/description"}{/s}',
+            success: '{s name="refund_order/success"}{/s}',
+        },
         ship_order: {
             success: '{s name="ship_order/success"}Die Bestellung wurde erfolgreich als verschickt markiert.{/s}',
             external_invoice_placeholder: '{s name="ship_order/external_invoice_placeholder"}Externe Rechnungsnummer{/s}',

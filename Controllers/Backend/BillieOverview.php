@@ -2,7 +2,6 @@
 
 use BilliePayment\Enum\PaymentMethods;
 use Shopware\Components\CSRFWhitelistAware;
-use BilliePayment\Components\Payment\Service;
 use Shopware\Models\Order\Order;
 
 /**
@@ -115,6 +114,29 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $amount   = floatval($this->Request()->getParam('amount'));
         $order    = $this->Request()->getParam('order_id');
         $response = $api->confirmPayment($order, $amount);
+
+        // Return result message
+        $this->Front()->Plugins()->Json()->setRenderer();
+        $this->View()->assign($response);
+    }
+
+    public function refundOrderAction()
+    {
+        /** @var \BilliePayment\Components\Api\Api $api */
+        $api = $this->container->get('billie_payment.api');
+        $order = $this->Request()->getParam('order_id');
+        $amount = floatval(str_replace(',', '', $this->Request()->getParam('amount')));
+        $response = [];
+        $response['success'] = false;
+        try {
+            if($amount > 0) {
+                $response = $api->partlyRefund($order, $amount);
+            } else {
+                $response['error'] = 'Invalid parameters';
+            }
+        } catch (\Exception $e) {
+            $response['error'] = $e->getMessage();
+        }
 
         // Return result message
         $this->Front()->Plugins()->Json()->setRenderer();
