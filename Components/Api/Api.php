@@ -15,6 +15,7 @@ use BilliePayment\Services\ConfigService;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Order\Document\Document;
 use Shopware\Models\Order\Order;
+use Shopware\Models\Payment\Payment;
 
 /**
  * Service Wrapper for billie API sdk
@@ -74,9 +75,11 @@ class Api
         return $this->client->checkoutSessionCreate($customer->getId());
     }
 
-    public function confirmCheckoutSession(CheckoutSessionConfirm $confirmModel)
+    public function confirmCheckoutSession($refId, Payment $paymentMethod, $amount, $currency)
     {
-        return $this->client->checkoutSessionConfirm($confirmModel); // TODO does not work - 2020-01-10
+        $amount['currency'] = $currency;
+        $model = $this->factory->createConfirmCheckoutSessionCommand($refId, $amount, $paymentMethod->getAttribute()->getBillieDuration());
+        return $this->client->checkoutSessionConfirm($model);
     }
 
     /**

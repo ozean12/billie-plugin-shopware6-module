@@ -2,6 +2,7 @@
 
 namespace BilliePayment\Components\Api;
 
+use Billie\Command\CheckoutSessionConfirm;
 use BilliePayment\Components\Utils;
 use Doctrine\Common\Collections\Criteria;
 use Shopware\Models\Order\Order;
@@ -189,6 +190,14 @@ class CommandFactory
     public function createConfirmPaymentCommand($refId, $amount)
     {
         return new ConfirmPayment($refId, $amount * 100); // amount are in cents!
+    }
+
+    public function createConfirmCheckoutSessionCommand($refId, array $amount, $duration)
+    {
+        $model = new CheckoutSessionConfirm($refId);
+        $model->duration = $duration;
+        $model->amount = new Amount($amount['net'], $amount['currency'], $amount['tax']);
+        return $model;
     }
 
     /**

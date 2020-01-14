@@ -1,6 +1,7 @@
 <?php
 
 use BilliePayment\Components\Api\Api;
+use BilliePayment\Components\Api\CommandFactory;
 use BilliePayment\Components\Payment\Response;
 use BilliePayment\Components\Payment\Service;
 use BilliePayment\Enum\PaymentMethods;
@@ -73,12 +74,19 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     {
         // Check if the payment method is selected, otherwise return to default controller.
         if (PaymentMethods::exists($this->getPaymentShortName())) {
+            /** @var Payment $paymentMethod */
+            $paymentMethod = $this->getModelManager()->getRepository(Payment::class)->findOneBy(['name' => $this->getPaymentShortName()]);
             $sessionId = $this->sessionService->getCheckoutSessionId(false);
             if ($sessionId !== null) {
 
+
                 try {
-                    $confirmModel = $this->sessionService->getSessionConfirmModel();
-                    $orderId = $this->billieApi->confirmCheckoutSession($confirmModel);
+                    $totals = $this->sessionService->getTotalAmount();
+                    $currency = $this->sessionService->getSession()->offsetGet('sOrderVariables')['sBasket']['sCurrencyName'];
+                    $orderId = $this->billieApi->confirmCheckoutSession($sessionId, $paymentMethod, [
+                        'net' => $totals['net'] * 100,
+                        'tax' => $totals['tax'] * 100
+                    ], $currency);
                 } catch (Exception $e) {
                     $this->logger->addCritical($e->getMessage());
                     return $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
@@ -104,16 +112,14 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     // write determined address to shopware order address
                     $billingAddress = $order->getBilling();
 
-
-
                     $orderAttribute = $order->getAttribute();
                     $orderAttribute->setBillieBic($billieOrder->bankAccount->bic);
                     $orderAttribute->setBillieIban($billieOrder->bankAccount->iban);
                     $orderAttribute->setBillieReferenceid($billieOrder->referenceId);
                     $orderAttribute->setBillieState($billieOrder->state);
-                    $orderAttribute->setBillieDuration($confirmModel->duration);
+                    $orderAttribute->setBillieDuration($paymentMethod->getAttribute()->getBillieDuration());
                     $date = new DateTime();
-                    $date->modify('+' . $confirmModel->duration . ' days');
+                    $date->modify('+' . $orderAttribute->getBillieDuration() . ' days');
                     $orderAttribute->setBillieDurationDate($date->format('d.m.Y'));
 
                     $this->getModelManager()->flush([$orderAttribute, $billingAddress]);
