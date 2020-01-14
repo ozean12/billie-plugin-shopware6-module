@@ -3,6 +3,7 @@
 use BilliePayment\Enum\PaymentMethods;
 use Shopware\Components\CSRFWhitelistAware;
 use BilliePayment\Components\Payment\Service;
+use Shopware\Models\Order\Order;
 
 /**
  * Backend Controller for lightweight backend module.
@@ -78,7 +79,10 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
             return;
         }
 
+        $shopwareOrder = $this->getModelManager()->getRepository(Order::class)->getList([$order]);
+
         $this->View()->assign($response);
+        $this->View()->assign('shopwareOrder', $shopwareOrder ? array_values($shopwareOrder)[0] : null);
     }
 
     /**

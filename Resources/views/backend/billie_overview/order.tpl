@@ -61,6 +61,24 @@
 
         <hr />
 
+        <h3>{s name="order/amount/heading"}{/s}</h3>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">{s name="order/amount/shopware"}{/s}</label>
+            <div class="col-sm-10">
+                <span>{$shopwareOrder.invoiceAmountNet} {s name="order/amount/net"}{/s}</span><br>
+                <span>{$shopwareOrder.invoiceAmount} {s name="order/amount/gross"}{/s}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">{s name="order/amount/billie"}{/s}</label>
+            <div class="col-sm-10">
+                <span>{$amount_net} {s name="order/amount/net"}{/s}</span><br>
+                <span>{$amount} {s name="order/amount/gross"}{/s}</span>
+            </div>
+        </div>
+
+        <hr />
+
         <h3>{s name="order/payment/heading"}Zahlungsdetails{/s}</h3>
         <div class="form-group">
             <label for="IBAN" class="col-sm-2 control-label">{s name="order/payment/iban"}IBAN{/s}</label>
@@ -114,7 +132,7 @@
                 <input type="text" class="form-control" id="address_house_country" value="{$debtor_company.address_house_country}" readonly>
             </div>
         </div>
-        
+
         {* <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
             <button type="submit" class="btn btn-default">Sign in</button>

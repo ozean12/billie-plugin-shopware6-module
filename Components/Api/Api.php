@@ -402,7 +402,9 @@ class Api
                 'address_house_city'        => $response->debtorCompany->address->city,
                 'address_house_postal_code' => $response->debtorCompany->address->postalCode,
                 'address_house_country'     => $response->debtorCompany->address->countryCode
-            ]
+            ],
+            'amount' => $response->amount,
+            'amountNet' => $response->amountNet
         ];
 
         // Update order details in database with new ones from billie
