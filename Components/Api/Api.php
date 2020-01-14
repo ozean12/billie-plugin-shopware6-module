@@ -91,10 +91,11 @@ class Api
     {
         // Load Orders
         $builder = $this->utils->getQueryBuilder();
-        $builder->select(['orders, attribute'])
+        $builder->select(['orders, attribute', 'billing'])
             ->from(Order::class, 'orders')
             ->leftJoin('orders.attribute', 'attribute')
             ->leftJoin('orders.payment', 'payment')
+            ->leftJoin('orders.billing', 'billing')
             ->addFilter($filters)
             ->andWhere('orders.number != 0')
             ->andWhere('orders.status != -1')

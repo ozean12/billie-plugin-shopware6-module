@@ -13,7 +13,8 @@
                     <th>{s name="listing/column/order_time"}Bestell-Zeit{/s}</th>
                     <th>{s name="listing/column/order_numer"}Bestellnummer{/s}</th>
                     <th>{s name="listing/column/amount"}Betrag{/s}</th>
-                    <th>{s name="listing/column/transaction"}Transaktion{/s}</th>
+                    <!--th>{s name="listing/column/transaction"}Transaktion{/s}</th-->
+                    <th>{s name="listing/column/company"}{/s}</th>
                     <th>{s name="listing/column/current_state"}Aktueller Status{/s}</th>
                     <th></th>
                 </tr>
@@ -25,7 +26,8 @@
                         <td>{$order.orderTime|date:DATE_SHORT}</td>
                         <td>{$order.number}</td>
                         <td>{$order.invoiceAmount|currency:use_shortname:right}</td>
-                        <td>{$order.transactionId}</td>
+                        <!--td>{$order.transactionId}</td-->
+                        <td>{$order.billing.company}</td>
                         <td class="state">
                             {if $order.attribute.billieState == 'created'}
                                 {s name="order/state/created"}erstellt{/s}
