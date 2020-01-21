@@ -181,6 +181,7 @@ class Api
         $order = $this->client->getOrder($shopwareOrder->getTransactionId());
         if ($amount >= $order->amount) {
             $return = $this->cancelOrder($shopwareOrder->getId());
+            $partly = false;
         } else {
             $newAmount = ($order->amount - $amount) * 100;
             $taxRate = round(($order->amount / $order->amountNet), 2);
@@ -190,23 +191,36 @@ class Api
                 'gross' => round($newAmount, 0),
                 'currency' => $shopwareOrder->getCurrency(),
             ]);
-            $return = $this->client->reduceOrderAmount($model);
+            try {
+                $return = $this->client->reduceOrderAmount($model);
+                $partly = true;
+            } catch (InvalidCommandException | BillieException $e) {
+                return [
+                    'success' => false,
+                    'error' => $e->getMessage() ? : implode('', $e->getViolations())
+                ];
+            }
         }
         if (is_array($return)) {
             if (isset($return['success'])) {
+                $return['partly'] = $partly;
                 return $return;
             } else if (isset($return['uuid'])) {
+                $order = $this->getClient()->getOrder($return['uuid']);
                 return [
-                    'success' => true
+                    'success' => true,
+                    'partly' => $order->state !== \Billie\Model\Order::STATE_CANCELLED
                 ];
             }
         } else if ($return instanceof \Billie\Model\Order) {
             return [
-                'success' => true
+                'success' => true,
+                'partly' => $return->state !== \Billie\Model\Order::STATE_CANCELLED
             ];
         }
         return [
-            'success' => true
+            'success' => false,
+            'error' => 'Unknown error.'
         ];
     }
 

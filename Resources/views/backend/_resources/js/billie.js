@@ -84,10 +84,13 @@ $(function () {
             },
             success: function (response) {
                 if (response.success === true) {
-                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.success, _BILLIE_SNIPPETS_.refund_order.success);
+                    postMessageApi.createAlertMessage(
+                        _BILLIE_SNIPPETS_.errorCodes.success,
+                        response.partly ? _BILLIE_SNIPPETS_.refund_order.success : _BILLIE_SNIPPETS_.cancel_order.success
+                    );
                     window.location.reload();
                 } else {
-                    postMessageApi.createAlertMessage(response.title, response.data);
+                    postMessageApi.createAlertMessage(response.title ? response.title : 'Error', response.error);
                 }
             }
         });

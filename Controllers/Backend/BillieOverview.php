@@ -125,7 +125,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         /** @var \BilliePayment\Components\Api\Api $api */
         $api = $this->container->get('billie_payment.api');
         $order = $this->Request()->getParam('order_id');
-        $amount = floatval(str_replace(',', '', $this->Request()->getParam('amount')));
+        $amount = floatval(str_replace(',', '.', $this->Request()->getParam('amount')));
         $response = [];
         $response['success'] = false;
         try {

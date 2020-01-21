@@ -138,19 +138,6 @@ class CommandFactory
             $amount['gross'] - $amount['net'] // Gross - Net = Tax Amount
         );
 
-        // Get Invoice if exists
-        $invoice = $this->fetchInvoice($order);
-
-        if (!$invoice) {
-            throw new MissingDocumentsException(
-                'The Invoice Document is missing. Please generate the documents before marking the order as shipped.'
-            );
-        }
-
-        $command->invoiceNumber       = $invoice->getDocumentId(); // required, given by merchant
-        $command->invoiceUrl          = $this->utils->getInvoiceUrl($invoice); // Invoice API Endpoint
-        // $command->shippingDocumentUrl = 'https://www.example.com/shipping_document.pdf'; // (optional)
-
         return $command;
     }
 
