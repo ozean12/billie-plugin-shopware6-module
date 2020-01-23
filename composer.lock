@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:ozean12/billie-shop-plugin-sdk.git",
-                "reference": "4bea4630237379d6c4d3b4a69e45d183d7b08415"
+                "reference": "8260725b4baa7edd55510d9f455a7ab8bcffdb41"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ozean12/billie-shop-plugin-sdk/zipball/4bea4630237379d6c4d3b4a69e45d183d7b08415",
-                "reference": "4bea4630237379d6c4d3b4a69e45d183d7b08415",
+                "url": "https://api.github.com/repos/ozean12/billie-shop-plugin-sdk/zipball/8260725b4baa7edd55510d9f455a7ab8bcffdb41",
+                "reference": "8260725b4baa7edd55510d9f455a7ab8bcffdb41",
                 "shasum": ""
             },
             "require": {
@@ -63,7 +63,7 @@
                 "source": "https://github.com/ozean12/billie-shop-plugin-sdk/tree/feature/oauth2",
                 "issues": "https://github.com/ozean12/billie-shop-plugin-sdk/issues"
             },
-            "time": "2020-01-14T13:01:42+00:00"
+            "time": "2020-01-22T11:16:32+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -167,6 +167,7 @@
                 }
             ],
             "description": "Provides a simple API and specification that abstracts away the details of HTTP into a single PHP function.",
+            "abandoned": true,
             "time": "2018-07-31T13:22:33+00:00"
         },
         {
@@ -558,16 +559,16 @@
         },
         {
             "name": "symfony/translation",
-            "version": "v4.4.2",
+            "version": "v4.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/translation.git",
-                "reference": "f7669f48a9633bf8139bc026c755e894b7206677"
+                "reference": "f5d2ac46930238b30a9c2f1b17c905f3697d808c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/translation/zipball/f7669f48a9633bf8139bc026c755e894b7206677",
-                "reference": "f7669f48a9633bf8139bc026c755e894b7206677",
+                "url": "https://api.github.com/repos/symfony/translation/zipball/f5d2ac46930238b30a9c2f1b17c905f3697d808c",
+                "reference": "f5d2ac46930238b30a9c2f1b17c905f3697d808c",
                 "shasum": ""
             },
             "require": {
@@ -630,7 +631,7 @@
             ],
             "description": "Symfony Translation Component",
             "homepage": "https://symfony.com",
-            "time": "2019-12-12T12:53:52+00:00"
+            "time": "2020-01-15T13:29:06+00:00"
         },
         {
             "name": "symfony/translation-contracts",
@@ -778,16 +779,16 @@
     "packages-dev": [
         {
             "name": "symfony/var-dumper",
-            "version": "v3.4.36",
+            "version": "v3.4.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/var-dumper.git",
-                "reference": "569e261461600810845a8305ca3f64abd3e712c0"
+                "reference": "51ecb139114c38080801145a212f10210ea99ea3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/569e261461600810845a8305ca3f64abd3e712c0",
-                "reference": "569e261461600810845a8305ca3f64abd3e712c0",
+                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/51ecb139114c38080801145a212f10210ea99ea3",
+                "reference": "51ecb139114c38080801145a212f10210ea99ea3",
                 "shasum": ""
             },
             "require": {
@@ -843,7 +844,7 @@
                 "debug",
                 "dump"
             ],
-            "time": "2019-10-10T11:03:19+00:00"
+            "time": "2020-01-01T11:03:25+00:00"
         }
     ],
     "aliases": [],
