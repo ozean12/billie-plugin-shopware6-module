@@ -4,14 +4,14 @@
 namespace BilliePayment\Bootstrap\Attributes;
 
 
-use Shopware\Models\Customer\Customer;
+use Shopware\Models\Payment\Payment;
 
 class PaymentMethodAttributes extends AbstractAttributes
 {
 
     protected function getEntityClass()
     {
-        return Customer::class;
+        return Payment::class;
     }
 
     protected function createUpdateAttributes()
