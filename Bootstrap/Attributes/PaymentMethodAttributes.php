@@ -26,6 +26,8 @@ class PaymentMethodAttributes extends AbstractAttributes
 
     protected function uninstallAttributes()
     {
-        $this->crudService->delete($this->tableName, 'billie_duration');
+        if ($this->crudService->get($this->tableName, 'billie_duration')) {
+            $this->crudService->delete($this->tableName, 'billie_duration');
+        }
     }
 }

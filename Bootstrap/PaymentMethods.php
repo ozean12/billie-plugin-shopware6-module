@@ -6,6 +6,7 @@ namespace BilliePayment\Bootstrap;
 
 use BilliePayment\Enum\PaymentMethods as PaymentMethodsEnum;
 use Shopware\Components\Plugin\PaymentInstaller;
+use Shopware\Models\Attribute\Payment as PaymentAttribute;
 use Shopware\Models\Payment\Payment;
 use Shopware\Models\Payment\Repository;
 
@@ -77,6 +78,7 @@ class PaymentMethods extends AbstractBootstrap
 
     public function install()
     {
+        $attributeMeta = $this->modelManager->getClassMetadata(PaymentAttribute::class);
         foreach (PaymentMethodsEnum::PAYMENTS as $options) {
             $payment = $this->paymentMethodRepo->findOneBy(['name' => $options['name']]);
             if ($payment !== null) {
@@ -87,7 +89,17 @@ class PaymentMethods extends AbstractBootstrap
                     $options['additionalDescription']
                 );
             }
-            $this->paymentMethodInstaller->createOrUpdate($this->installContext->getPlugin()->getName(), $options);
+            $payment = $this->paymentMethodInstaller->createOrUpdate($this->installContext->getPlugin()->getName(), $options);
+
+            $params = [
+                'id' => $payment->getId(),
+                'duration' => $options['billie_config']['duration']
+            ];
+            $this->modelManager->getConnection()->executeQuery(
+                "REPLACE INTO " . $attributeMeta->getTableName() . " 
+                    (paymentmeanID, billie_duration) 
+                    VALUES(:id, :duration);",
+                $params);
         }
     }
 

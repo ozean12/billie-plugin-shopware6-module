@@ -44,6 +44,8 @@ abstract class AbstractAttributes extends AbstractBootstrap
 
     protected function cleanUp()
     {
+        $metaDataCache = $this->modelManager->getConfiguration()->getMetadataCacheImpl();
+        $metaDataCache->deleteAll();
         $this->modelManager->generateAttributeModels([$this->tableName]);
     }
 

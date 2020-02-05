@@ -60,16 +60,18 @@
             <name>billiepayment/salutation/male</name>
             <label lang="de">Anreden Herren</label>
             <label lang="en">Salutations males</label>
-            <description lang="de">Bitte geben Sie die Anreden ein, welche in Ihrem Shop für die Herren gepflegt sind. (einschließlich Übersetzungen)</description>
-            <description lang="en">Please insert all salutations which are setup for males. (incl. the translation for them)</description>
+            <value>Herr</value>
+            <description lang="de">Bitte geben Sie die Anreden ein, welche in Ihrem Shop für die Herren gepflegt sind. (einschließlich Übersetzungen) (kommasepariert)</description>
+            <description lang="en">Please insert all salutations which are setup for males. (incl. the translation for them) (comma separated)</description>
         </element>
 
         <element required="true" type="textarea" scope="locale">
             <name>billiepayment/salutation/female</name>
             <label lang="de">Anreden Frauen</label>
             <label lang="en">Salutations females</label>
-            <description lang="de">Bitte geben Sie die Anreden ein, welche in Ihrem Shop für die Frauen gepflegt sind. (einschließlich Übersetzungen)</description>
-            <description lang="en">Please insert all salutations which are setup for females. (incl. the translation for them)</description>
+            <value>Frau</value>
+            <description lang="de">Bitte geben Sie die Anreden ein, welche in Ihrem Shop für die Frauen gepflegt sind. (einschließlich Übersetzungen) (kommasepariert)</description>
+            <description lang="en">Please insert all salutations which are setup for females. (incl. the translation for them) (comma separated)</description>
         </element>
     </elements>
 </config>

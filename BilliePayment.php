@@ -45,13 +45,14 @@ class BilliePayment extends Plugin
 
     public function install(Plugin\Context\InstallContext $context)
     {
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        $bootstrapClasses = $this->getBootstrapClasses($context);
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->preInstall();
         }
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->install();
         }
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->postInstall();
         }
         parent::install($context);
@@ -66,11 +67,11 @@ class BilliePayment extends Plugin
     {
         /** @var AbstractBootstrap[] $bootstrapper */
         $bootstrapper = [
-            new PaymentMethods(),
-            new OrderAttributes(),
             new PaymentMethodAttributes(),
+            new OrderAttributes(),
             new UserAddressAttributes(),
-            new UserAttributes()
+            new UserAttributes(),
+            new PaymentMethods()
         ];
 
         $logger = new FileLogger($this->container->getParameter('kernel.logs_dir'));
@@ -86,13 +87,14 @@ class BilliePayment extends Plugin
 
     public function update(Plugin\Context\UpdateContext $context)
     {
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        $bootstrapClasses = $this->getBootstrapClasses($context);
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->preUpdate();
         }
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->update();
         }
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->postUpdate();
         }
         parent::update($context);
@@ -101,13 +103,14 @@ class BilliePayment extends Plugin
 
     public function uninstall(Plugin\Context\UninstallContext $context)
     {
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        $bootstrapClasses = $this->getBootstrapClasses($context);
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->preUninstall();
         }
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->uninstall($context->keepUserData());
         }
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->postUninstall();
         }
         parent::uninstall($context);
@@ -116,13 +119,14 @@ class BilliePayment extends Plugin
 
     public function deactivate(Plugin\Context\DeactivateContext $context)
     {
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        $bootstrapClasses = $this->getBootstrapClasses($context);
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->preDeactivate();
         }
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->deactivate();
         }
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->postDeactivate();
         }
         parent::deactivate($context);
@@ -131,13 +135,14 @@ class BilliePayment extends Plugin
 
     public function activate(Plugin\Context\ActivateContext $context)
     {
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        $bootstrapClasses = $this->getBootstrapClasses($context);
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->preActivate();
         }
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->activate();
         }
-        foreach ($this->getBootstrapClasses($context) as $bootstrap) {
+        foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->postActivate();
         }
         parent::activate($context);
