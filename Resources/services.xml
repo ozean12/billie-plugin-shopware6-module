@@ -86,6 +86,9 @@
             <argument id="BilliePayment\Services\SessionService" type="service"/>
         </service>
 
+        <service id="BilliePayment\Services\BankService">
+            <argument>%billie_payment.plugin_dir%</argument>
+        </service>
 
 
     </services>

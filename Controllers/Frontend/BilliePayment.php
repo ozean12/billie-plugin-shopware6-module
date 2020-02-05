@@ -6,6 +6,7 @@ use BilliePayment\Components\Payment\Response;
 use BilliePayment\Components\Payment\Service;
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Services\AddressService;
+use BilliePayment\Services\BankService;
 use BilliePayment\Services\ConfigService;
 use BilliePayment\Services\SessionService;
 use Monolog\Logger;
@@ -47,6 +48,10 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
      * @var AddressService
      */
     private $addressService;
+    /**
+     * @var BankService
+     */
+    private $bankService;
 
     public function setContainer(Container $loader = null)
     {
@@ -54,6 +59,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $this->configService = $this->container->get(ConfigService::class);
         $this->addressService = $this->container->get(AddressService::class);
         $this->sessionService = $this->container->get(SessionService::class);
+        $this->bankService = $this->container->get(BankService::class);
         $this->billieApi = $this->container->get('billie_payment.api');
         $this->logger = $this->container->get('billie_payment.logger');
 
@@ -112,9 +118,11 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     // write determined address to shopware order address
                     $billingAddress = $order->getBilling();
 
+                    $bank = $this->bankService->getBankData($order, $billieOrder);
                     $orderAttribute = $order->getAttribute();
                     $orderAttribute->setBillieBic($billieOrder->bankAccount->bic);
                     $orderAttribute->setBillieIban($billieOrder->bankAccount->iban);
+                    $orderAttribute->setBillieBank($bank ? $bank['name'] : null);
                     $orderAttribute->setBillieReferenceid($billieOrder->referenceId);
                     $orderAttribute->setBillieState($billieOrder->state);
                     $orderAttribute->setBillieDuration($paymentMethod->getAttribute()->getBillieDuration());

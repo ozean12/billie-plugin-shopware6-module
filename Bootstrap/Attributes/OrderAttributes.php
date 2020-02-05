@@ -21,6 +21,7 @@ class OrderAttributes extends AbstractAttributes
         $this->crudService->update($this->tableName, 'billie_state', 'string');
         $this->crudService->update($this->tableName, 'billie_iban', 'string');
         $this->crudService->update($this->tableName, 'billie_bic', 'string');
+        $this->crudService->update($this->tableName, 'billie_bank', 'string');
         $this->crudService->update($this->tableName, 'billie_duration', 'integer');
         $this->crudService->update($this->tableName, 'billie_duration_date', 'string');
     }
