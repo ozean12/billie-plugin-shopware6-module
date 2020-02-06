@@ -27,8 +27,20 @@ class TemplateRegistration implements SubscriberInterface
     {
         return [
             'Enlight_Controller_Action_PreDispatch' => 'onPreDispatch',
-            'Enlight_Controller_Action_PostDispatch_Backend_Index' => 'addMenuItem'
+            'Enlight_Controller_Action_PostDispatch_Backend_Index' => 'addMenuItem',
+            'Theme_Inheritance_Template_Directories_Collected' => 'collectTemplateDirForDocuments'
         ];
+    }
+
+    public function collectTemplateDirForDocuments(\Enlight_Event_EventArgs $args)
+    {
+        $dirs = $args->getReturn();
+
+        $request = Shopware()->Front()->Request();
+        if($request->getControllerName() == 'Order' && $request->getActionName() == 'createDocument') {
+            $dirs[] = $this->pluginDirectory . '/Resources/views/';
+        }
+        return $dirs;
     }
 
     /**
