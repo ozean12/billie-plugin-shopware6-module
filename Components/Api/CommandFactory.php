@@ -5,6 +5,7 @@ namespace BilliePayment\Components\Api;
 use Billie\Command\CheckoutSessionConfirm;
 use BilliePayment\Components\Utils;
 use Doctrine\Common\Collections\Criteria;
+use Shopware\Models\Document\Document;
 use Shopware\Models\Order\Order;
 use Billie\Model\Address;
 use Billie\Model\Amount;
@@ -137,6 +138,12 @@ class CommandFactory
             $amount['currency'],
             $amount['gross'] - $amount['net'] // Gross - Net = Tax Amount
         );
+        /** @var Document $document */
+        $invoice = $this->fetchInvoice($order);
+        if($invoice) {
+            $command->invoiceUrl = $this->utils->getInvoiceUrl($invoice);
+            $command->invoiceNumber = $invoice->getDocumentId();
+        }
 
         return $command;
     }

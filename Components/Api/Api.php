@@ -11,6 +11,7 @@ use Billie\HttpClient\BillieClient;
 use BilliePayment\Components\MissingDocumentsException;
 use BilliePayment\Components\MissingLegalFormException;
 use BilliePayment\Components\Utils;
+use BilliePayment\Services\BankService;
 use BilliePayment\Services\ConfigService;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Order\Document\Document;
@@ -46,6 +47,10 @@ class Api
      * @var Utils
      */
     protected $utils = null;
+    /**
+     * @var BankService
+     */
+    private $bankService;
 
     /**
      * Load Plugin config
@@ -55,12 +60,14 @@ class Api
      * @param Utils $utils
      * @param CommandFactory $factory
      * @param ConfigService $config
+     * @param BankService $bankService
      */
     public function __construct(
         Helper $helper,
         Utils $utils,
         CommandFactory $factory,
-        ConfigService $config
+        ConfigService $config,
+        BankService $bankService
 )
     {
         // initialize Billie Client
@@ -69,6 +76,7 @@ class Api
         $this->factory = $factory;
         $this->utils   = $utils;
         $this->client  = BillieClient::create($config->getClientId(), $config->getClientSecret(), $config->isSandbox());
+        $this->bankService = $bankService;
     }
 
     public function createCheckoutSession(Customer $customer) {
@@ -456,7 +464,8 @@ class Api
             'order_id'     => $item->getId(),
             'bank_account' => [
                 'iban' => $response->bankAccount->iban,
-                'bic'  => $response->bankAccount->bic
+                'bic'  => $response->bankAccount->bic,
+                'bank' => $this->bankService->getBankData($item, $response)['name']
             ],
             'debtor_company' => [
                 'name'                      => $response->debtorCompany->name,

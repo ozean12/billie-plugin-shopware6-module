@@ -77,15 +77,15 @@
         <div class="form-group">
             <label class="col-sm-2 control-label">{s name="order/amount/shopware"}{/s}</label>
             <div class="col-sm-10">
-                <span>{$shopwareOrder.invoiceAmountNet} {s name="order/amount/net"}{/s}</span><br>
-                <span>{$shopwareOrder.invoiceAmount} {s name="order/amount/gross"}{/s}</span>
+                <span>{$shopwareOrder.invoiceAmountNet|string_format:"%.2f"} {s name="order/amount/net"}{/s}</span><br>
+                <span>{$shopwareOrder.invoiceAmount|string_format:"%.2f"} {s name="order/amount/gross"}{/s}</span>
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-2 control-label">{s name="order/amount/billie"}{/s}</label>
             <div class="col-sm-10">
-                <span>{$amountNet} {s name="order/amount/net"}{/s}</span><br>
-                <span>{$amount} {s name="order/amount/gross"}{/s}</span>
+                <span>{$amountNet|string_format:"%.2f"} {s name="order/amount/net"}{/s}</span><br>
+                <span>{$amount|string_format:"%.2f"} {s name="order/amount/gross"}{/s}</span>
             </div>
         </div>
 
@@ -102,6 +102,12 @@
             <label for="BIC" class="col-sm-2 control-label">{s name="order/payment/bic"}BIC{/s}</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="BIC" value="{$bank_account.bic}" readonly>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="BIC" class="col-sm-2 control-label">{s name="order/payment/bank"}Bank{/s}</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="BIC" value="{$bank_account.bank}" readonly>
             </div>
         </div>
 

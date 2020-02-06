@@ -66,6 +66,7 @@
             <argument type="service" id="billie_payment.utils" />
             <argument type="service" id="billie_payment.factory" />
             <argument type="service" id="BilliePayment\Services\ConfigService" />
+            <argument type="service" id="BilliePayment\Services\BankService" />
         </service>
 
         <service id="BilliePayment\Subscriber\Backend\BaseSubscriber">
