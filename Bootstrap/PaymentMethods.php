@@ -93,7 +93,7 @@ class PaymentMethods extends AbstractBootstrap
 
             $params = [
                 'id' => $payment->getId(),
-                'duration' => $options['billie_config']['duration']
+                'duration' => $options['billie_config']['default_duration']
             ];
             $this->modelManager->getConnection()->executeQuery(
                 "REPLACE INTO " . $attributeMeta->getTableName() . " 
