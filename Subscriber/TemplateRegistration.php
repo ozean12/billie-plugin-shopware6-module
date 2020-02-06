@@ -35,12 +35,8 @@ class TemplateRegistration implements SubscriberInterface
     public function collectTemplateDirForDocuments(\Enlight_Event_EventArgs $args)
     {
         $dirs = $args->getReturn();
-
-        $request = Shopware()->Front()->Request();
-        if($request->getControllerName() == 'Order' && $request->getActionName() == 'createDocument') {
-            $dirs[] = $this->pluginDirectory . '/Resources/views/';
-        }
-        return $dirs;
+        $dirs[] = $this->pluginDirectory . '/Resources/views_documents/';
+        $args->setReturn($dirs);
     }
 
     /**
