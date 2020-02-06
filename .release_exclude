@@ -1,0 +1,14 @@
+.git
+.github
+build
+build.sh
+Jenkinsfile
+phpunit.xml.dist
+sonar-project.properties
+.gitignore
+Tests
+.release_exclude
+.DS_Store
+composer.json
+composer.lock
+Resources/views_documents/README.md
