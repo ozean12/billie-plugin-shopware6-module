@@ -83,15 +83,23 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             /** @var Payment $paymentMethod */
             $paymentMethod = $this->getModelManager()->getRepository(Payment::class)->findOneBy(['name' => $this->getPaymentShortName()]);
             $sessionId = $this->sessionService->getCheckoutSessionId(false);
-            $billingAddress = $this->sessionService->getBillingAddress();
-            if ($sessionId !== null) {
+            $approvedAddress = $this->sessionService->getApprovedAddress();
+            if ($sessionId !== null && $approvedAddress !== null) {
                 try {
                     $totals = $this->sessionService->getTotalAmount();
                     $currency = $this->sessionService->getSession()->offsetGet('sOrderVariables')['sBasket']['sCurrencyName'];
-                    $orderId = $this->billieApi->confirmCheckoutSession($sessionId, $billingAddress, $paymentMethod, [
-                        'net' => $totals['net'] * 100,
-                        'tax' => $totals['tax'] * 100
-                    ], $currency);
+
+                    $orderId = $this->billieApi->confirmCheckoutSession(
+                        $sessionId,
+                        $approvedAddress,
+                        $paymentMethod,
+                        [
+                            'net' => $totals['net'] * 100,
+                            'tax' => $totals['tax'] * 100
+                        ],
+                        $currency
+                    );
+
                 } catch (Exception $e) {
                     $this->logger->addCritical($e->getMessage());
                     return $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
@@ -139,7 +147,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             }
         }
 
-        return $this->redirect(['controller' => 'checkout', 'action' => 'confirm']);
+        return $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
     }
 
     /**
@@ -239,6 +247,8 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
 
             if($country === null) {
                 $errorCode = '_SwCountryNotAvailable';
+            } else {
+                $this->sessionService->setApprovedAddress($params['debtor_company']);
             }
         } else {
             $errorCode = '_UnknownError';

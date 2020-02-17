@@ -5,6 +5,7 @@ namespace BilliePayment\Services;
 
 
 use Billie\Command\CheckoutSessionConfirm;
+use Billie\Model\DebtorCompany;
 use BilliePayment\Components\Api\Api;
 use BilliePayment\Helper\BasketHelper;
 use Enlight_Components_Session_Namespace;
@@ -122,6 +123,44 @@ class SessionService
     public function getSession()
     {
         return $this->session;
+    }
+
+    /**
+     * @param DebtorCompany|array $address
+     */
+    public function setApprovedAddress($address)
+    {
+        if ($address instanceof DebtorCompany) {
+            $address = [
+                "name" => $address->name,
+                "address_street" => $address->addressStreet,
+                "address_house_number" => $address->addressHouseNumber,
+                "address_addition" => $address->addressAddition,
+                "address_postal_code" => $address->addressPostalCode,
+                "address_city" => $address->addressCity,
+                "address_country" => $address->addressCountry
+            ];
+        }
+        $this->setData('approved_address', $address);
+    }
+
+    /**
+     * @return DebtorCompany
+     */
+    public function getApprovedAddress()
+    {
+        $address = null;
+        if ($sessionAddress = $this->getData('approved_address')) {
+            $address = new DebtorCompany();
+            $address->name = $sessionAddress['name'];
+            $address->addressStreet = $sessionAddress['address_street'];
+            $address->addressHouseNumber = $sessionAddress['address_house_number'];
+            $address->addressAddition = $sessionAddress['address_addition'];
+            $address->addressPostalCode = $sessionAddress['address_postal_code'];
+            $address->addressCity = $sessionAddress['address_city'];
+            $address->addressCountry = $sessionAddress['address_country'];
+        }
+        return $address;
     }
 
 }

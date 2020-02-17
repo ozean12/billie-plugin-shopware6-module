@@ -8,6 +8,7 @@ use Billie\Exception\BillieException;
 use Billie\Exception\InvalidCommandException;
 use Billie\Exception\OrderDecline\OrderDeclinedException;
 use Billie\HttpClient\BillieClient;
+use Billie\Model\DebtorCompany;
 use BilliePayment\Components\MissingDocumentsException;
 use BilliePayment\Components\MissingLegalFormException;
 use BilliePayment\Components\Utils;
@@ -84,13 +85,22 @@ class Api
         return $this->client->checkoutSessionCreate($customer->getId());
     }
 
-    public function confirmCheckoutSession($refId, Address $address, Payment $paymentMethod, $amount, $currency)
+    /**
+     * @param $refId
+     * @param Address|DebtorCompany $address
+     * @param Payment $paymentMethod
+     * @param $amount
+     * @param $currency
+     * @return mixed
+     * @throws InvalidCommandException
+     */
+    public function confirmCheckoutSession($refId, $address, Payment $paymentMethod, $amount, $currency)
     {
         $amount['currency'] = $currency;
 
         $model = $this->factory->createConfirmCheckoutSessionCommand(
             $refId,
-            $this->factory->createDebtorCompany($address),
+            $address instanceof Address ? $this->factory->createDebtorCompany($address) : $address,
             $amount,
             $paymentMethod->getAttribute()->getBillieDuration()
         );
