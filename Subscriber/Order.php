@@ -2,12 +2,16 @@
 
 namespace BilliePayment\Subscriber;
 
-use Enlight\Event\SubscriberInterface;
 use BilliePayment\Components\Api\Api;
 use BilliePayment\Components\Payment\Service;
 use BilliePayment\Components\Utils;
+use BilliePayment\Enum\PaymentMethods;
 use DateInterval;
 use DateTime;
+use Enlight\Event\SubscriberInterface;
+use Enlight_Controller_Action;
+use Enlight_Event_EventArgs;
+use Enlight_View_Default;
 use Shopware\Models\Order\Order as OrderModel;
 use Shopware\Models\Order\Status;
 
@@ -57,7 +61,7 @@ class Order implements SubscriberInterface
      */
     public function __construct(Api $api, Utils $utils, Service $service)
     {
-        $this->api   = $api;
+        $this->api = $api;
         $this->utils = $utils;
         $this->service = $service;
 
@@ -70,38 +74,49 @@ class Order implements SubscriberInterface
     {
         return [
             'Enlight_Controller_Action_PostDispatchSecure_Backend_Order' => 'onSaveOrder',
-            'Enlight_Controller_Action_PreDispatch_Backend_Order'        => 'onBeforeSaveOrder', // TODO fix key duplicate
-            'Shopware_Modules_Order_SaveOrder_FilterAttributes'          => 'onBeforeSendMail',
-            'Enlight_Controller_Action_PreDispatch_Backend_Order'        => 'onDocumentCreate' // TODO fix key duplicate
+            'Enlight_Controller_Action_PreDispatch_Backend_Order' => 'onBeforeSaveOrder', // TODO fix key duplicate
+            'Shopware_Modules_Order_SaveOrder_FilterAttributes' => 'onBeforeSendMail',
+            'Enlight_Controller_Action_PreDispatch_Backend_Order' => 'onDocumentCreate', // TODO fix key duplicate
+            'Shopware_Modules_Order_SendMail_FilterVariables' => 'filterOrderMailVariables'
         ];
+    }
+
+    public function filterOrderMailVariables(Enlight_Event_EventArgs $args)
+    {
+        $data = $args->getReturn();
+        if (PaymentMethods::exists($data['additional']['payment']['name'])) {
+            // BILLSWPL-31: remove payment method description in order mail
+            $data['additional']['payment']['additionaldescription'] = null;
+        }
+        return $data;
     }
 
     /**
      * Calcuate Duration
      *
-     * @param \Enlight_Event_EventArgs $args
+     * @param Enlight_Event_EventArgs $args
      * @return void
      */
-    public function onDocumentCreate(\Enlight_Event_EventArgs $args)
+    public function onDocumentCreate(Enlight_Event_EventArgs $args)
     {
-        /** @var \Enlight_Controller_Action $controller */
+        /** @var Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
-        $request    = $controller->Request();
-        $params     = $request->getParams();
+        $request = $controller->Request();
+        $params = $request->getParams();
 
         if ($request->getActionName() == 'createDocument') {
-            /** @var \Shopware\Models\Order\Order $order */
-            $order  = Shopware()->Models()->find('Shopware\Models\Order\Order', $params['orderId']);
+            /** @var OrderModel $order */
+            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $params['orderId']);
 
             if (empty($order) || !$this->service->isBilliePayment(['id' => $order->getPayment()->getId()])) {
                 return;
             }
-            
+
             $duration = $order->getPayment()->getAttribute()->getBillieDuration();
             $attrs = $order->getAttribute();
             $date = array_key_exists('displayDate', $params) ? new DateTime($params['displayDate']) : new DateTime();
             $date->add(new DateInterval('P' . $duration . 'D'));
-    
+
             $attrs->setBillieDuration($duration);
             $attrs->setBillieDurationDate($date->format('d.m.Y'));
 
@@ -114,12 +129,12 @@ class Order implements SubscriberInterface
     /**
      * Filter to add billie api response to order attributes before mail is send.
      *
-     * @param \Enlight_Event_EventArgs $args
+     * @param Enlight_Event_EventArgs $args
      * @return void
      */
-    public function onBeforeSendMail(\Enlight_Event_EventArgs $args)
+    public function onBeforeSendMail(Enlight_Event_EventArgs $args)
     {
-        /** @var \Shopware\Models\Order\Order $order */
+        /** @var OrderModel $order */
         $session = Shopware()->Session()['billie_api_response'];
         $value = $args->getReturn();
 
@@ -139,32 +154,32 @@ class Order implements SubscriberInterface
     /**
      * Send updates to billie if order is changed.
      *
-     * @param \Enlight_Event_EventArgs $args
+     * @param Enlight_Event_EventArgs $args
      * @return void
      */
-    public function onBeforeSaveOrder(\Enlight_Event_EventArgs $args)
+    public function onBeforeSaveOrder(Enlight_Event_EventArgs $args)
     {
-        /** @var \Enlight_Controller_Action $controller */
+        /** @var Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
-        $request    = $controller->Request();
-        $params     = $request->getParams();
-        $view       = $controller->View();
+        $request = $controller->Request();
+        $params = $request->getParams();
+        $view = $controller->View();
 
         // Update Amount.
         if ($request->getActionName() == 'save') {
-            /** @var \Shopware\Models\Order\Order $order */
-            $order    = Shopware()->Models()->find('Shopware\Models\Order\Order', $params['id']);
+            /** @var OrderModel $order */
+            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $params['id']);
             $response = $this->api->updateOrder($order->getId(), [
                 'amount' => [
-                    'net'      => $params['invoiceAmountNet'] + $params['invoiceShippingNet'],
-                    'gross'    => $params['invoiceAmount'] + $params['invoiceShipping'],
+                    'net' => $params['invoiceAmountNet'] + $params['invoiceShippingNet'],
+                    'gross' => $params['invoiceAmount'] + $params['invoiceShipping'],
                     'currency' => $order->getCurrency(),
                 ]
             ]);
 
             $view->assign([
                 'success' => $response['success'],
-                'title'   => $response['title'],
+                'title' => $response['title'],
                 'message' => $response['data']
             ]);
         }
@@ -173,16 +188,16 @@ class Order implements SubscriberInterface
     /**
      * Sent updates to billie if order is changed.
      *
-     * @param \Enlight_Event_EventArgs $args
+     * @param Enlight_Event_EventArgs $args
      * @return void
      */
-    public function onSaveOrder(\Enlight_Event_EventArgs $args)
+    public function onSaveOrder(Enlight_Event_EventArgs $args)
     {
-        /** @var \Enlight_Controller_Action $controller */
+        /** @var Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
-        $request    = $controller->Request();
-        $view       = $controller->View();
-        $params     = $request->getParams();
+        $request = $controller->Request();
+        $view = $controller->View();
+        $params = $request->getParams();
 
         switch ($request->getActionName()) {
             // Batch Process orders.
@@ -208,12 +223,12 @@ class Order implements SubscriberInterface
      * Process an order and call the respective api endpoints.
      *
      * @param array $order
-     * @param \Enlight_View_Default $view
+     * @param Enlight_View_Default $view
      * @return void
      */
-    protected function processOrder(array $order, \Enlight_View_Default $view)
+    protected function processOrder(array $order, Enlight_View_Default $view)
     {
-        /** @var \BilliePayment\Components\Payment\Service $service */
+        /** @var Service $service */
         $service = Shopware()->Container()->get('billie_payment.payment_service');
         if (!$service->isBilliePayment(['id' => $order['paymentId']])) {
             return;
@@ -238,7 +253,7 @@ class Order implements SubscriberInterface
                 $response = $this->api->shipOrder($order['id']);
                 $view->assign([
                     'success' => $response['success'],
-                    'title'   => $response['title'],
+                    'title' => $response['title'],
                     'message' => $this->utils->getSnippet(
                         'backend/billie_overview/errors',
                         $response['data'],
