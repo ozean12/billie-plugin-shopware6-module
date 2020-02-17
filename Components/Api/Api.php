@@ -13,6 +13,7 @@ use BilliePayment\Components\MissingLegalFormException;
 use BilliePayment\Components\Utils;
 use BilliePayment\Services\BankService;
 use BilliePayment\Services\ConfigService;
+use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
 use Shopware\Models\Order\Document\Document;
 use Shopware\Models\Order\Order;
@@ -83,10 +84,16 @@ class Api
         return $this->client->checkoutSessionCreate($customer->getId());
     }
 
-    public function confirmCheckoutSession($refId, Payment $paymentMethod, $amount, $currency)
+    public function confirmCheckoutSession($refId, Address $address, Payment $paymentMethod, $amount, $currency)
     {
         $amount['currency'] = $currency;
-        $model = $this->factory->createConfirmCheckoutSessionCommand($refId, $amount, $paymentMethod->getAttribute()->getBillieDuration());
+
+        $model = $this->factory->createConfirmCheckoutSessionCommand(
+            $refId,
+            $this->factory->createDebtorCompany($address),
+            $amount,
+            $paymentMethod->getAttribute()->getBillieDuration()
+        );
         return $this->client->checkoutSessionConfirm($model);
     }
 

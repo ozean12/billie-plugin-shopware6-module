@@ -83,13 +83,12 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             /** @var Payment $paymentMethod */
             $paymentMethod = $this->getModelManager()->getRepository(Payment::class)->findOneBy(['name' => $this->getPaymentShortName()]);
             $sessionId = $this->sessionService->getCheckoutSessionId(false);
+            $billingAddress = $this->sessionService->getBillingAddress();
             if ($sessionId !== null) {
-
-
                 try {
                     $totals = $this->sessionService->getTotalAmount();
                     $currency = $this->sessionService->getSession()->offsetGet('sOrderVariables')['sBasket']['sCurrencyName'];
-                    $orderId = $this->billieApi->confirmCheckoutSession($sessionId, $paymentMethod, [
+                    $orderId = $this->billieApi->confirmCheckoutSession($sessionId, $billingAddress, $paymentMethod, [
                         'net' => $totals['net'] * 100,
                         'tax' => $totals['tax'] * 100
                     ], $currency);

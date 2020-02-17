@@ -3,6 +3,7 @@
 namespace BilliePayment\Components\Api;
 
 use Billie\Command\CheckoutSessionConfirm;
+use Billie\Model\DebtorCompany;
 use BilliePayment\Components\Utils;
 use Doctrine\Common\Collections\Criteria;
 use Shopware\Models\Document\Document;
@@ -186,11 +187,12 @@ class CommandFactory
         return new ConfirmPayment($refId, $amount * 100); // amount are in cents!
     }
 
-    public function createConfirmCheckoutSessionCommand($refId, array $amount, $duration)
+    public function createConfirmCheckoutSessionCommand($refId, DebtorCompany $debtorCompany, array $amount, $duration)
     {
         $model = new CheckoutSessionConfirm($refId);
         $model->duration = $duration;
         $model->amount = new Amount($amount['net'], $amount['currency'], $amount['tax']);
+        $model->debtorCompany = $debtorCompany;
         return $model;
     }
 
@@ -253,5 +255,18 @@ class CommandFactory
         if (!empty($errors)) {
             throw new MissingLegalFormException($errors);
         }
+    }
+
+    public function createDebtorCompany(\Shopware\Models\Customer\Address $address)
+    {
+        $debtorCompany = new DebtorCompany();
+        $debtorCompany->name = $address->getCompany();
+        $debtorCompany->addressStreet = $address->getStreet();
+        $debtorCompany->addressAddition = implode(', ', [$address->getAdditionalAddressLine1(), $address->getAdditionalAddressLine2(), $address->getAdditional()]);
+        $debtorCompany->addressHouseNumber = null;
+        $debtorCompany->addressPostalCode = $address->getZipcode();
+        $debtorCompany->addressCity = $address->getCity();
+        $debtorCompany->addressCountry = $address->getCountry()->getIso();
+        return $debtorCompany;
     }
 }
