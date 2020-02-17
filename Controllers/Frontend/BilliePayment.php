@@ -118,6 +118,8 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                         self::PAYMENTSTATUSPAID //TODO replace by config
                     );
 
+                    $this->billieApi->updateOrder($orderId, ['order_id' => $orderNumber]);
+
                     $repo = $this->getModelManager()->getRepository(Order::class);
                     /** @var Order $order */
                     $order = $repo->findOneBy(['number' => $orderNumber]);

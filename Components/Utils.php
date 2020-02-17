@@ -120,7 +120,7 @@ class Utils
     public function getLogger()
     {
         if ($this->logger === null) {
-            $this->logger = Shopware()->Container()->get('pluginlogger');
+            $this->logger = Shopware()->Container()->get('billie_payment.logger');
         }
 
         return $this->logger;

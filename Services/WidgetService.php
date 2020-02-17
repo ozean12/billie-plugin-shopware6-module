@@ -5,6 +5,8 @@ namespace BilliePayment\Services;
 
 
 use BilliePayment\Helper\BasketHelper;
+use kamermans\OAuth2\Exception\AccessTokenRequestException;
+use Monolog\Logger;
 use Shopware\Bundle\StoreFrontBundle\Service\ContextServiceInterface;
 use Shopware\Bundle\StoreFrontBundle\Service\ProductServiceInterface;
 use Shopware\Bundle\StoreFrontBundle\Struct\Product;
@@ -28,18 +30,24 @@ class WidgetService
      * @var ContextServiceInterface
      */
     private $contextService;
+    /**
+     * @var Logger
+     */
+    private $logger;
 
     public function __construct(
         ProductServiceInterface $productService,
         ConfigService $configService,
         SessionService $sessionService,
-        ContextServiceInterface $contextService
+        ContextServiceInterface $contextService,
+        Logger $logger
     )
     {
         $this->productService = $productService;
         $this->configService = $configService;
         $this->sessionService = $sessionService;
         $this->contextService = $contextService;
+        $this->logger = $logger;
     }
 
     public function getWidgetData(array $sOrderVariables)
@@ -48,9 +56,17 @@ class WidgetService
         $billingAddress = $this->sessionService->getBillingAddress();
         $shippingAddress = $this->sessionService->getShippingAddress();
 
+
+        try {
+            $checkoutSessionId = $this->sessionService->getCheckoutSessionId(true);
+        } catch (AccessTokenRequestException $e) {
+            $this->logger->addCritical($e->getMessage());
+            $checkoutSessionId = '';
+        }
+
         $widgetData = [
             'src' => $this->configService->isSandbox() ? 'https://static-paella-sandbox.billie.io/checkout/billie-checkout.js' : 'https://static.billie.io/checkout/billie-checkout.js',
-            'checkoutSessionId' => $this->sessionService->getCheckoutSessionId(true),
+            'checkoutSessionId' => $checkoutSessionId,
             'checkoutData' => [
                 'amount' => $this->sessionService->getTotalAmount(),
                 'duration' => $this->sessionService->getBillieDurationForPaymentMethod(),

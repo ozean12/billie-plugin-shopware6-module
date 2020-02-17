@@ -108,7 +108,7 @@ class Checkout implements SubscriberInterface
             $view->assign('sErrorFlag', $session->sErrorFlag);
             $view->assign('sErrorMessages', $session->sErrorMessages);
             $view->assign('legalForms', \Billie\Util\LegalFormProvider::all());
-            
+
             unset($session->sErrorFlag);
             unset($session->sErrorMessages);
         }
@@ -161,7 +161,7 @@ class Checkout implements SubscriberInterface
     public function addApiMessagesToView(\Enlight_Event_EventArgs $args)
     {
         /** @var \Shopware\Components\Logger $logger */
-        $logger = Shopware()->Container()->get('pluginlogger');
+        $logger = Shopware()->Container()->get('billie_payment.logger');
 
         /** @var \Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
@@ -196,7 +196,7 @@ class Checkout implements SubscriberInterface
             $view->assign('invalidInvoiceAddressSnippet', $error['code']);
             $view->assign('invalidInvoiceAddress', $error['invalid']);
         }
-        
+
         // Get API errors from the session and assign them to the view
         $errorCode = $request->getParam('errorCode');
         if ($errorCode) {
