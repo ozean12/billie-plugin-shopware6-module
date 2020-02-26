@@ -10,6 +10,7 @@ use DateInterval;
 use DateTime;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Controller_Action;
+use Enlight_Controller_Request_RequestHttp;
 use Enlight_Event_EventArgs;
 use Enlight_View_Default;
 use Shopware\Models\Order\Order as OrderModel;
@@ -74,9 +75,8 @@ class Order implements SubscriberInterface
     {
         return [
             'Enlight_Controller_Action_PostDispatchSecure_Backend_Order' => 'onSaveOrder',
-            'Enlight_Controller_Action_PreDispatch_Backend_Order' => 'onBeforeSaveOrder', // TODO fix key duplicate
             'Shopware_Modules_Order_SaveOrder_FilterAttributes' => 'onBeforeSendMail',
-            'Enlight_Controller_Action_PreDispatch_Backend_Order' => 'onDocumentCreate', // TODO fix key duplicate
+            'Enlight_Controller_Action_PreDispatch_Backend_Order' => 'onDocumentCreate',
             'Shopware_Modules_Order_SendMail_FilterVariables' => 'filterOrderMailVariables'
         ];
     }
@@ -152,40 +152,6 @@ class Order implements SubscriberInterface
     }
 
     /**
-     * Send updates to billie if order is changed.
-     *
-     * @param Enlight_Event_EventArgs $args
-     * @return void
-     */
-    public function onBeforeSaveOrder(Enlight_Event_EventArgs $args)
-    {
-        /** @var Enlight_Controller_Action $controller */
-        $controller = $args->getSubject();
-        $request = $controller->Request();
-        $params = $request->getParams();
-        $view = $controller->View();
-
-        // Update Amount.
-        if ($request->getActionName() == 'save') {
-            /** @var OrderModel $order */
-            $order = Shopware()->Models()->find('Shopware\Models\Order\Order', $params['id']);
-            $response = $this->api->updateOrder($order->getId(), [
-                'amount' => [
-                    'net' => $params['invoiceAmountNet'] + $params['invoiceShippingNet'],
-                    'gross' => $params['invoiceAmount'] + $params['invoiceShipping'],
-                    'currency' => $order->getCurrency(),
-                ]
-            ]);
-
-            $view->assign([
-                'success' => $response['success'],
-                'title' => $response['title'],
-                'message' => $response['data']
-            ]);
-        }
-    }
-
-    /**
      * Sent updates to billie if order is changed.
      *
      * @param Enlight_Event_EventArgs $args
@@ -203,13 +169,13 @@ class Order implements SubscriberInterface
             // Batch Process orders.
             case 'batchProcess':
                 foreach ($params['orders'] as $order) {
-                    $this->processOrder($order, $view);
+                    $this->processOrder($request, $order, $view);
                 }
                 break;
 
             // Process Single Order.
             case 'save':
-                $this->processOrder($params, $view);
+                $this->processOrder($request, $params, $view);
                 break;
 
             // Extend order details overview.
@@ -217,6 +183,8 @@ class Order implements SubscriberInterface
                 $view->extendsTemplate('backend/billie_payment/view/detail/overview.js');
                 break;
         }
+
+
     }
 
     /**
@@ -226,12 +194,20 @@ class Order implements SubscriberInterface
      * @param Enlight_View_Default $view
      * @return void
      */
-    protected function processOrder(array $order, Enlight_View_Default $view)
+    protected function processOrder(Enlight_Controller_Request_RequestHttp $request, array $order, Enlight_View_Default $view)
     {
         /** @var Service $service */
         $service = Shopware()->Container()->get('billie_payment.payment_service');
         if (!$service->isBilliePayment(['id' => $order['paymentId']])) {
             return;
+        }
+
+        if ($request->getActionName() == 'save') {
+            $this->api->updateOrderAmount(
+                $request->getParam('id'),
+                $request->getParam('invoiceAmountNet') + $request->getParam('invoiceShippingNet'),
+                $request->getParam('invoiceAmount') + $request->getParam('invoiceShipping')
+            );
         }
 
         switch ($order['status']) {

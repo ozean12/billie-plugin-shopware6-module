@@ -135,9 +135,9 @@ class CommandFactory
     {
         $command         = new ReduceOrderAmount($order->getAttribute()->getBillieReferenceId());
         $command->amount = new Amount(
-            $amount['net'],
+            round($amount['net'], 2),
             $amount['currency'],
-            $amount['gross'] - $amount['net'] // Gross - Net = Tax Amount
+            round($amount['gross'] - $amount['net'], 2) // Gross - Net = Tax Amount
         );
         /** @var Document $document */
         $invoice = $this->fetchInvoice($order);

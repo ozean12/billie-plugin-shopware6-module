@@ -89,7 +89,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     $totals = $this->sessionService->getTotalAmount();
                     $currency = $this->sessionService->getSession()->offsetGet('sOrderVariables')['sBasket']['sCurrencyName'];
 
-                    $orderId = $this->billieApi->confirmCheckoutSession(
+                    $billieOrder = $this->billieApi->confirmCheckoutSession(
                         $sessionId,
                         $approvedAddress,
                         $paymentMethod,
@@ -104,8 +104,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     $this->logger->addCritical($e->getMessage());
                     return $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
                 }
-                if ($orderId) {
-                    $billieOrder = $this->billieApi->getClient()->getOrder($orderId);
+                if ($billieOrder) {
                     if($this->configService->isOverrideCustomerAddress()) {
                         $this->addressService->updateBillingAddress($billieOrder->debtorCompany);
                     }
@@ -113,16 +112,17 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     $this->addressService->updateSessionAddress($billieOrder->debtorCompany);
 
                     $orderNumber = $this->saveOrder(
-                        $orderId,
-                        $orderId,
+                        $billieOrder->referenceId,
+                        $billieOrder->referenceId,
                         self::PAYMENTSTATUSPAID //TODO replace by config
                     );
-
-                    $this->billieApi->updateOrder($orderId, ['order_id' => $orderNumber]);
-
                     $repo = $this->getModelManager()->getRepository(Order::class);
                     /** @var Order $order */
                     $order = $repo->findOneBy(['number' => $orderNumber]);
+
+                    $billieOrder->orderId = $orderNumber;
+                    $this->billieApi->updateOrder($order, $billieOrder);
+
 
                     // write determined address to shopware order address
                     $billingAddress = $order->getBilling();
