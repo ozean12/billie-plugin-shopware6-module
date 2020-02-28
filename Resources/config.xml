@@ -31,7 +31,7 @@
             <name>billiepayment/override_address</name>
             <label lang="de">Überschreibe Adresse</label>
             <label lang="en">Override address</label>
-            <value>false</value>
+            <value>true</value>
             <description lang="de">Wenn aktiviert, wird die Adresse im Kundenaccount überschrieben. Wenn deaktivert, wird lediglich die Adresse in der Bestellung überschrieben.</description>
             <description lang="en">If enabled, the address in the customer account got overridden. If disabled, Billie will only override the address in the order.</description>
         </element>
