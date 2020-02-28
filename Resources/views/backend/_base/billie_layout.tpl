@@ -43,9 +43,9 @@
 <script type="text/javascript">
     var _BILLIE_SNIPPETS_ = {
         confirm_payment: {
-            title: '{s name="confirm_payment/title"}Zahlungsbetrag{/s}',
-            desc: '{s name="confirm_payment/description"}Bitte geben Sie Zahlungsbetrag an.{/s}',
-            success: '{s name="confirm_payment/success"}Billie PaD wurde über den angegebenen Zahlungsbetrag informiert.{/s}',
+            title: '{s name="confirm_payment/title"}{/s}',
+            desc: '{s name="confirm_payment/description"}{/s}',
+            success: '{s name="confirm_payment/success"}{/s}',
         },
         cancel_order: {
             title: '{s name="cancel_order/title"}Bestellung abbrechen{/s}',
