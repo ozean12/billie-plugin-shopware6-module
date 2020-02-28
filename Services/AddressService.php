@@ -54,13 +54,7 @@ class AddressService
             $billingAddress->setCountry($country);
         }
 
-        $addressAttribute = $billingAddress->getAttribute();
-        $addressAttribute->setBillieRegistrationnumber($company->registrationNumber);
-        $addressAttribute->setBillieLegalform($company->legalForm);
-
-
-
-        $this->modelManager->flush([$billingAddress, $addressAttribute]);
+        $this->modelManager->flush([$billingAddress]);
     }
 
     public function updateSessionAddress(Company $company){

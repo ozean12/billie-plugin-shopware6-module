@@ -66,9 +66,6 @@ class CommandFactory
 
         // Company information, whereas CUSTOMER_ID is the merchant's customer id (null for guest orders)
         $command->debtorCompany                     = new Company($customer, $args->billing['company'], $address);
-        $command->debtorCompany->legalForm          = $args->billing['attributes']['billieLegalform'];
-        $command->debtorCompany->registrationNumber = $args->billing['attributes']['billieRegistrationnumber'];
-        $command->debtorCompany->taxId              = $args->billing['ustid'];
 
         // Debtor Person data
         $command->debtorPerson            = new Person($args->customerEmail);

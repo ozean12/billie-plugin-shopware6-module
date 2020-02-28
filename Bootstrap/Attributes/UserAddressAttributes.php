@@ -17,24 +17,18 @@ class UserAddressAttributes extends AbstractAttributes
 
     protected function createUpdateAttributes()
     {
-        // Get all legal forms.
-        $allLegalForms = LegalFormProvider::all();
-        $legalData = [];
-        foreach ($allLegalForms as $legal) {
-            $legalData[] = ['key' => $legal['code'], 'value' => $legal['label']];
-        }
+    }
 
-        $this->crudService->update($this->tableName, 'billie_registrationNumber', 'string', [
-            'label' => 'Registration Number',
-            'displayInBackend' => true,
-            'custom' => false
-        ]);
-        $this->crudService->update($this->tableName, 'billie_legalform', 'combobox', [
-            'label' => 'Legalform',
-            'displayInBackend' => true,
-            'arrayStore' => $legalData,
-            'custom' => false
-        ]);
+    public function install()
+    {
+        // these attributes are not required anymore
+        $this->uninstall(false);
+    }
+
+    public function update()
+    {
+        // these attributes are not required anymore
+        $this->uninstall(false);
     }
 
     protected function uninstallAttributes()

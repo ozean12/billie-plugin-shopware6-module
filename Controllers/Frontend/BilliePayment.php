@@ -120,8 +120,10 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     /** @var Order $order */
                     $order = $repo->findOneBy(['number' => $orderNumber]);
 
-                    $billieOrder->orderId = $orderNumber;
-                    $this->billieApi->updateOrder($order, $billieOrder);
+                    // if we set the orderNumber for the billie order, we are not able to mark the order as shipped on the billie gateway.
+                    // also see BILLSWPL-21
+                    //$billieOrder->orderId = $orderNumber;
+                    //$this->billieApi->updateOrder($order, $billieOrder);
 
 
                     // write determined address to shopware order address
@@ -150,89 +152,6 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         }
 
         return $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
-    }
-
-    /**
-     * Complete the order if everything is valid.
-     */
-    public function returnAction()
-    {
-        /** @var Service $service */
-        $service = $this->container->get('billie_payment.payment_service');
-        $user = $this->getUser();
-        $billing = $user['billingaddress'];
-        $attrs = $billing['attributes'];
-
-        /** @var Response $response */
-        $response = $service->createPaymentResponse($this->Request());
-        $signature = $response->signature;
-        $token = $service->createPaymentToken($this->getAmount(), $billing['customernumber']);
-
-        // Make sure that a legalform is selected, otherwise display error message.
-        if (!isset($attrs['billieLegalform']) && !isset($attrs['billie_legalform'])) {
-            $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => 'MissingLegalForm']);
-            return;
-        }
-
-        // If token is invalid, cancel action!
-        if (!$service->isValidToken($response, $token)) {
-            $this->forward('cancel');
-            return;
-        }
-
-        // Loads basked and verifies if it's still the same.
-        try {
-            $basket = $this->loadBasketFromSignature($signature);
-            $this->verifyBasketSignature($signature, $basket);
-        } catch (Exception $e) {
-            $this->forward('cancel');
-        }
-
-        // Check response status and save order when everything went fine.
-        if ($response->status === 'accepted') {
-            /** @var Api $api */
-            $api = $this->container->get('billie_payment.api');
-            $session = $this->container->get('session');
-
-            /** @var ModelManager $models */
-            $models = Shopware()->Container()->get('models');
-
-            // Call Api for created order
-            $apiResp = $api->createOrder(
-                $service->createApiArgs($user, $this->getBasket(), $this->getPaymentShortName())
-            );
-
-            // Update Email templates
-            $payment = $models->getRepository(Payment::class)->findOneBy(['name' => $this->getPaymentShortName()]);
-            $duration = $payment->getAttribute()->getBillieDuration();
-            $date = new DateTime();
-            $date->add(new DateInterval('P' . $duration . 'D'));
-            $apiResp['local']['duration'] = $duration;
-            $apiResp['local']['duration_date'] = $date->format('d.m.Y');
-            $session['billie_api_response'] = $apiResp;
-
-            // Save Order on success
-            if ($apiResp['success']) {
-                $orderNumber = $this->saveOrder(
-                    $response->transactionId,
-                    $response->token,
-                    self::PAYMENTSTATUSPAID
-                );
-
-                $repo = $models->getRepository(Order::class);
-                $order = $repo->findOneBy(['number' => $orderNumber]);
-                $api->helper->updateLocal($order, $apiResp['local']);
-
-                // Finish checkout
-                $this->redirect(['controller' => 'checkout', 'action' => 'finish']);
-                return;
-            }
-
-            $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $apiResp['data']]);
-            return;
-        }
-
-        $this->forward('cancel');
     }
 
     public function validateAddressAction()

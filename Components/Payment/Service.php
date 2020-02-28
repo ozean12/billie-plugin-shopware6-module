@@ -14,14 +14,6 @@ use Shopware\Models\Payment\Payment;
  */
 class Service
 {
-    /**
-     * Names of differnt billie payment means
-     * @var array
-     * @deprecated
-     */
-    const PAYMENT_MEANS = [
-        'billie_payment_after_delivery'
-    ];
 
     /**
      * Validate payment data based on legal form. If successful return true,
@@ -37,15 +29,6 @@ class Service
         // Error Bags
         $errorMessages = [];
         $errorFlag     = [];
-
-        // Check what fields are required based on legal form
-        if (LegalFormProvider::isVatIdRequired($request->getParam('sBillieLegalForm'))) {
-            $fields[] = 'sBillieVatId';
-        }
-
-        if (LegalFormProvider::isRegistrationIdRequired($request->getParam('sBillieLegalForm'))) {
-            $fields[] = 'sBillieRegistrationnumber';
-        }
 
         // validate Fields and return error if there are any
         foreach ($fields as $field) {
@@ -101,106 +84,4 @@ class Service
         return false;
     }
 
-    /**
-     * Saves addtional payment data like legal form and registration number.
-     *
-     * @param integer $userId
-     * @param string $legalForm
-     * @param string $regNumber
-     * @param string|null $vatId
-     * @return void
-     */
-    public function saveAdditionalPaymentData($userId, $legalForm, $regNumber, $vatId=null)
-    {
-        // Fetch User
-        $models = Shopware()->Container()->get('models');
-        $user   = $models->getRepository(Customer::class)->find($userId);
-
-        if ($user) {
-            // Set vat id
-            $billing = $user->getCustomer()->getDefaultBillingAddress();
-            if (!is_null($vatId)) {
-                $billing->setVatId($vatId);
-            }
-
-            // Set attrs
-            $attr = $billing->getAttribute();
-            $attr->setBillieLegalform($legalForm);
-            $attr->setBillieRegistrationnumber($regNumber);
-
-            // Save
-            $models->persist($billing);
-            $models->persist($attr);
-            $models->flush([$billing, $attr]);
-        }
-    }
-
-    /**
-     * @param \Enlight_Controller_Request_Request $request
-     * @return Response
-     */
-    public function createPaymentResponse(\Enlight_Controller_Request_Request $request)
-    {
-        $response                = new Response();
-        $response->transactionId = $request->getParam('transactionId', null);
-        $response->status        = $request->getParam('status', null);
-        $response->token         = $request->getParam('token', null);
-        $response->signature     = $request->getParam('signature', null);
-
-        return $response;
-    }
-
-    /**
-     * @param array $user
-     * @param array $basket
-     * @param string $shortName
-     * @return ApiArguments
-     */
-    public function createApiArgs($user, $basket, $shortName)
-    {
-        // fix inconsistend camelcase
-        $attrs = $user['billingaddress']['attributes'];
-        if (array_key_exists('billie_legalform', $attrs) && !array_key_exists('billieLegalform', $attrs)) {
-            $attrs['billieLegalform']          = $attrs['billie_legalform'];
-            $attrs['billieRegistrationnumber'] = $attrs['billie_registrationnumber'];
-        }
-        $user['billingaddress']['attributes'] = $attrs;
-
-        // Payment Duration
-        $models   = Shopware()->Container()->get('models');
-        $payment  = $models->getRepository(Payment::class)->findOneBy(['name' => $shortName]);
-        $duration = $payment->getAttribute()->getBillieDuration();
-
-        // Build Args
-        $args                = new ApiArguments();
-        $args->billing       = $user['billingaddress'];
-        $args->amountNet     = $basket['AmountNetNumeric'];
-        $args->currency      = $basket['sCurrencyName'];
-        $args->taxAmount     = $basket['sAmountTax'];
-        $args->customerEmail = $user['additional']['user']['email'];
-        $args->country       = $user['additional']['country'];
-        $args->duration      = (int) $duration;
-
-        return $args;
-    }
-
-    /**
-     * @param Response $response
-     * @param string $token
-     * @return bool
-     */
-    public function isValidToken(Response $response, $token)
-    {
-        return hash_equals($token, $response->token);
-    }
-
-    /**
-     * @param float $amount
-     * @param int $customerId
-     * @return string
-     */
-    public function createPaymentToken($amount, $customerId)
-    {
-        return md5(implode('|', [$amount, $customerId]));
-    }
 }
