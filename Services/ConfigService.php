@@ -62,6 +62,11 @@ class ConfigService
         return $this->getConfig('billiepayment/override_address', false, $shop);
     }
 
+    public function isShowPaymentIcon($shop = null)
+    {
+        return $this->getConfig('billiepayment/payment_page/show_icon', false, $shop);
+    }
+
     /**
      * @param $configName
      * @param null $default

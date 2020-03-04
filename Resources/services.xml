@@ -24,6 +24,7 @@
         </service>
         <service id="BilliePayment\Subscriber\Frontend\CheckoutSubscriber">
             <argument id="session" type="service"/>
+            <argument id="BilliePayment\Services\ConfigService" type="service"/>
             <argument id="BilliePayment\Services\WidgetService" type="service"/>
             <tag name="shopware.event_subscriber"/>
         </service>

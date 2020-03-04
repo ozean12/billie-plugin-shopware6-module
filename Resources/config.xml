@@ -73,5 +73,15 @@
             <description lang="de">Bitte geben Sie die Anreden ein, welche in Ihrem Shop für die Frauen gepflegt sind. (einschließlich Übersetzungen) (kommasepariert)</description>
             <description lang="en">Please insert all salutations which are setup for females. (incl. the translation for them) (comma separated)</description>
         </element>
+
+        <element type="boolean" scope="locale">
+            <name>billiepayment/payment_page/show_icon</name>
+            <label lang="de">Billie-Icon anzeigen</label>
+            <label lang="en">Show Billie-Icon</label>
+            <value>true</value>
+            <description lang="de">Wenn auf "Ja" gestellt ist, wird das Billie-Icon neben der Zahlart auf der Zahlartenseite angezeigt.</description>
+            <description lang="en">If set to "Yes", the Billie-Icon will be displayed on the selectionpage of the payment method.</description>
+        </element>
+
     </elements>
 </config>
