@@ -48,9 +48,9 @@
             success: '{s name="confirm_payment/success"}{/s}',
         },
         cancel_order: {
-            title: '{s name="cancel_order/title"}Bestellung abbrechen{/s}',
-            desc: '{s name="cancel_order/description"}Sind Sie sicher, dass Sie die Bestellung über Billie PaD stornieren möchten?{/s}',
-            success: '{s name="cancel_order/success"}Die Bestellung wurde erfolgreich über Billie PaD storniert.{/s}',
+            title: '{s name="cancel_order/title"}{/s}',
+            desc: '{s name="cancel_order/description"}{/s}',
+            success: '{s name="cancel_order/success"}{/s}',
         },
         refund_order: {
             title: '{s name="refund_order/title"}{/s}',
@@ -58,20 +58,20 @@
             success: '{s name="refund_order/success"}{/s}',
         },
         ship_order: {
-            success: '{s name="ship_order/success"}Die Bestellung wurde erfolgreich als verschickt markiert.{/s}',
-            external_invoice_placeholder: '{s name="ship_order/external_invoice_placeholder"}Externe Rechnungsnummer{/s}',
-            external_url_placeholder: '{s name="ship_order/external_url_placeholder"}URL/ Link zum PDF-Rechnungsdokument{/s}',
-            add_external_invoice: '{s name="ship_order/add_external_invoice"}Bitte erzeugen Sie zuerst eine Rechnung in Shopware (Bestellung -> Dokumente -> Rechnung...) oder geben Sie nachfolgend die Rechnungsnummer ein, falls Sie die Rechnung bereits extern (bspw. in einer Warenwirtschaft) erzeugt haben.{/s}',
-            missing_invoice_number: '{s name="ship_order/missing_invoice_number"}Die Bestellung konnte nicht als verschickt markieren, da die Rechnungsnummer fehlt! Bitte erstellen Sie eine Rechnung oder geben Sie eine externe Rechnungsnummer ein.{/s}',
+            success: '{s name="ship_order/success"}{/s}',
+            external_invoice_placeholder: '{s name="ship_order/external_invoice_placeholder"}{/s}',
+            external_url_placeholder: '{s name="ship_order/external_url_placeholder"}{/s}',
+            add_external_invoice: '{s name="ship_order/add_external_invoice"}{/s}',
+            missing_invoice_number: '{s name="ship_order/missing_invoice_number"}{/s}',
         },
         states: {
-            created: '{s name="order/state/created" namespace="backend/billie_overview/order"}created{/s}',
-            declined: '{s name="order/state/declined" namespace="backend/billie_overview/order"}declined{/s}',
-            shipped: '{s name="order/state/shipped" namespace="backend/billie_overview/order"}shipped{/s}',
-            paid_out: '{s name="order/state/paid_out" namespace="backend/billie_overview/order"}paid_out{/s}',
-            late: '{s name="order/state/late" namespace="backend/billie_overview/order"}late{/s}',
-            complete: '{s name="order/state/complete" namespace="backend/billie_overview/order"}complete{/s}',
-            canceled: '{s name="order/state/canceled" namespace="backend/billie_overview/order"}canceled{/s}'
+            created: '{s name="created" namespace="backend/billie/states"}{/s}',
+            declined: '{s name="declined" namespace="backend/billie/states"}{/s}',
+            shipped: '{s name="shipped" namespace="backend/billie/states"}{/s}',
+            paid_out: '{s name="paid_out" namespace="backend/billie/states"}{/s}',
+            late: '{s name="late" namespace="backend/billie/states"}{/s}',
+            complete: '{s name="complete" namespace="backend/billie/states"}{/s}',
+            canceled: '{s name="canceled" namespace="backend/billie/states"}{/s}'
         },
         errorCodes: {
             error: '{s name="error" namespace="backend/billie_overview/errors"}{/s}',

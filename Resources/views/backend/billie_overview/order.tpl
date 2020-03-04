@@ -4,7 +4,7 @@
 {block name="content/main"}
 <div class="wrapper">
     <div class="page-header">
-        <h1>{s name="order/heading"}Bestellung{/s} <small><code>order_id: {$order_number}</code></small></h1>
+        <h1>{s name="order/heading"}{/s} <small><code>order_id: {$order_number}</code></small></h1>
         <button
             class="btn btn-primary confirm-payment"
             data-order_id="{$order_id}"
@@ -17,7 +17,7 @@
             data-order_id="{$order_id}"
             data-action="{url controller="BillieOverview" action="cancelOrder" __csrf_token=$csrfToken}"
             >
-            {s name="order/cancel_order"}Bestellung stornieren{/s}
+            {s name="order/cancel_order"}{/s}
         </button-->
         {if $state != 'canceled'}
             <button
@@ -37,35 +37,35 @@
                 data-order_id="{$order_id}"
                 data-action="{url controller="BillieOverview" action="shipOrder" __csrf_token=$csrfToken}"
             >
-                {s name="order/ship_order"}Bestellung als verschickt markieren{/s}
+                {s name="order/ship_order"}{/s}
             </button>
         {/if}
         <a class="btn btn-primary pull-right" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">
-            {s name="back"}Back to Overview{/s}
+            {s name="back"}{/s}
         </a>
     </div>
 
     <form class="form-horizontal">
 
-        <h3>{s name="order/state/heading"}Zustandsdetails{/s}</h3>
+        <h3>{s name="order/state/heading"}{/s}</h3>
         <div class="form-group">
-            <label for="state" class="col-sm-2 control-label">{s name="order/state/state"}Zustand{/s}</label>
+            <label for="state" class="col-sm-2 control-label">{s name="order/state/state"}{/s}</label>
             <div class="col-sm-10">
                 <span class="state">
                     {if $state == 'created'}
-                        {s name="order/state/created"}erstellt{/s}
+                        {s namespace="backend/billie/states" name="created"}{/s}
                     {elseif $state == 'declined'}
-                        {s name="order/state/declined"}abgelehnt{/s}
+                        {s namespace="backend/billie/states" name="declined"}{/s}
                     {elseif $state == 'shipped'}
-                        {s name="order/state/shipped"}verschickt{/s}
+                        {s namespace="backend/billie/states" name="shipped"}{/s}
                     {elseif $state == 'paid_out'}
-                        {s name="order/state/paid_out"}ausbezahlt{/s}
+                        {s namespace="backend/billie/states" name="paid_out"}{/s}
                     {elseif $state == 'late'}
-                        {s name="order/state/late"}überfällig{/s}
+                        {s namespace="backend/billie/states" name="late"}{/s}
                     {elseif $state == 'complete'}
-                        {s name="order/state/complete"}abgeschlossen{/s}
+                        {s namespace="backend/billie/states" name="complete"}{/s}
                     {elseif $state == 'canceled'}
-                        {s name="order/state/canceled"}storniert{/s}
+                        {s namespace="backend/billie/states" name="canceled"}{/s}
                     {/if}
                 </span>
             </div>
@@ -93,19 +93,19 @@
 
         <h3>{s name="order/payment/heading"}Zahlungsdetails{/s}</h3>
         <div class="form-group">
-            <label for="IBAN" class="col-sm-2 control-label">{s name="order/payment/iban"}IBAN{/s}</label>
+            <label for="IBAN" class="col-sm-2 control-label">{s name="order/payment/iban"}{/s}</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="IBAN" value="{$bank_account.iban}" readonly>
             </div>
         </div>
         <div class="form-group">
-            <label for="BIC" class="col-sm-2 control-label">{s name="order/payment/bic"}BIC{/s}</label>
+            <label for="BIC" class="col-sm-2 control-label">{s name="order/payment/bic"}{/s}</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="BIC" value="{$bank_account.bic}" readonly>
             </div>
         </div>
         <div class="form-group">
-            <label for="BIC" class="col-sm-2 control-label">{s name="order/payment/bank"}Bank{/s}</label>
+            <label for="BIC" class="col-sm-2 control-label">{s name="order/payment/bank"}{/s}</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="BIC" value="{$bank_account.bank}" readonly>
             </div>
@@ -115,37 +115,37 @@
 
         <h3>{s name="order/debtor/heading"}Schuldner{/s}</h3>
         <div class="form-group">
-            <label for="name" class="col-sm-2 control-label">{s name="order/debtor/name"}Name{/s}</label>
+            <label for="name" class="col-sm-2 control-label">{s name="order/debtor/name"}{/s}</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="name" value="{$debtor_company.name}" readonly>
             </div>
         </div>
         <div class="form-group">
-            <label for="address_house_number" class="col-sm-2 control-label">{s name="order/debtor/house_number"}Hausnummer{/s}</label>
+            <label for="address_house_number" class="col-sm-2 control-label">{s name="order/debtor/house_number"}{/s}</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="address_house_number" value="{$debtor_company.address_house_number}" readonly>
             </div>
         </div>
         <div class="form-group">
-            <label for="address_house_street" class="col-sm-2 control-label">{s name="order/debtor/street"}Straße{/s}</label>
+            <label for="address_house_street" class="col-sm-2 control-label">{s name="order/debtor/street"}{/s}</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="address_house_street" value="{$debtor_company.address_house_street}" readonly>
             </div>
         </div>
         <div class="form-group">
-            <label for="address_house_city" class="col-sm-2 control-label">{s name="order/debtor/city"}Stadt{/s}</label>
+            <label for="address_house_city" class="col-sm-2 control-label">{s name="order/debtor/city"}{/s}</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="address_house_city" value="{$debtor_company.address_house_city}" readonly>
             </div>
         </div>
         <div class="form-group">
-            <label for="address_house_postal_code" class="col-sm-2 control-label">{s name="order/debtor/postal_code"}PLZ{/s}</label>
+            <label for="address_house_postal_code" class="col-sm-2 control-label">{s name="order/debtor/postal_code"}{/s}</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="address_house_postal_code" value="{$debtor_company.address_house_postal_code}" readonly>
             </div>
         </div>
         <div class="form-group">
-            <label for="address_house_country" class="col-sm-2 control-label">{s name="order/debtor/country"}Land{/s}</label>
+            <label for="address_house_country" class="col-sm-2 control-label">{s name="order/debtor/country"}{/s}</label>
             <div class="col-sm-10">
                 <input type="text" class="form-control" id="address_house_country" value="{$debtor_company.address_house_country}" readonly>
             </div>
@@ -160,7 +160,7 @@
 
     <p>
         <a class="btn btn-link pull-right" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">
-            <small>{s name="back"}Back to Overview{/s}</small>
+            <small>{s name="back"}{/s}</small>
         </a>
     </p>
 </div>

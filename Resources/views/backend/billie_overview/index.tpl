@@ -3,19 +3,19 @@
 
 {block name="content/main"}
     <div class="page-header">
-        <h1>{s name="listing/heading"}Bestellungen{/s}</h1>
+        <h1>{s name="listing/heading"}{/s}</h1>
     </div>
 
     <div class="table-responsive">
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>{s name="listing/column/order_time"}Bestell-Zeit{/s}</th>
-                    <th>{s name="listing/column/order_numer"}Bestellnummer{/s}</th>
-                    <th>{s name="listing/column/amount"}Betrag{/s}</th>
-                    <!--th>{s name="listing/column/transaction"}Transaktion{/s}</th-->
+                    <th>{s name="listing/column/order_time"}{/s}</th>
+                    <th>{s name="listing/column/order_numer"}{/s}</th>
+                    <th>{s name="listing/column/amount"}{/s}</th>
+                    <!--th>{s name="listing/column/transaction"}{/s}</th-->
                     <th>{s name="listing/column/company"}{/s}</th>
-                    <th>{s name="listing/column/current_state"}Aktueller Status{/s}</th>
+                    <th>{s name="listing/column/current_state"}{/s}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -30,19 +30,19 @@
                         <td>{$order.billing.company}</td>
                         <td class="state">
                             {if $order.attribute.billieState == 'created'}
-                                {s name="order/state/created"}erstellt{/s}
+                                {s namespace="backend/billie/states" name="created"}{/s}
                             {elseif $order.attribute.billieState == 'declined'}
-                                {s name="order/state/declined"}abgelehnt{/s}
+                                {s namespace="backend/billie/states" name="declined"}{/s}
                             {elseif $order.attribute.billieState == 'shipped'}
-                                {s name="order/state/shipped"}verschickt{/s}
+                                {s namespace="backend/billie/states" name="shipped"}{/s}
                             {elseif $order.attribute.billieState == 'paid_out'}
-                                {s name="order/state/paid_out"}ausbezahlt{/s}
+                                {s namespace="backend/billie/states" name="paid_out"}{/s}
                             {elseif $order.attribute.billieState == 'late'}
-                                {s name="order/state/late"}überfällig{/s}
+                                {s namespace="backend/billie/states" name="late"}{/s}
                             {elseif $order.attribute.billieState == 'complete'}
-                                {s name="order/state/complete"}abgeschlossen{/s}
+                                {s namespace="backend/billie/states" name="complete"}{/s}
                             {elseif $order.attribute.billieState == 'canceled'}
-                                {s name="order/state/canceled"}storniert{/s}
+                                {s namespace="backend/billie/states" name="canceled"}{/s}
                             {/if}
                         </td>
                         <td>
@@ -72,14 +72,14 @@
             <tfoot>
                 <tr class="active">
                     <td colspan="2">
-                        <strong>{s name="listing/column/entries"}Einträge:{/s}</strong> {$total}
+                        <strong>{s name="listing/column/entries"}{/s}</strong> {$total}
                     </td>
                     <td colspan="4">
-                        <nav aria-label="{s name="listing/navigation/label"}Navigation{/s}" class="pull-right">
+                        <nav aria-label="{s name="listing/navigation/label"}{/s}" class="pull-right">
                             <ul class="pagination">
                                 {if $page > 1}
                                     <li>
-                                        <a href="{url controller="BillieOverview" action="index" page=($page -1)}" aria-label="{s name="listing/navigation/prev"}Zurück{/s}">
+                                        <a href="{url controller="BillieOverview" action="index" page=($page -1)}" aria-label="{s name="listing/navigation/prev"}{/s}">
                                             <span aria-hidden="true">&laquo;</span>
                                         </a>
                                     </li>
@@ -93,7 +93,7 @@
                                 {/for}
                                 {if $page < $totalPages}
                                     <li>
-                                        <a href="{url controller="BillieOverview" action="index" page=($page + 1)}" aria-label="{s name="listing/navigation/next"}Weiter{/s}">
+                                        <a href="{url controller="BillieOverview" action="index" page=($page + 1)}" aria-label="{s name="listing/navigation/next"}{/s}">
                                             <span aria-hidden="true">&raquo;</span>
                                         </a>
                                     </li>
