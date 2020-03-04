@@ -10,7 +10,7 @@
             data-order_id="{$order_id}"
             data-action="{url controller="BillieOverview" action="confirmPayment" __csrf_token=$csrfToken}"
             >
-            {s name="order/confirm_payment"}Zahlung bestätigen{/s}
+            {s name="order/confirm_payment"}{/s}
         </button>
         <!--button
             class="btn btn-primary cancel-order"
