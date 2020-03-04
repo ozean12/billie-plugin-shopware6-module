@@ -62,7 +62,15 @@ class SessionService
 
     public function getBillieDurationForPaymentMethod()
     {
-        return intval($this->session->get('sOrderVariables')['sPayment']['attribute']['billie_duration']);
+        $payment = $this->session->get('sOrderVariables')['sPayment'];
+        if(isset($payment['attribute']['billie_duration'])) {
+            return intval($payment['attribute']['billie_duration']);
+        } else if(isset($payment['attributes']['core'])) {
+            /** @var \Shopware\Bundle\StoreFrontBundle\Struct\Attribute $attributeStruct */
+            $attributeStruct = $payment['attributes']['core'];
+            return intval($attributeStruct->get('billie_duration'));
+        }
+        return 0;
     }
 
     public function getTotalAmount($key = null)
