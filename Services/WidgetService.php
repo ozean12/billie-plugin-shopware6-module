@@ -105,7 +105,7 @@ class WidgetService
     protected function extractStreet($street)
     {
         preg_match('/(.*) [0-9]+ {0,1}[A-Za-z]*/', $street, $matches);
-        return $matches[1];
+        return isset($matches[1]) ? $matches[1] : $street;
     }
 
     protected function extractStreetNumber($street)
