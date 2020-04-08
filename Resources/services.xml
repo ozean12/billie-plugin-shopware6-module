@@ -32,6 +32,9 @@
             <tag name="shopware.event_subscriber"/>
             <argument id="BilliePayment\Services\SessionService" type="service"/>
         </service>
+        <service id="BilliePayment\Subscriber\Document">
+            <tag name="shopware.event_subscriber"/>
+        </service>
 
         <!-- Billie Payment Service -->
         <service id="billie_payment.payment_service" class="BilliePayment\Components\Payment\Service" />
