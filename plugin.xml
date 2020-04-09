@@ -5,7 +5,7 @@
     <label lang="en">Billie Payment After Delivery</label>
     <label lang="de">Billie Payment After Delivery</label>
 
-    <version>0.4.0.13</version>
+    <version>1.0.1</version>
     <copyright>(c) Billie GmbH</copyright>
     <author>Billie GmbH</author>
     <link>https://www.billie.io/rechnungskauf/</link>
@@ -15,21 +15,25 @@
         <div style="text-align: center">
             <img src="/custom/plugins/BilliePayment/Resources/views/backend/_resources/images/billie_logo_vertical.png" width="69" height="96">
         </div>
-        <h1>Liquidität auf Knopfdruck</h1>
-        <p>Billie begleicht Ihre offenen Rechnungen sofort - bereits ab 0,7% Einmalgebühr auf den Rechnungsbetrag.</p>
-        <hr>
-        <h2>Flexibler als jede Kreditlinie</h2>
-        <p>Registrieren Sie sich mit wenigen Klicks und sichern Sie sich Ihren monatlichen Finanzierungsrahmen von bis zu <strong>200.000 €</strong> – in nur 7 Minuten und ganz ohne Dokumente!</p>
-        <hr>
-        <h2>Unkomplizierter als klassisches Factoring</h2>
-        <p>Laden Sie einfach Ihre offenen Rechnungen hoch und erhalten Sie den <strong>Rechnungsbetrag sofort ausbezahlt</strong> – ganz ohne Mindestumsätze oder Vertragsbindung!</p>
-        <hr>
-        <h2>100% sicher & vertraulich</h2>
-        <p>Billie ist von der BaFin lizenziert und bleibt stets <strong>anonym im Hintergrund</strong>. Sie müssen kein neues Konto eröffnen und keinen Abtretungsvermerk auf Ihre Rechnungen drucken.</p>
-        <hr/>
-        <blockquote>
-        "Billie reduziert die Antragszeit beim Factoring auf sieben Minuten."
-        </blockquote>
+        <br />
+        <div style="text-align: center"><h1>B2B-Rechnungskauf für das 21. Jahrhundert</h1>
+        <p>Jetzt durchstarten mit der beliebtesten Zahlungsart für B2B-Shops: Sofortige Auszahlung für Sie, 30 Tage Zahlungsziel für Ihre Kunden. Whitelabel Mahnprozess & 100% Ausfallschutz immer inklusive</p>
+        <br />
+        <h2>Maximale Akzeptanzrate</h2>
+        <p>Mit Akzeptanzraten von 85%+ bietet Billies branchenführender Scoring-Algorithmus einfachen und sicheren Rechnungskauf für nahezu alle Ihrer Kunden – ohne jeglichen manuellen Aufwand</p>
+        <br />
+        <h2>Operative Entlastung</h2>
+        <p>Entlasten Sie Ihre Buchhaltung von zeitraubenden Aufgaben. Billie kümmert sich um Zahlungszuordnung und Mahnwesen – diskret im Hintergrund und mit abgestimmter Mahnstrecke</p>
+        <br />
+        <h2>Hohe B2B-Einkaufslinien</h2>
+        <p>Überzeugen Sie Ihre Geschäftskunden auch bei großen Warenkörben mit ihrer bevorzugten Zahlungsart – durch Einkaufslinien von bis zu 25.000 EUR, auch für Neukunden</p>
+        <br />
+        <h2>Liquidität & Ausfallschutz</h2>
+        <p>Reduzieren Sie Ihren Working Capital Bedarf durch Auszahlung aller Bestellungen am nächsten Werktag – unabhängig davon wann Ihre Kunden bezahlen</p>
+        <br />
+        <h2>Günstiger All-Inclusive-Service</h2>
+        <p>Ein Preis und alles drin: Zur günstigen Festgebühr im Skontobereich kümmert sich Billie um die gesamte Rechnungsabwicklung – so können Sie sich voll auf Ihr Kerngeschäft konzentrieren.</p>
+        </div>
     ]]></description>
 
     <compatibility minVersion="5.5.0"/>
