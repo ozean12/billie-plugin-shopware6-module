@@ -30,6 +30,8 @@
         </service>
         <service id="BilliePayment\Subscriber\Frontend\PaymentFilterSubscriber">
             <tag name="shopware.event_subscriber"/>
+            <argument id="models" type="service"/>
+            <argument id="db" type="service"/>
             <argument id="BilliePayment\Services\SessionService" type="service"/>
         </service>
         <service id="BilliePayment\Subscriber\Document">

@@ -5,18 +5,36 @@ namespace BilliePayment\Subscriber\Frontend;
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Services\SessionService;
 use Enlight\Event\SubscriberInterface;
+use Enlight_Components_Db_Adapter_Pdo_Mysql;
 use Enlight_Event_EventArgs;
+use Shopware\Bundle\StoreFrontBundle\Struct\Attribute;
+use Shopware\Components\Model\ModelEntity;
+use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Attribute\Payment;
 
 class PaymentFilterSubscriber implements SubscriberInterface
 {
 
     /**
+     * @var ModelManager
+     */
+    private $modelManager;
+    /**
+     * @var Enlight_Components_Db_Adapter_Pdo_Mysql
+     */
+    private $db;
+    /**
      * @var SessionService
      */
     private $sessionService;
 
-    public function __construct(SessionService $sessionService)
+    public function __construct(
+        ModelManager $modelManager,
+        Enlight_Components_Db_Adapter_Pdo_Mysql $db,
+        SessionService $sessionService)
     {
+        $this->modelManager = $modelManager;
+        $this->db = $db;
         $this->sessionService = $sessionService;
     }
 
@@ -48,6 +66,14 @@ class PaymentFilterSubscriber implements SubscriberInterface
                     if ($billieMethod = PaymentMethods::getMethod($paymentMethod['name'])) {
                         if (in_array($billingAddress->getCountry()->getIso(), $billieMethod['billie_config']['allowed_in_countries']) == false) {
                             unset($paymentMethods[$i]);
+                        } else {
+                            // add backward compatibility
+                            if (!isset($paymentMethods[$i]['attributes'])) {
+                                $meta = $this->modelManager->getClassMetadata(Payment::class);
+                                $attributeData = $this->db->fetchRow("SELECT * FROM " . $meta->getTableName() . " WHERE paymentmeanID = ?", [$paymentMethod['id']]);
+                                /** @var ModelEntity $attributeModel */
+                                $paymentMethods[$i]['attributes']['core'] = new Attribute(is_array($attributeData) ? $attributeData : []);
+                            }
                         }
                     }
                 }

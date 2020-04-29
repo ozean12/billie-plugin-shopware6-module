@@ -9,9 +9,12 @@ use Billie\Model\DebtorCompany;
 use BilliePayment\Components\Api\Api;
 use BilliePayment\Helper\BasketHelper;
 use Enlight_Components_Session_Namespace;
+use Shopware\Bundle\StoreFrontBundle\Struct\Attribute;
 use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Attribute\Payment;
 use Shopware\Models\Customer\Address;
 use Shopware\Models\Customer\Customer;
+use stdClass;
 
 class SessionService
 {
@@ -42,7 +45,7 @@ class SessionService
         $model = new CheckoutSessionConfirm($this->getCheckoutSessionId(false) ?: false);
         $model->duration = $this->getBillieDurationForPaymentMethod();
         $amount = $this->getTotalAmount();
-        $model->amount = new \stdClass();
+        $model->amount = new stdClass();
         $model->amount->grossAmount = $amount['gross'] * 100;
         $model->amount->netAmount = $amount['net'] * 100;
         $model->amount->taxAmount = $amount['tax'] * 100;
@@ -63,12 +66,17 @@ class SessionService
     public function getBillieDurationForPaymentMethod()
     {
         $payment = $this->session->get('sOrderVariables')['sPayment'];
-        if(isset($payment['attribute']['billie_duration'])) {
+        if (isset($payment['attribute']['billie_duration'])) {
             return intval($payment['attribute']['billie_duration']);
-        } else if(isset($payment['attributes']['core'])) {
-            /** @var \Shopware\Bundle\StoreFrontBundle\Struct\Attribute $attributeStruct */
+        } else if (isset($payment['attributes']['core'])) {
+            /** @var Attribute $attributeStruct */
             $attributeStruct = $payment['attributes']['core'];
             return intval($attributeStruct->get('billie_duration'));
+        } else if (isset($payment['id'])) {
+            $repo = $this->modelManager->getRepository(Payment::class);
+            /** @var Payment $attribute */
+            $attribute = $repo->findOneBy(['paymentId' => $payment['id']]);
+            return $attribute ? $attribute->getBillieDuration() : 0;
         }
         return 0;
     }
@@ -83,7 +91,7 @@ class SessionService
     public function getBillingAddress()
     {
         $addressId = $this->session->get('checkoutBillingAddressId');
-        if($addressId === null) {
+        if ($addressId === null) {
             $customer = $this->getCustomer();
             return $customer ? $customer->getDefaultBillingAddress() : null;
         }
@@ -93,7 +101,7 @@ class SessionService
     public function getShippingAddress()
     {
         $addressId = $this->session->get('checkoutShippingAddressId');
-        if($addressId === null) {
+        if ($addressId === null) {
             $customer = $this->getCustomer();
             return $customer ? $customer->getDefaultShippingAddress() : null;
         }

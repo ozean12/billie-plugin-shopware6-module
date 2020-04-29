@@ -1,9 +1,6 @@
 <?php
 
 use BilliePayment\Components\Api\Api;
-use BilliePayment\Components\Api\CommandFactory;
-use BilliePayment\Components\Payment\Response;
-use BilliePayment\Components\Payment\Service;
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Services\AddressService;
 use BilliePayment\Services\BankService;
@@ -11,10 +8,10 @@ use BilliePayment\Services\ConfigService;
 use BilliePayment\Services\SessionService;
 use Monolog\Logger;
 use Shopware\Components\DependencyInjection\Container;
-use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Country\Country;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Payment\Payment;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Frontend Controller for Billie.io Payment.
@@ -105,7 +102,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     return $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
                 }
                 if ($billieOrder) {
-                    if($this->configService->isOverrideCustomerAddress()) {
+                    if ($this->configService->isOverrideCustomerAddress()) {
                         $this->addressService->updateBillingAddress($billieOrder->debtorCompany);
                     }
 
@@ -156,7 +153,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
 
     public function validateAddressAction()
     {
-        $response = [];
+        $responseArray = [];
         $billingAddress = $this->sessionService->getBillingAddress();
 
         $params = $this->Request()->getParams();
@@ -166,7 +163,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             $country = $this->getModelManager()->getRepository(Country::class)
                 ->findOneBy(['iso' => $params['debtor_company']['address_country']]);
 
-            if($country === null) {
+            if ($country === null) {
                 $errorCode = '_SwCountryNotAvailable';
             } else {
                 $this->sessionService->setApprovedAddress($params['debtor_company']);
@@ -175,14 +172,12 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             $errorCode = '_UnknownError';
         }
 
-        $response['status'] = $errorCode === null;
+        $responseArray['status'] = $errorCode === null;
         if ($errorCode) {
-            $response['redirect'] = $this->Front()->Router()->assemble(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $errorCode]);
+            $responseArray['redirect'] = $this->Front()->Router()->assemble(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $errorCode]);
         }
-        $this->Response()->setStatusCode(200, 'OK');
-        $this->Response()->setHeader('Content-Typ', 'application/json');
-        $this->Response()->sendHeaders();
-        echo json_encode($response);
+        $response = new JsonResponse($responseArray, 200);
+        $response->send();
         exit;
     }
 

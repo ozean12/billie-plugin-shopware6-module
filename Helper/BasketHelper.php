@@ -18,9 +18,42 @@ class BasketHelper
 
     public static function getProductAmount(array $product)
     {
+        $fetchKeys = [
+            'gross' => [
+                'amountWithTax',
+                'amountNumeric',
+                'priceNumeric'
+            ],
+            'net' => [
+                'amountnetNumeric',
+                'netprice'
+            ]
+        ];
+
+        $gross = $net = 0;
+        foreach($fetchKeys as $variable => $keys) {
+            $value = null;
+            foreach($keys as $key) {
+                if(isset($product[$key])) {
+                    $value = $product[$key];
+                    break;
+                }
+            }
+            if($value) {
+                switch($variable) {
+                    case 'gross':
+                        $gross = $value;
+                        break;
+                    case 'net':
+                        $net = $value;
+                        break;
+                }
+            }
+        }
+
         return self::round(self::addTax([
-            'gross' => !empty($product['amountWithTax']) ? $product['amountWithTax'] : $product['amountNumeric'],
-            'net' => $product['amountnetNumeric'],
+            'gross' => $gross,
+            'net' => $net,
         ]));
     }
 
