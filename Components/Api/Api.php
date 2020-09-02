@@ -330,7 +330,7 @@ class Api
         // run POST /v1/order/{order_id}/ship
         try {
             /** @var \Billie\Model\Order $response */
-            $response       = $this->client->shipOrder($this->factory->createShipCommand($item, $invoice, $url));
+            $response       = $this->client->shipOrder($this->factory->createShipCommand($item, $invoice, $url), true);
             $local['state'] = $response->state;
             $this->utils->getLogger()->info("POST /v1/order/{$order}/ship");
             // $dueDate = $order->invoice->dueDate;
