@@ -5,7 +5,7 @@
     <label lang="en">Billie Payment After Delivery</label>
     <label lang="de">Billie Payment After Delivery</label>
 
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <copyright>(c) Billie GmbH</copyright>
     <author>Billie GmbH</author>
     <link>https://www.billie.io/rechnungskauf/</link>
@@ -48,6 +48,11 @@
     ]]></description>
 
     <compatibility minVersion="5.5.0"/>
+
+    <changelog version="1.0.3">
+        <changes lang="en">moved sdk from composer-dependencies to plugin</changes>
+        <changes lang="de">SDK von Composer-Abhängigkeiten in das Plugin verschoben</changes>
+    </changelog>
 
     <changelog version="1.0.2">
         <changes lang="en">first release</changes>
