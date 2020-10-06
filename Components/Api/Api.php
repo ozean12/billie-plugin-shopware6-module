@@ -232,7 +232,12 @@ class Api
             try {
                 $return = $this->client->reduceOrderAmount($model);
                 $partly = true;
-            } catch (InvalidCommandException | BillieException $e) {
+            } catch (InvalidCommandException $e) {
+                return [
+                    'success' => false,
+                    'error' => $e->getMessage() ? : implode('', $e->getViolations())
+                ];
+            } catch (BillieException $e) {
                 return [
                     'success' => false,
                     'error' => $e->getMessage() ? : implode('', $e->getViolations())

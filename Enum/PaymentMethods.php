@@ -54,9 +54,9 @@ final class PaymentMethods extends Enum
         return $paymentMethod ? array_key_exists($paymentMethod, self::PAYMENTS) : false;
     }
 
-    public static function getMethod(string $paymentMethod)
+    public static function getMethod($paymentMethod)
     {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
-        return isset(self::PAYMENTS[$paymentMethod]) ? self::PAYMENTS[$paymentMethod] : false;
+        return self::exists($paymentMethod) ? self::PAYMENTS[$paymentMethod] : false;
     }
 }

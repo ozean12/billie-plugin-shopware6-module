@@ -6,7 +6,7 @@
             checkoutSessionId: null,
             merchantName: null,
             validateAddressUrl: null,
-            defaultErrorMessage: null
+            defaultMessageContainerSelector: '.billie-notify'
         },
         $form: null,
         $submitButton: null,
@@ -49,7 +49,7 @@
                         'merchant_name': me.opts.merchantName
                     },
                     billie_order_data: window.billiePaymentData
-                }).then(function success(data) {
+                }).then(function (data) {
                     jQuery.ajax({
                         type: "POST",
                         url: me.opts.validateAddressUrl,
@@ -63,23 +63,30 @@
                                 if(response.redirect) {
                                     window.location.href = response.redirect;
                                 } else {
-                                    alert(me.opts.defaultErrorMessage);
+                                    me.showDefaultMessage();
                                     me.unlockSubmitButton();
                                 }
                             }
                         },
                     });
-                }).catch(function failure(err) {
+                }).catch(function (err) {
                     // code to execute when there is an error or when order is rejected
                     if(err.state !== 'declined') {
                         //we assume, that the error popup of billie will be displayed, when the order got declined
                         console.log('Error occurred', err);
-                        alert(me.opts.defaultErrorMessage);
+                        me.showDefaultMessage();
                     }
                     me.unlockSubmitButton();
                 });
             }
         },
+
+        showDefaultMessage: function () {
+            var me = this,
+                $messageContainer = $(me.opts.defaultMessageContainerSelector);
+            $messageContainer.removeClass('is--hidden');
+            $('html, body').animate({scrollTop: $messageContainer.offset().top - 100}, 1000);
+        }
 
     });
     window.StateManager.addPlugin('#billie-payment', 'BilliePayment', null, null);

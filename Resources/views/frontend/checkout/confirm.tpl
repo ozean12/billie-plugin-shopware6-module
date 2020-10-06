@@ -23,8 +23,8 @@
     {if $smarty.get.errorCode}
         {include file="frontend/_includes/messages.tpl" type="error" content=$smarty.get.errorCode|snippet:$errorCode:'frontend/billie_payment/errors'}
     {/if}
+    {include file="frontend/_includes/messages.tpl" type="error billie-notify" content=''|snippet:'_DefaultErrorMessage':'frontend/billie_payment/errors' visible=false}
 {/block}
-
 
 
 {block name="frontend_checkout_confirm_submit"}
@@ -35,7 +35,6 @@
              data-checkoutSessionId="{$billiePayment.widget.checkoutSessionId}"
              data-merchantName="{config name=shopName}"
              data-validateAddressUrl="{url module="frontend" controller="BilliePayment" action="validateAddress"}"
-             data-defaultErrorMessage="{s namespace="frontend/billie_payment/errors" name="_DefaultErrorMessage"}{/s}"
         ></div>
     {/if}
 {/block}

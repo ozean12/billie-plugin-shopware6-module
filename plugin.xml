@@ -11,7 +11,7 @@
     <link>https://www.billie.io/rechnungskauf/</link>
     <license>proprietary</license>
 
-     <description lang="de"><![CDATA[
+    <description lang="de"><![CDATA[
         <div style="text-align: center">
             <img src="/custom/plugins/BilliePayment/Resources/views/backend/_resources/images/billie_logo_vertical.png" width="69" height="96">
         </div>
@@ -36,5 +36,21 @@
         </div>
     ]]></description>
 
+    <description lang="en"><![CDATA[
+        <div style="text-align: center">
+            <img src="/custom/plugins/BilliePayment/Resources/views/backend/_resources/images/billie_logo_vertical.png" width="69" height="96">
+        </div>
+        <br />
+        <div style="text-align: center">
+        <h1>B2B-Invoicing</h1>
+        <p>Get started now with the most popular payment method for B2B shops: Guaranteed payout for you, 30 days payment term for your customers. Whitelabel dunning process & 100% default protection always included.</p>
+        </div>
+    ]]></description>
+
     <compatibility minVersion="5.5.0"/>
+
+    <changelog version="1.0.2">
+        <changes lang="en">first release</changes>
+        <changes lang="de">Erstveröffentlichung</changes>
+    </changelog>
 </plugin>

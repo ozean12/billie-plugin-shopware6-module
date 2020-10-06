@@ -178,7 +178,6 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         }
         $response = new JsonResponse($responseArray, 200);
         $response->send();
-        exit;
     }
 
     /**
