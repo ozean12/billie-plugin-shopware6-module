@@ -6,21 +6,19 @@
             "email": "pascal.kleindienst@solution360.de"
         }
     ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "git@github.com:ozean12/billie-shop-plugin-sdk.git"
-        }
-    ],
     "require": {
-        "php": "^5.6 || 7.0",
-        "billie/api-php-sdk": "dev-feature/oauth2",
-        "guzzlehttp/guzzle": "5.3.3"
+        "php": "^5.6 || 7.0"
     },
     "require-dev": {
-        "symfony/var-dumper": "^3.4",
         "friendsofphp/php-cs-fixer": "^2.16"
     },
-    "minimum-stability": "dev",
-    "prefer-stable" : true
+    "repositories": [
+        {
+            "type": "path",
+            "url": "lib/*",
+            "options": {
+                "symlink": true
+            }
+        }
+    ]
 }

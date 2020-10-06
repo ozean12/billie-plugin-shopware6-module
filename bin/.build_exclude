@@ -1,7 +1,7 @@
 .git
 .github
 build
-build.sh
+bin/
 Jenkinsfile
 phpunit.xml.dist
 sonar-project.properties
@@ -9,8 +9,11 @@ sonar-project.properties
 Tests
 .release_exclude
 .DS_Store
-composer.json
-composer.lock
 Resources/views_documents/README.md
 .php_cs
 .php_cs.dist
+lib/api-php-sdk/vendor
+vendor/
+CODING-GUIDELINE.md
+tests/
+lib/README.md
