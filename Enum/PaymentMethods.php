@@ -6,7 +6,6 @@ use Shopware\Models\Payment\Payment;
 
 final class PaymentMethods extends Enum
 {
-
     const PAYMENT_BILLIE_1 = 'billie_payment_after_delivery_1';
     const PAYMENT_BILLIE_2 = 'billie_payment_after_delivery_2';
 
@@ -21,8 +20,8 @@ final class PaymentMethods extends Enum
             'additionalDescription' => 'Bezahlen Sie bequem und sicher auf Rechnung - innerhalb von {$payment_mean.attributes.core->get(\'billie_duration\')} Tagen nach Erhalt der Ware.',
             'billie_config' => [
                 'default_duration' => 14,
-                'allowed_in_countries' => ['DE']
-            ]
+                'allowed_in_countries' => ['DE'],
+            ],
         ],
         self::PAYMENT_BILLIE_2 => [
             'name' => self::PAYMENT_BILLIE_2,
@@ -34,8 +33,8 @@ final class PaymentMethods extends Enum
             'additionalDescription' => 'Bezahlen Sie bequem und sicher auf Rechnung - innerhalb von {$payment_mean.attributes.core->get(\'billie_duration\')} Tagen nach Erhalt der Ware.',
             'billie_config' => [
                 'default_duration' => 30,
-                'allowed_in_countries' => ['DE']
-            ]
+                'allowed_in_countries' => ['DE'],
+            ],
         ],
     ];
 
@@ -46,17 +45,20 @@ final class PaymentMethods extends Enum
 
     /**
      * @param string|Payment $paymentMethod
-     * @return boolean
+     *
+     * @return bool
      */
     public static function exists($paymentMethod)
     {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
+
         return $paymentMethod ? array_key_exists($paymentMethod, self::PAYMENTS) : false;
     }
 
     public static function getMethod($paymentMethod)
     {
         $paymentMethod = $paymentMethod instanceof Payment ? $paymentMethod->getName() : $paymentMethod;
+
         return self::exists($paymentMethod) ? self::PAYMENTS[$paymentMethod] : false;
     }
 }

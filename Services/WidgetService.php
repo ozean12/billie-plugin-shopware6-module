@@ -1,8 +1,6 @@
 <?php
 
-
 namespace BilliePayment\Services;
-
 
 use BilliePayment\Helper\BasketHelper;
 use kamermans\OAuth2\Exception\AccessTokenRequestException;
@@ -13,23 +11,26 @@ use Shopware\Bundle\StoreFrontBundle\Struct\Product;
 
 class WidgetService
 {
-
     /**
      * @var ProductServiceInterface
      */
     private $productService;
+
     /**
      * @var ConfigService
      */
     private $configService;
+
     /**
      * @var SessionService
      */
     private $sessionService;
+
     /**
      * @var ContextServiceInterface
      */
     private $contextService;
+
     /**
      * @var Logger
      */
@@ -41,8 +42,7 @@ class WidgetService
         SessionService $sessionService,
         ContextServiceInterface $contextService,
         Logger $logger
-    )
-    {
+    ) {
         $this->productService = $productService;
         $this->configService = $configService;
         $this->sessionService = $sessionService;
@@ -55,7 +55,6 @@ class WidgetService
         $customer = $this->sessionService->getCustomer();
         $billingAddress = $this->sessionService->getBillingAddress();
         $shippingAddress = $this->sessionService->getShippingAddress();
-
 
         try {
             $checkoutSessionId = $this->sessionService->getCheckoutSessionId(true);
@@ -95,8 +94,8 @@ class WidgetService
                     'phone_number' => $billingAddress->getPhone(),
                     'email' => $customer->getEmail(),
                 ],
-                'line_items' => $this->getLineItems($sOrderVariables['sBasket']['content'])
-            ]
+                'line_items' => $this->getLineItems($sOrderVariables['sBasket']['content']),
+            ],
         ];
 
         return $widgetData;
@@ -105,12 +104,14 @@ class WidgetService
     protected function extractStreet($street)
     {
         preg_match('/(.*) [0-9]+ {0,1}[A-Za-z]*/', $street, $matches);
+
         return isset($matches[1]) ? $matches[1] : $street;
     }
 
     protected function extractStreetNumber($street)
     {
         preg_match('/.* ([0-9]+ {0,1}[A-Za-z]*)/', $street, $matches);
+
         return $matches[1];
     }
 
@@ -119,7 +120,7 @@ class WidgetService
         $salutations = $this->configService->getSalutationMapping();
         if (in_array($salutation, $salutations['male'])) {
             return 'm';
-        } else if (in_array($salutation, $salutations['female'])) {
+        } elseif (in_array($salutation, $salutations['female'])) {
             return 'f';
         } else {
             return $this->configService->getFallbackSalutation();
@@ -157,6 +158,7 @@ class WidgetService
     protected function getLineItem(array $item, Product $product = null)
     {
         $categories = $product ? $product->getCategories() : null;
+
         return [
             'external_id' => $item['ordernumber'],
             'title' => $item['articlename'],
@@ -166,8 +168,7 @@ class WidgetService
             'brand' => $product && $product->getManufacturer() ? $product->getManufacturer()->getName() : null,
             'gtin' => $product ? $product->getEan() : null,
             'mpn' => null, // is not supported by shopware
-            'amount' => BasketHelper::getProductAmount($item)
+            'amount' => BasketHelper::getProductAmount($item),
         ];
     }
-
 }

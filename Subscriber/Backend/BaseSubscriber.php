@@ -1,15 +1,12 @@
 <?php
 
-
 namespace BilliePayment\Subscriber\Backend;
-
 
 use Enlight\Event\SubscriberInterface;
 use Enlight_Controller_ActionEventArgs;
 
 class BaseSubscriber implements SubscriberInterface
 {
-
     private $pluginDir;
 
     public function __construct($pluginDir)
@@ -23,14 +20,12 @@ class BaseSubscriber implements SubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Action_PostDispatch_Backend_Base' => 'extendExtJS'
+            'Enlight_Controller_Action_PostDispatch_Backend_Base' => 'extendExtJS',
         ];
     }
 
     /**
      * Extend Attribute Form to make BIC/IBAN readonly
-     *
-     * @param Enlight_Controller_ActionEventArgs $args
      */
     public function extendExtJS(Enlight_Controller_ActionEventArgs $args)
     {

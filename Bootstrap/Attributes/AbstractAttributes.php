@@ -1,15 +1,12 @@
 <?php
 
-
 namespace BilliePayment\Bootstrap\Attributes;
-
 
 use BilliePayment\Bootstrap\AbstractBootstrap;
 use Shopware\Bundle\AttributeBundle\Service\CrudService;
 
 abstract class AbstractAttributes extends AbstractBootstrap
 {
-
     /**
      * @var CrudService
      */
@@ -24,12 +21,8 @@ abstract class AbstractAttributes extends AbstractBootstrap
     {
         parent::setContainer($container);
         $this->crudService = $this->container->get('shopware_attribute.crud_service');
-        $this->tableName = $this->container->get('models')->getClassMetadata($this->getEntityClass())->getTableName().'_attributes';
+        $this->tableName = $this->container->get('models')->getClassMetadata($this->getEntityClass())->getTableName() . '_attributes';
     }
-
-    protected abstract function getEntityClass();
-    protected abstract function createUpdateAttributes();
-    protected abstract function uninstallAttributes();
 
     public function update()
     {
@@ -40,11 +33,6 @@ abstract class AbstractAttributes extends AbstractBootstrap
     {
         $this->createUpdateAttributes();
         $this->cleanUp();
-    }
-
-    protected function cleanUp()
-    {
-        $this->modelManager->generateAttributeModels([$this->tableName]);
     }
 
     public function uninstall($keepUserData = false)
@@ -63,5 +51,16 @@ abstract class AbstractAttributes extends AbstractBootstrap
     public function deactivate()
     {
         // do nothing
+    }
+
+    abstract protected function getEntityClass();
+
+    abstract protected function createUpdateAttributes();
+
+    abstract protected function uninstallAttributes();
+
+    protected function cleanUp()
+    {
+        $this->modelManager->generateAttributeModels([$this->tableName]);
     }
 }

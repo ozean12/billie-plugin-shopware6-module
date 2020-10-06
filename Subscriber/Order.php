@@ -23,49 +23,46 @@ use Shopware\Models\Order\Status;
 class Order implements SubscriberInterface
 {
     /**
-     * @var Api $api
-     */
-    private $api;
-
-    /**
-     * @var Utils $utils
-     */
-    private $utils;
-
-    /**
-     * @var Service $service
-     */
-    private $service;
-
-    /**
      * Canceled Order Code
-     * @var integer
+     *
+     * @var int
      */
     const ORDER_CANCELED = 4; // TODO config
 
     /**
      * Shipped Order Code
-     * @var integer
+     *
+     * @var int
      */
     const ORDER_SHIPPED = 7; // TODO config
 
     /**
      * Clarification required order code
-     * @var integer
+     *
+     * @var int
      */
     const ORDER_STATE_CLARIFICATION_REQUIRED = 8; // TODO config
 
     /**
-     * @param Api $api
-     * @param Utils $utils
-     * @param Service $service
+     * @var Api
      */
+    private $api;
+
+    /**
+     * @var Utils
+     */
+    private $utils;
+
+    /**
+     * @var Service
+     */
+    private $service;
+
     public function __construct(Api $api, Utils $utils, Service $service)
     {
         $this->api = $api;
         $this->utils = $utils;
         $this->service = $service;
-
     }
 
     /**
@@ -77,7 +74,7 @@ class Order implements SubscriberInterface
             'Enlight_Controller_Action_PostDispatchSecure_Backend_Order' => 'onSaveOrder',
             'Shopware_Modules_Order_SaveOrder_FilterAttributes' => 'onBeforeSendMail',
             'Enlight_Controller_Action_PreDispatch_Backend_Order' => 'onDocumentCreate',
-            'Shopware_Modules_Order_SendMail_FilterVariables' => 'filterOrderMailVariables'
+            'Shopware_Modules_Order_SendMail_FilterVariables' => 'filterOrderMailVariables',
         ];
     }
 
@@ -88,13 +85,13 @@ class Order implements SubscriberInterface
             // BILLSWPL-31: remove payment method description in order mail
             $data['additional']['payment']['additionaldescription'] = null;
         }
+
         return $data;
     }
 
     /**
      * Calcuate Duration
      *
-     * @param Enlight_Event_EventArgs $args
      * @return void
      */
     public function onDocumentCreate(Enlight_Event_EventArgs $args)
@@ -129,7 +126,6 @@ class Order implements SubscriberInterface
     /**
      * Filter to add billie api response to order attributes before mail is send.
      *
-     * @param Enlight_Event_EventArgs $args
      * @return void
      */
     public function onBeforeSendMail(Enlight_Event_EventArgs $args)
@@ -148,13 +144,13 @@ class Order implements SubscriberInterface
         }
 
         unset($session);
+
         return $value;
     }
 
     /**
      * Sent updates to billie if order is changed.
      *
-     * @param Enlight_Event_EventArgs $args
      * @return void
      */
     public function onSaveOrder(Enlight_Event_EventArgs $args)
@@ -183,15 +179,11 @@ class Order implements SubscriberInterface
                 $view->extendsTemplate('backend/billie_payment/view/detail/overview.js');
                 break;
         }
-
-
     }
 
     /**
      * Process an order and call the respective api endpoints.
      *
-     * @param array $order
-     * @param Enlight_View_Default $view
      * @return void
      */
     protected function processOrder(Enlight_Controller_Request_RequestHttp $request, array $order, Enlight_View_Default $view)
@@ -220,7 +212,7 @@ class Order implements SubscriberInterface
                         'backend/billie_overview/errors',
                         $response['data'],
                         $response['data']
-                    )
+                    ),
                 ]);
                 break;
 
@@ -234,7 +226,7 @@ class Order implements SubscriberInterface
                         'backend/billie_overview/errors',
                         $response['data'],
                         $response['data']
-                    )
+                    ),
                 ]);
 
                 // Set Satus to clarification required in api error

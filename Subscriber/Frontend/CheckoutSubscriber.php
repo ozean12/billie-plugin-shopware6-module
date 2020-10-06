@@ -1,8 +1,6 @@
 <?php
 
-
 namespace BilliePayment\Subscriber\Frontend;
-
 
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Services\ConfigService;
@@ -14,15 +12,16 @@ use Shopware_Controllers_Frontend_Checkout;
 
 class CheckoutSubscriber implements SubscriberInterface
 {
-
     /**
      * @var Enlight_Components_Session_Namespace
      */
     private $session;
+
     /**
      * @var WidgetService
      */
     private $widgetService;
+
     /**
      * @var ConfigService
      */
@@ -38,11 +37,10 @@ class CheckoutSubscriber implements SubscriberInterface
         $this->configService = $configService;
     }
 
-
     public static function getSubscribedEvents()
     {
         return [
-            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onCheckout'
+            'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onCheckout',
         ];
     }
 
@@ -58,17 +56,15 @@ class CheckoutSubscriber implements SubscriberInterface
 
             $subject->View()->assign([
                 'billiePayment' => [
-                    'widget' => $this->widgetService->getWidgetData((array)$this->session->get('sOrderVariables'))
-                ]
+                    'widget' => $this->widgetService->getWidgetData((array) $this->session->get('sOrderVariables')),
+                ],
             ]);
-        } else if ($subject->Request()->getActionName() === 'shippingPayment') {
+        } elseif ($subject->Request()->getActionName() === 'shippingPayment') {
             $subject->View()->assign([
                 'billiePayment' => [
-                    'showPaymentIcon' => $this->configService->isShowPaymentIcon()
-                ]
+                    'showPaymentIcon' => $this->configService->isShowPaymentIcon(),
+                ],
             ]);
         }
-
-
     }
 }

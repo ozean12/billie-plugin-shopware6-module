@@ -12,3 +12,5 @@ Tests
 composer.json
 composer.lock
 Resources/views_documents/README.md
+.php_cs
+.php_cs.dist

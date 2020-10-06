@@ -2,8 +2,8 @@
 
 namespace BilliePayment\Components;
 
-use Shopware\Models\Order\Document\Document;
 use Shopware\Components\Plugin\ConfigReader;
+use Shopware\Models\Order\Document\Document;
 
 /**
  * Utility Class
@@ -33,7 +33,6 @@ class Utils
     /**
      * Load Plugin Config
      *
-     * @param ConfigReader $configReader
      * @param string $pluginName
      */
     public function __construct(ConfigReader $configReader, $pluginName)
@@ -56,29 +55,27 @@ class Utils
      *
      * @param string $namespace
      * @param string $snippet
-     * @param mixed $default
-     * @return mixed
      */
     public function getSnippet($namespace, $snippet, $default = null)
     {
         /** @var \Shopware_Components_Snippet_Manager $snippets */
         $snippets = Shopware()->Container()->get('snippets');
+
         return $snippets->getNamespace($namespace)->get($snippet, $default);
     }
 
     /**
      * Assemble the invoice url
      *
-     * @param Document $document
      * @return string
      */
     public function getInvoiceUrl(Document $document)
     {
         $data = [
             'controller' => 'BillieInvoice',
-            'action'     => 'invoice',
-            'module'     => 'frontend',
-            'hash'       => $document->getHash()
+            'action' => 'invoice',
+            'module' => 'frontend',
+            'hash' => $document->getHash(),
         ];
 
         return Shopware()->Front()->Router()->assemble($data);

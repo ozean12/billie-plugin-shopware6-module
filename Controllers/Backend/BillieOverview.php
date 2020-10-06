@@ -23,7 +23,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     public function postDispatch()
     {
         $csrfToken = $this->container->get('BackendSession')->offsetGet('X-CSRF-Token');
-        $this->View()->assign([ 'csrfToken' => $csrfToken ]);
+        $this->View()->assign(['csrfToken' => $csrfToken]);
     }
 
     /**
@@ -41,23 +41,23 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         unset($filters[0]['operator']);
 
         /** @var \BilliePayment\Components\Api\Api $api */
-        $api     = $this->container->get('billie_payment.api');
-        $sort    = [['property' => 'orders.orderTime', 'direction' => 'DESC']];
+        $api = $this->container->get('billie_payment.api');
+        $sort = [['property' => 'orders.orderTime', 'direction' => 'DESC']];
         $orders = $api->getList(intval($this->Request()->getParam('page', 1)), 25, $filters, $sort);
 
         // Assign view data
         $this->View()->assign('errorCode', $this->Request()->getParam('errorCode'));
         $this->View()->assign($orders);
         $this->View()->assign([
-            'statusClasses' =>  [
-                'created'  => 'info',
+            'statusClasses' => [
+                'created' => 'info',
                 'declined' => 'danger',
-                'shipped'  => 'success',
+                'shipped' => 'success',
                 'paid_out' => 'success',
-                'late'     => 'warning',
+                'late' => 'warning',
                 'complete' => 'success',
                 'canceled' => 'danger',
-            ]
+            ],
         ]);
     }
 
@@ -69,12 +69,13 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     public function orderAction()
     {
         /** @var \BilliePayment\Components\Api\Api $api */
-        $api      = $this->container->get('billie_payment.api');
-        $order    = $this->Request()->getParam('order_id');
+        $api = $this->container->get('billie_payment.api');
+        $order = $this->Request()->getParam('order_id');
         $response = $api->retrieveOrder($order);
 
         if ($response['success'] === false) {
             $this->redirect(['controller' => 'BillieOverview', 'action' => 'index', 'errorCode' => $response['data']]);
+
             return;
         }
 
@@ -92,10 +93,10 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     public function shipOrderAction()
     {
         /** @var \BilliePayment\Components\Api\Api $api */
-        $api      = $this->container->get('billie_payment.api');
-        $order    = $this->Request()->getParam('order_id');
-        $invoice  = $this->Request()->getParam('invoice', null);
-        $url      = $this->Request()->getParam('url', null);
+        $api = $this->container->get('billie_payment.api');
+        $order = $this->Request()->getParam('order_id');
+        $invoice = $this->Request()->getParam('invoice', null);
+        $url = $this->Request()->getParam('url', null);
         $response = $api->shipOrder($order, $invoice, $url);
 
         $this->Front()->Plugins()->Json()->setRenderer();
@@ -110,9 +111,9 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     public function confirmPaymentAction()
     {
         /** @var \BilliePayment\Components\Api\Api $api */
-        $api      = $this->container->get('billie_payment.api');
+        $api = $this->container->get('billie_payment.api');
         $amount = floatval(str_replace(',', '.', $this->Request()->getParam('amount')));
-        $order    = $this->Request()->getParam('order_id');
+        $order = $this->Request()->getParam('order_id');
         $response = $api->confirmPayment($order, $amount);
 
         // Return result message
@@ -129,7 +130,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $response = [];
         $response['success'] = false;
         try {
-            if($amount > 0) {
+            if ($amount > 0) {
                 $response = $api->partlyRefund($order, $amount);
             } else {
                 $response['error'] = 'Invalid parameters';
@@ -151,8 +152,8 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     public function cancelOrderAction()
     {
         /** @var \BilliePayment\Components\Api\Api $api */
-        $api      = $this->container->get('billie_payment.api');
-        $order    = $this->Request()->getParam('order_id');
+        $api = $this->container->get('billie_payment.api');
+        $order = $this->Request()->getParam('order_id');
         $response = $api->cancelOrder($order);
 
         // Return result message
@@ -167,6 +168,6 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     public function getWhitelistedCSRFActions()
     {
-        return [ 'index', 'order' ];
+        return ['index', 'order'];
     }
 }

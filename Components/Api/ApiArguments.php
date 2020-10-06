@@ -52,7 +52,7 @@ class ApiArguments
     /**
      * Duration information
      *
-     * @var integer
+     * @var int
      */
     public $duration;
 }

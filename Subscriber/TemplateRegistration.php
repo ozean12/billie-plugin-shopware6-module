@@ -28,7 +28,7 @@ class TemplateRegistration implements SubscriberInterface
         return [
             'Enlight_Controller_Action_PreDispatch' => 'onPreDispatch',
             'Enlight_Controller_Action_PostDispatch_Backend_Index' => 'addMenuItem',
-            'Theme_Inheritance_Template_Directories_Collected' => 'collectTemplateDirForDocuments'
+            'Theme_Inheritance_Template_Directories_Collected' => 'collectTemplateDirForDocuments',
         ];
     }
 
@@ -41,7 +41,6 @@ class TemplateRegistration implements SubscriberInterface
 
     /**
      * Add Menu item sprite class
-     * @param Enlight_Controller_ActionEventArgs $args
      */
     public function addMenuItem(Enlight_Controller_ActionEventArgs $args)
     {
@@ -55,7 +54,6 @@ class TemplateRegistration implements SubscriberInterface
 
     /**
      * Add template dir prior dispatching views.
-     * @param Enlight_Controller_ActionEventArgs $args
      */
     public function onPreDispatch(Enlight_Controller_ActionEventArgs $args)
     {

@@ -2,10 +2,7 @@
 
 namespace BilliePayment\Components\Payment;
 
-use Billie\Util\LegalFormProvider;
-use BilliePayment\Components\Api\ApiArguments;
 use BilliePayment\Enum\PaymentMethods;
-use Shopware\Models\Attribute\Customer;
 use Shopware\Models\Payment\Payment;
 
 /**
@@ -14,21 +11,19 @@ use Shopware\Models\Payment\Payment;
  */
 class Service
 {
-
     /**
      * Validate payment data based on legal form. If successful return true,
      * otherwise return an array with errorflags and messages.
      *
      * @SuppressWarnings(PHPMD.StaticAccess)
-     * @param array $fields
-     * @param \Enlight_Controller_Request_Request $request
+     *
      * @return array|bool
      */
     public function validate(array $fields, \Enlight_Controller_Request_Request $request)
     {
         // Error Bags
         $errorMessages = [];
-        $errorFlag     = [];
+        $errorFlag = [];
 
         // validate Fields and return error if there are any
         foreach ($fields as $field) {
@@ -43,7 +38,7 @@ class Service
 
             return [
                 'errorFlag' => $errorFlag,
-                'messages'  => $errorMessages
+                'messages' => $errorMessages,
             ];
         }
 
@@ -53,8 +48,7 @@ class Service
     /**
      * Check if payment id belongs to billie payment
      *
-     * @param array $payment
-     * @return boolean
+     * @return bool
      */
     public function isBilliePayment(array $payment)
     {
@@ -83,5 +77,4 @@ class Service
 
         return false;
     }
-
 }

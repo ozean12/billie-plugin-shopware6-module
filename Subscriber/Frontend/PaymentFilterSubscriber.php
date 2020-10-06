@@ -14,15 +14,16 @@ use Shopware\Models\Attribute\Payment;
 
 class PaymentFilterSubscriber implements SubscriberInterface
 {
-
     /**
      * @var ModelManager
      */
     private $modelManager;
+
     /**
      * @var Enlight_Components_Db_Adapter_Pdo_Mysql
      */
     private $db;
+
     /**
      * @var SessionService
      */
@@ -31,7 +32,8 @@ class PaymentFilterSubscriber implements SubscriberInterface
     public function __construct(
         ModelManager $modelManager,
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
-        SessionService $sessionService)
+        SessionService $sessionService
+    )
     {
         $this->modelManager = $modelManager;
         $this->db = $db;
@@ -70,8 +72,8 @@ class PaymentFilterSubscriber implements SubscriberInterface
                             // add backward compatibility
                             if (!isset($paymentMethods[$i]['attributes'])) {
                                 $meta = $this->modelManager->getClassMetadata(Payment::class);
-                                $attributeData = $this->db->fetchRow("SELECT * FROM " . $meta->getTableName() . " WHERE paymentmeanID = ?", [$paymentMethod['id']]);
-                                /** @var ModelEntity $attributeModel */
+                                $attributeData = $this->db->fetchRow('SELECT * FROM ' . $meta->getTableName() . ' WHERE paymentmeanID = ?', [$paymentMethod['id']]);
+                                /* @var ModelEntity $attributeModel */
                                 $paymentMethods[$i]['attributes']['core'] = new Attribute(is_array($attributeData) ? $attributeData : []);
                             }
                         }
@@ -79,6 +81,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
                 }
             }
         }
+
         return $paymentMethods;
     }
 }

@@ -1,14 +1,11 @@
 <?php
 
-
 namespace BilliePayment\Bootstrap\Attributes;
-
 
 use Shopware\Models\Customer\Customer;
 
 class UserAttributes extends AbstractAttributes
 {
-
     protected function getEntityClass()
     {
         return Customer::class;

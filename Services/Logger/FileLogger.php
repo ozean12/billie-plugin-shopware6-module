@@ -1,8 +1,6 @@
 <?php
 
-
 namespace BilliePayment\Services\Logger;
-
 
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
@@ -12,7 +10,6 @@ use Monolog\Logger;
  */
 class FileLogger extends Logger
 {
-
     const FILENAME = 'billie-payment.log';
 
     public function __construct($logDir)

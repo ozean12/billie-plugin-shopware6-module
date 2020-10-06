@@ -1,12 +1,9 @@
 <?php
 
-
 namespace BilliePayment\Helper;
-
 
 class BasketHelper
 {
-
     /* Shipping costs currently are not needed
      * public static function getShippingAmount(array $basket)
     {
@@ -22,25 +19,25 @@ class BasketHelper
             'gross' => [
                 'amountWithTax',
                 'amountNumeric',
-                'priceNumeric'
+                'priceNumeric',
             ],
             'net' => [
                 'amountnetNumeric',
-                'netprice'
-            ]
+                'netprice',
+            ],
         ];
 
         $gross = $net = 0;
-        foreach($fetchKeys as $variable => $keys) {
+        foreach ($fetchKeys as $variable => $keys) {
             $value = null;
-            foreach($keys as $key) {
-                if(isset($product[$key])) {
+            foreach ($keys as $key) {
+                if (isset($product[$key])) {
                     $value = $product[$key];
                     break;
                 }
             }
-            if($value) {
-                switch($variable) {
+            if ($value) {
+                switch ($variable) {
                     case 'gross':
                         $gross = $value;
                         break;
@@ -61,7 +58,7 @@ class BasketHelper
     {
         return self::round(self::addTax([
             'gross' => empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'],
-            'net' => $basket['AmountNetNumeric']
+            'net' => $basket['AmountNetNumeric'],
         ]));
     }
 
@@ -70,15 +67,14 @@ class BasketHelper
         $data['tax'] = round($data['tax'], 2);
         $data['gross'] = round($data['gross'], 2);
         $data['net'] = round($data['net'], 2);
+
         return $data;
     }
 
     private static function addTax(array $data)
     {
         $data['tax'] = $data['gross'] - $data['net'];
+
         return $data;
     }
-
-
-
 }

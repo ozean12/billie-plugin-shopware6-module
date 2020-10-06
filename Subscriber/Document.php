@@ -1,18 +1,15 @@
 <?php
 
-
 namespace BilliePayment\Subscriber;
-
 
 use Enlight\Event\SubscriberInterface;
 
 class Document implements SubscriberInterface
 {
-
     public static function getSubscribedEvents()
     {
         return [
-            'Shopware_Components_Document::initTemplateEngine::after' => 'afterInitDocumentTemplate'
+            'Shopware_Components_Document::initTemplateEngine::after' => 'afterInitDocumentTemplate',
         ];
     }
 

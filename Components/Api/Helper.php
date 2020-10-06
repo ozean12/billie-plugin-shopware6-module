@@ -2,15 +2,15 @@
 
 namespace BilliePayment\Components\Api;
 
-use Shopware\Models\Order\Order;
-use BilliePayment\Components\Utils;
 use Billie\Exception\BillieException;
 use Billie\Exception\InvalidCommandException;
-use Billie\Exception\OrderDecline\OrderDeclinedException;
 use Billie\Exception\OrderDecline\DebtorAddressException;
 use Billie\Exception\OrderDecline\DebtorLimitExceededException;
 use Billie\Exception\OrderDecline\DebtorNotIdentifiedException;
+use Billie\Exception\OrderDecline\OrderDeclinedException;
 use Billie\Exception\OrderDecline\RiskPolicyDeclinedException;
+use BilliePayment\Components\Utils;
+use Shopware\Models\Order\Order;
 
 /**
  * Helper Class to manage error messages and
@@ -25,8 +25,6 @@ class Helper
 
     /**
      * Set the utils helper via DI
-     *
-     * @param Utils $utils
      */
     public function __construct(Utils $utils)
     {
@@ -36,8 +34,9 @@ class Helper
     /**
      * Update local information
      *
-     * @param Order|integer $order
-     * @param array $data
+     * @param Order|int $order
+     * @param array     $data
+     *
      * @return bool|array
      */
     public function updateLocal($order, $data)
@@ -53,15 +52,15 @@ class Helper
         }
 
         // set values
-        $orderAttr    = $item->getAttribute();
+        $orderAttr = $item->getAttribute();
         $customerAttr = $item->getCustomer()->getAttribute();
-        $methods      = [
-            'state'         => 'setBillieState',
-            'iban'          => 'setBillieIban',
-            'bic'           => 'setBillieBic',
-            'reference'     => 'setBillieReferenceId',
-            'duration'      => 'setBillieDuration',
-            'duration_date' => 'setBillieDurationDate'
+        $methods = [
+            'state' => 'setBillieState',
+            'iban' => 'setBillieIban',
+            'bic' => 'setBillieBic',
+            'reference' => 'setBillieReferenceId',
+            'duration' => 'setBillieDuration',
+            'duration_date' => 'setBillieDurationDate',
         ];
 
         foreach ($data as $key => $value) {
@@ -87,49 +86,49 @@ class Helper
     /**
      * Get an order by id
      *
-     * @param integer $order
+     * @param int $order
+     *
      * @return Order
      */
     public function getOrder($order)
     {
         $models = $this->utils->getEnityManager();
-        $repo   = $models->getRepository(Order::class);
+        $repo = $models->getRepository(Order::class);
+
         return $repo->find($order);
     }
 
     /**
      * Get the order not found data message
      *
-     * @param integer $order
+     * @param int $order
+     *
      * @return array
      */
     public function orderNotFoundMessage($order)
     {
         return [
             'success' => false,
-            'title'   => $this->utils->getSnippet('backend/billie_overview/errors', 'error'),
-            'data'    => sprintf($this->utils->getSnippet('backend/billie_overview/errors', 'ORDER_NOT_FOUND'), $order)
+            'title' => $this->utils->getSnippet('backend/billie_overview/errors', 'error'),
+            'data' => sprintf($this->utils->getSnippet('backend/billie_overview/errors', 'ORDER_NOT_FOUND'), $order),
         ];
     }
 
     /**
      * Generate Response based on exception
      *
-     * @param BillieException $exc
-     * @param array $local
      * @return array
      */
     public function errorMessage(BillieException $exc, array $local = [])
     {
         $this->utils->getLogger()->error(sprintf('[%s]: %s', $exc->getBillieCode(), $exc->getBillieMessage()));
+
         return ['success' => false, 'data' => $exc->getBillieCode(), 'local' => $local];
     }
 
     /**
      * Generate Response based on declined order exception
      *
-     * @param OrderDeclinedException $exc
-     * @param array $local
      * @return array
      */
     public function declinedErrorMessage(OrderDeclinedException $exc, array $local = [])
@@ -152,20 +151,20 @@ class Helper
         }
 
         $this->utils->getLogger()->error(sprintf('[%s]: %s', $code, $exc->getBillieMessage()));
+
         return ['success' => false, 'data' => $code, 'local' => $local];
     }
 
     /**
      * Generate InvalidCommand error message
      *
-     * @param InvalidCommandException $exc
-     * @param array $local
      * @return array
      */
     public function invalidCommandMessage(InvalidCommandException $exc, array $local = [])
     {
         $violations = $exc->getViolations();
         $this->utils->getLogger()->error('[InvalidCommandException]: ' . implode('; ', $violations));
+
         return ['success' => false, 'data' => 'InvalidCommandException', 'local' => $local];
     }
 }

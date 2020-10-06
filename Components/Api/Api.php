@@ -5,7 +5,6 @@ namespace BilliePayment\Components\Api;
 use Billie\Command\UpdateOrder;
 use Billie\Exception\BillieException;
 use Billie\Exception\InvalidCommandException;
-use Billie\Exception\InvalidRequestException;
 use Billie\Exception\OrderDecline\OrderDeclinedException;
 use Billie\HttpClient\BillieClient;
 use Billie\Mapper\RetrieveOrderMapper;
@@ -28,6 +27,11 @@ use Shopware\Models\Payment\Payment;
 class Api
 {
     /**
+     * @var Helper
+     */
+    public $helper = null;
+
+    /**
      * @var ConfigService
      */
     protected $config = [];
@@ -43,18 +47,9 @@ class Api
     protected $factory = null;
 
     /**
-     * @var Helper
-     */
-    public $helper = null;
-
-    /**
      * @var Utils
      */
     protected $utils = null;
-    /**
-     * @var BankService
-     */
-    private $bankService;
 
     /**
      * @var ModelManager
@@ -62,14 +57,14 @@ class Api
     protected $modelManager;
 
     /**
+     * @var BankService
+     */
+    private $bankService;
+
+    /**
      * Load Plugin config
      *
      * @SuppressWarnings(PHPMD.StaticAccess)
-     * @param Helper $helper
-     * @param Utils $utils
-     * @param CommandFactory $factory
-     * @param ConfigService $config
-     * @param BankService $bankService
      */
     public function __construct(
         Helper $helper,
@@ -77,30 +72,31 @@ class Api
         CommandFactory $factory,
         ConfigService $config,
         BankService $bankService
-)
-    {
+    ) {
         // initialize Billie Client
         $this->config = $config;
-        $this->helper  = $helper;
+        $this->helper = $helper;
         $this->factory = $factory;
-        $this->utils   = $utils;
-        $this->client  = BillieClient::create($config->getClientId(), $config->getClientSecret(), $config->isSandbox());
+        $this->utils = $utils;
+        $this->client = BillieClient::create($config->getClientId(), $config->getClientSecret(), $config->isSandbox());
         $this->bankService = $bankService;
         $this->modelManager = $this->utils->getEnityManager(); // TODO move to DI
     }
 
-    public function createCheckoutSession(Customer $customer) {
+    public function createCheckoutSession(Customer $customer)
+    {
         return $this->client->checkoutSessionCreate($customer->getId());
     }
 
     /**
      * @param $refId
      * @param Address|DebtorCompany $address
-     * @param Payment $paymentMethod
      * @param $amount
      * @param $currency
-     * @return \Billie\Model\Order
+     *
      * @throws InvalidCommandException
+     *
+     * @return \Billie\Model\Order
      */
     public function confirmCheckoutSession($refId, $address, Payment $paymentMethod, $amount, $currency)
     {
@@ -113,20 +109,19 @@ class Api
             $paymentMethod->getAttribute()->getBillieDuration()
         );
         $response = $this->client->checkoutSessionConfirm($model);
-        if(is_array($response)) {
+        if (is_array($response)) {
             return RetrieveOrderMapper::orderObjectFromArray($response);
-        } else {
-            return $response;
         }
+
+        return $response;
     }
 
     /**
      * Load orders paid with billie.
      *
-     * @param integer $page
-     * @param integer $perPage
-     * @param mixed $filters
-     * @param mixed $sorting
+     * @param int $page
+     * @param int $perPage
+     *
      * @return array
      */
     public function getList($page = 1, $perPage = 25, $filters = null, $sorting = null)
@@ -152,18 +147,17 @@ class Api
 
         // Return result
         return [
-            'orders'     => $paginator->getIterator()->getArrayCopy(),
-            'total'      => $paginator->count(),
-            'totalPages' => ceil($paginator->count()/$perPage),
-            'page'       => $page,
-            'perPage'    => $perPage
+            'orders' => $paginator->getIterator()->getArrayCopy(),
+            'total' => $paginator->count(),
+            'totalPages' => ceil($paginator->count() / $perPage),
+            'page' => $page,
+            'perPage' => $perPage,
         ];
     }
 
     /**
      * Tell billie about newly created order
      *
-     * @param ApiArguments $args
      * @return array
      */
     public function createOrder(ApiArguments $args)
@@ -173,19 +167,19 @@ class Api
         // Call API Endpoint to create order -> POST /v1/order
         try {
             /** @var \Billie\Model\Order $order */
-            $order              = $this->client->createOrder($this->factory->createOrderCommand($args));
+            $order = $this->client->createOrder($this->factory->createOrderCommand($args));
             $local['reference'] = $order->referenceId;
-            $local['state']     = $order->state;
-            $local['iban']      = $order->bankAccount->iban;
-            $local['bic']       = $order->bankAccount->bic;
+            $local['state'] = $order->state;
+            $local['iban'] = $order->bankAccount->iban;
+            $local['bic'] = $order->bankAccount->bic;
             $this->utils->getLogger()->info('POST /v1/order');
         }
         // Missing Legal Form attributes
         catch (MissingLegalFormException $exc) {
             return [
                 'success' => false,
-                'title'   => $this->utils->getSnippet('backend/billie_overview/errors', 'error'),
-                'data'    => $exc->getErrorCodes()[0]
+                'title' => $this->utils->getSnippet('backend/billie_overview/errors', 'error'),
+                'data' => $exc->getErrorCodes()[0],
             ];
         }
         // Order Declined -> Billie User Error Message
@@ -207,11 +201,14 @@ class Api
     /**
      * refunds partly or completly the order. if the amount is greater or equal than the actual open amount on
      * billie PaD, the order will canceled
+     *
      * @param $orderId
      * @param $amount
-     * @return array
+     *
      * @throws BillieException
      * @throws InvalidCommandException
+     *
+     * @return array
      */
     public function partlyRefund($orderId, $amount)
     {
@@ -235,49 +232,53 @@ class Api
             } catch (InvalidCommandException $e) {
                 return [
                     'success' => false,
-                    'error' => $e->getMessage() ? : implode('', $e->getViolations())
+                    'error' => $e->getMessage() ?: implode('', $e->getViolations()),
                 ];
             } catch (BillieException $e) {
                 return [
                     'success' => false,
-                    'error' => $e->getMessage() ? : implode('', $e->getViolations())
+                    'error' => $e->getMessage() ?: implode('', $e->getViolations()),
                 ];
             }
         }
         if (is_array($return)) {
             if (isset($return['success'])) {
                 $return['partly'] = $partly;
+
                 return $return;
-            } else if (isset($return['uuid'])) {
+            } elseif (isset($return['uuid'])) {
                 $order = $this->getClient()->getOrder($return['uuid']);
+
                 return [
                     'success' => true,
-                    'partly' => $order->state !== \Billie\Model\Order::STATE_CANCELLED
+                    'partly' => $order->state !== \Billie\Model\Order::STATE_CANCELLED,
                 ];
             }
-        } else if ($return instanceof \Billie\Model\Order) {
+        } elseif ($return instanceof \Billie\Model\Order) {
             return [
                 'success' => true,
-                'partly' => $return->state !== \Billie\Model\Order::STATE_CANCELLED
+                'partly' => $return->state !== \Billie\Model\Order::STATE_CANCELLED,
             ];
         }
+
         return [
             'success' => false,
-            'error' => 'Unknown error.'
+            'error' => 'Unknown error.',
         ];
     }
 
     /**
      * Full Cancelation of an order on billie site.
      *
-     * @param integer $order
+     * @param int $order
+     *
      * @return array
      */
     public function cancelOrder($order)
     {
         // Get Order
         $local = [];
-        $item  = $this->helper->getOrder($order);
+        $item = $this->helper->getOrder($order);
 
         if (!$item) {
             return $this->helper->orderNotFoundMessage($order);
@@ -311,16 +312,17 @@ class Api
     /**
      * Mark order as shipped
      *
-     * @param integer $order
+     * @param int         $order
      * @param string|null $invoice
      * @param string|null $url
+     *
      * @return array
      */
     public function shipOrder($order, $invoice = null, $url = null)
     {
         // Get Order
         $local = [];
-        $item  = $this->helper->getOrder($order);
+        $item = $this->helper->getOrder($order);
 
         if (!$item) {
             return $this->helper->orderNotFoundMessage($order);
@@ -335,7 +337,7 @@ class Api
         // run POST /v1/order/{order_id}/ship
         try {
             /** @var \Billie\Model\Order $response */
-            $response       = $this->client->shipOrder($this->factory->createShipCommand($item, $invoice, $url), true);
+            $response = $this->client->shipOrder($this->factory->createShipCommand($item, $invoice, $url), true);
             $local['state'] = $response->state;
             $this->utils->getLogger()->info("POST /v1/order/{$order}/ship");
             // $dueDate = $order->invoice->dueDate;
@@ -371,14 +373,16 @@ class Api
             $command = $this->factory->createReduceAmountCommand($order, [
                 'net' => floatval($net) * 100,
                 'gross' => floatval($gross) * 100,
-                'currency' => $order->getCurrency()
+                'currency' => $order->getCurrency(),
             ]);
             $billieOrder = $this->client->reduceOrderAmount($command);
             $order->getAttribute()->setBillieState($billieOrder->state);
             $this->modelManager->flush($order);
+
             return true;
         } catch (\Exception $e) {
-            $this->utils->getLogger()->info("Error during `updateOrderAmount`. Message: ".$e->getMessage());
+            $this->utils->getLogger()->info('Error during `updateOrderAmount`. Message: ' . $e->getMessage());
+
             return false;
         }
     }
@@ -386,9 +390,7 @@ class Api
     /**
      * Update an order
      *
-     * @param Order $order
-     * @param \Billie\Model\Order $billieOrder
-     * @return \Billie\Model\Order|boolean
+     * @return \Billie\Model\Order|bool
      */
     public function updateOrder(Order $order, \Billie\Model\Order $billieOrder)
     {
@@ -400,12 +402,14 @@ class Api
             if ($response instanceof \Billie\Model\Order) {
                 $order->getAttribute()->setBillieState($response->state);
                 $this->modelManager->flush($order);
+
                 return $billieOrder;
-            } else {
-                return false;
             }
+
+            return false;
         } catch (\Exception $e) {
-            $this->utils->getLogger()->info("Error during `updateOrderAmount`. Message: ".$e->getMessage());
+            $this->utils->getLogger()->info('Error during `updateOrderAmount`. Message: ' . $e->getMessage());
+
             return false;
         }
     }
@@ -413,15 +417,16 @@ class Api
     /**
      * Full cancelation of an order on billie site.
      *
-     * @param integer $order
+     * @param int   $order
      * @param float $amount
+     *
      * @return array
      */
     public function confirmPayment($order, $amount)
     {
         // Get Order
         $local = [];
-        $item  = $this->helper->getOrder($order);
+        $item = $this->helper->getOrder($order);
 
         if (!$item) {
             return $this->helper->orderNotFoundMessage($order);
@@ -429,9 +434,9 @@ class Api
 
         // Call POST /v1/order/{order_id}/confirm-payment
         try {
-            $refId          = $item->getAttribute()->getBillieReferenceid();
-            $command        = $this->factory->createConfirmPaymentCommand($refId, $amount);
-            $order          = $this->client->confirmPayment($command);
+            $refId = $item->getAttribute()->getBillieReferenceid();
+            $command = $this->factory->createConfirmPaymentCommand($refId, $amount);
+            $order = $this->client->confirmPayment($command);
             $local['state'] = $order->state;
             $this->utils->getLogger()->info("POST /v1/order/{$order}/confirm-payment");
         }
@@ -455,14 +460,15 @@ class Api
     /**
      * Retrieve Order information
      *
-     * @param integer $order
+     * @param int $order
+     *
      * @return array
      */
     public function retrieveOrder($order)
     {
         // Get Order
         $local = [];
-        $item  = $this->helper->getOrder($order);
+        $item = $this->helper->getOrder($order);
 
         if (!$item) {
             return $this->helper->orderNotFoundMessage($order);
@@ -471,10 +477,10 @@ class Api
         // GET /v1/order/{order_id}
         try {
             $this->utils->getLogger()->info("GET /v1/order/{$order}");
-            $response       = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
+            $response = $this->client->getOrder($item->getAttribute()->getBillieReferenceId());
             $local['state'] = $response->state;
-            $local['iban']  = $response->bankAccount->iban;
-            $local['bic']   = $response->bankAccount->bic;
+            $local['iban'] = $response->bankAccount->iban;
+            $local['bic'] = $response->bankAccount->bic;
         }
         // Invalid Command -> Non-technical user error message
         catch (InvalidCommandException $exc) {
@@ -487,25 +493,25 @@ class Api
 
         // Retrieved Data
         $response = [
-            'success'      => true,
-            'state'        => $response->state,
+            'success' => true,
+            'state' => $response->state,
             'order_number' => $item->getNumber(),
-            'order_id'     => $item->getId(),
+            'order_id' => $item->getId(),
             'bank_account' => [
                 'iban' => $response->bankAccount->iban,
-                'bic'  => $response->bankAccount->bic,
-                'bank' => $this->bankService->getBankData($item, $response)['name']
+                'bic' => $response->bankAccount->bic,
+                'bank' => $this->bankService->getBankData($item, $response)['name'],
             ],
             'debtor_company' => [
-                'name'                      => $response->debtorCompany->name,
-                'address_house_number'      => $response->debtorCompany->address->houseNumber,
-                'address_house_street'      => $response->debtorCompany->address->street,
-                'address_house_city'        => $response->debtorCompany->address->city,
+                'name' => $response->debtorCompany->name,
+                'address_house_number' => $response->debtorCompany->address->houseNumber,
+                'address_house_street' => $response->debtorCompany->address->street,
+                'address_house_city' => $response->debtorCompany->address->city,
                 'address_house_postal_code' => $response->debtorCompany->address->postalCode,
-                'address_house_country'     => $response->debtorCompany->address->countryCode
+                'address_house_country' => $response->debtorCompany->address->countryCode,
             ],
             'amount' => $response->amount,
-            'amountNet' => $response->amountNet
+            'amountNet' => $response->amountNet,
         ];
 
         // Update order details in database with new ones from billie

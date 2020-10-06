@@ -24,27 +24,38 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_Frontend_Payment
 {
+    /**
+     * Payment Status Paid Code
+     *
+     * @var int
+     */
+    const PAYMENTSTATUSPAID = 12; // TODO config
 
     /**
      * @var Api
      */
     private $billieApi;
+
     /**
      * @var SessionService
      */
     private $sessionService;
+
     /**
      * @var Logger
      */
     private $logger;
+
     /**
      * @var ConfigService
      */
     private $configService;
+
     /**
      * @var AddressService
      */
     private $addressService;
+
     /**
      * @var BankService
      */
@@ -59,14 +70,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $this->bankService = $this->container->get(BankService::class);
         $this->billieApi = $this->container->get('billie_payment.api');
         $this->logger = $this->container->get('billie_payment.logger');
-
     }
-
-    /**
-     * Payment Status Paid Code
-     * @var integer
-     */
-    const PAYMENTSTATUSPAID = 12; // TODO config
 
     /**
      * Index action method.
@@ -92,13 +96,13 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                         $paymentMethod,
                         [
                             'net' => $totals['net'] * 100,
-                            'tax' => $totals['tax'] * 100
+                            'tax' => $totals['tax'] * 100,
                         ],
                         $currency
                     );
-
                 } catch (Exception $e) {
                     $this->logger->addCritical($e->getMessage());
+
                     return $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
                 }
                 if ($billieOrder) {
@@ -121,7 +125,6 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     // also see BILLSWPL-21
                     //$billieOrder->orderId = $orderNumber;
                     //$this->billieApi->updateOrder($order, $billieOrder);
-
 
                     // write determined address to shopware order address
                     $billingAddress = $order->getBilling();
@@ -186,5 +189,4 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     public function cancelAction()
     {
     }
-
 }

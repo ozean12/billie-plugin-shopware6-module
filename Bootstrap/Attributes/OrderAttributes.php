@@ -1,15 +1,11 @@
 <?php
 
-
 namespace BilliePayment\Bootstrap\Attributes;
-
-
 
 use Shopware\Models\Order\Order;
 
 class OrderAttributes extends AbstractAttributes
 {
-
     protected function getEntityClass()
     {
         return Order::class;

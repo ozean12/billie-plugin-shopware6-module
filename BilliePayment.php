@@ -18,7 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 class BilliePayment extends Plugin
 {
-
     public static function isPackage()
     {
         return file_exists(self::getPackageVendorAutoload());
@@ -28,7 +27,6 @@ class BilliePayment extends Plugin
     {
         return __DIR__ . '/vendor/autoload.php';
     }
-
 
     public function build(ContainerBuilder $container)
     {
@@ -57,32 +55,6 @@ class BilliePayment extends Plugin
         }
         parent::install($context);
         $context->scheduleClearCache($context::CACHE_LIST_ALL);
-    }
-
-    /**
-     * @param Plugin\Context\InstallContext $context
-     * @return AbstractBootstrap[]
-     */
-    protected function getBootstrapClasses(Plugin\Context\InstallContext $context)
-    {
-        /** @var AbstractBootstrap[] $bootstrapper */
-        $bootstrapper = [
-            new PaymentMethodAttributes(),
-            new OrderAttributes(),
-            new UserAddressAttributes(),
-            new UserAttributes(),
-            new PaymentMethods()
-        ];
-
-        $logger = new FileLogger($this->container->getParameter('kernel.logs_dir'));
-        // initialize all bootstraps
-        foreach ($bootstrapper as $bootstrap) {
-            $bootstrap->setContext($context);
-            $bootstrap->setLogger($logger);
-            $bootstrap->setContainer($this->container);
-            $bootstrap->setPluginDir($this->getPath());
-        }
-        return $bootstrapper;
     }
 
     public function update(Plugin\Context\UpdateContext $context)
@@ -147,6 +119,32 @@ class BilliePayment extends Plugin
         }
         parent::activate($context);
         $context->scheduleClearCache($context::CACHE_LIST_ALL);
+    }
+
+    /**
+     * @return AbstractBootstrap[]
+     */
+    protected function getBootstrapClasses(Plugin\Context\InstallContext $context)
+    {
+        /** @var AbstractBootstrap[] $bootstrapper */
+        $bootstrapper = [
+            new PaymentMethodAttributes(),
+            new OrderAttributes(),
+            new UserAddressAttributes(),
+            new UserAttributes(),
+            new PaymentMethods(),
+        ];
+
+        $logger = new FileLogger($this->container->getParameter('kernel.logs_dir'));
+        // initialize all bootstraps
+        foreach ($bootstrapper as $bootstrap) {
+            $bootstrap->setContext($context);
+            $bootstrap->setLogger($logger);
+            $bootstrap->setContainer($this->container);
+            $bootstrap->setPluginDir($this->getPath());
+        }
+
+        return $bootstrapper;
     }
 }
 

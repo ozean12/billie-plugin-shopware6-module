@@ -1,8 +1,6 @@
 <?php
 
-
 namespace BilliePayment\Bootstrap;
-
 
 use Monolog\Logger;
 use Shopware\Components\Model\ModelManager;
@@ -15,23 +13,26 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 abstract class AbstractBootstrap
 {
-
     /**
      * @var InstallContext|UpdateContext
      */
     protected $updateContext;
+
     /**
      * @var InstallContext|UninstallContext
      */
     protected $uninstallContext;
+
     /**
      * @var ActivateContext|InstallContext
      */
     protected $activateContext;
+
     /**
      * @var DeactivateContext|InstallContext
      */
     protected $deactivateContext;
+
     /**
      * @var InstallContext
      */
@@ -41,6 +42,7 @@ abstract class AbstractBootstrap
      * @var ContainerInterface
      */
     protected $container;
+
     /**
      * @var ModelManager
      */
@@ -53,19 +55,19 @@ abstract class AbstractBootstrap
 
     protected $pluginDir;
 
-    public final function __construct()
+    final public function __construct()
     {
     }
 
-    public abstract function install();
+    abstract public function install();
 
-    public abstract function update();
+    abstract public function update();
 
-    public abstract function uninstall($keepUserData = false);
+    abstract public function uninstall($keepUserData = false);
 
-    public abstract function activate();
+    abstract public function activate();
 
-    public abstract function deactivate();
+    abstract public function deactivate();
 
     /**
      * @param ContainerInterface $container
@@ -76,29 +78,26 @@ abstract class AbstractBootstrap
         $this->modelManager = $this->container->get('models');
     }
 
-    public final function setContext(InstallContext $context)
+    final public function setContext(InstallContext $context)
     {
         if ($context instanceof UpdateContext) {
             $this->updateContext = $context;
-        } else if ($context instanceof UninstallContext) {
+        } elseif ($context instanceof UninstallContext) {
             $this->uninstallContext = $context;
-        } else if ($context instanceof ActivateContext) {
+        } elseif ($context instanceof ActivateContext) {
             $this->activateContext = $context;
-        } else if ($context instanceof DeactivateContext) {
+        } elseif ($context instanceof DeactivateContext) {
             $this->deactivateContext = $context;
         }
         $this->installContext = $context;
     }
 
-    public final function setLogger(Logger $logger)
+    final public function setLogger(Logger $logger)
     {
         $this->logger = $logger;
     }
 
-    /**
-     * @param mixed $pluginDir
-     */
-    public final function setPluginDir($pluginDir)
+    final public function setPluginDir($pluginDir)
     {
         $this->pluginDir = $pluginDir;
     }
@@ -143,12 +142,12 @@ abstract class AbstractBootstrap
     {
     }
 
-    protected final function getOldVersion()
+    final protected function getOldVersion()
     {
         return $this->installContext->getCurrentVersion();
     }
 
-    protected final function getNewVersion()
+    final protected function getNewVersion()
     {
         return $this->installContext->getPlugin()->getUpdateVersion();
     }

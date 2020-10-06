@@ -1,8 +1,6 @@
 <?php
 
-
 namespace BilliePayment\Bootstrap;
-
 
 use BilliePayment\Enum\PaymentMethods as PaymentMethodsEnum;
 use Shopware\Components\Plugin\PaymentInstaller;
@@ -12,7 +10,6 @@ use Shopware\Models\Payment\Repository;
 
 class PaymentMethods extends AbstractBootstrap
 {
-
     /**
      * @var PaymentInstaller
      */
@@ -73,7 +70,6 @@ class PaymentMethods extends AbstractBootstrap
             ->setParameter('name_new', $firstMethodData['name'])
             ->getQuery()
             ->execute();
-
     }
 
     public function install()
@@ -93,13 +89,14 @@ class PaymentMethods extends AbstractBootstrap
 
             $params = [
                 'id' => $payment->getId(),
-                'duration' => $options['billie_config']['default_duration']
+                'duration' => $options['billie_config']['default_duration'],
             ];
             $this->modelManager->getConnection()->executeQuery(
-                "REPLACE INTO " . $attributeMeta->getTableName() . " 
+                'REPLACE INTO ' . $attributeMeta->getTableName() . ' 
                     (paymentmeanID, billie_duration) 
-                    VALUES(:id, :duration);",
-                $params);
+                    VALUES(:id, :duration);',
+                $params
+            );
         }
     }
 
@@ -131,7 +128,6 @@ class PaymentMethods extends AbstractBootstrap
 
     /**
      * @param $flag bool
-     * @param array $methods
      */
     private function setActiveFlag($flag)
     {

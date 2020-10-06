@@ -1,12 +1,9 @@
 <?php
 
-
 namespace BilliePayment\Services;
-
 
 use ArrayObject;
 use Billie\Model\Address;
-use Billie\Model\Company;
 use Billie\Model\DebtorCompany;
 use Billie\Model\Order;
 use Shopware\Components\Model\ModelManager;
@@ -18,10 +15,12 @@ class AddressService
      * @var ConfigService
      */
     private $configService;
+
     /**
      * @var SessionService
      */
     private $sessionService;
+
     /**
      * @var ModelManager
      */
@@ -31,9 +30,7 @@ class AddressService
         ModelManager $modelManager,
         ConfigService $configService,
         SessionService $sessionService
-
-    )
-    {
+    ) {
         $this->modelManager = $modelManager;
         $this->configService = $configService;
         $this->sessionService = $sessionService;
@@ -44,7 +41,7 @@ class AddressService
         $billingAddress = $this->sessionService->getBillingAddress();
         // write determined address to shopware order address
         $billingAddress->setCompany($company->name);
-        $billingAddress->setStreet($company->addressStreet . ' '.$company->addressHouseNumber);
+        $billingAddress->setStreet($company->addressStreet . ' ' . $company->addressHouseNumber);
         $billingAddress->setAdditionalAddressLine1($company->addressAddition);
         $billingAddress->setZipCode($company->addressPostalCode);
         $billingAddress->setCity($company->addressCity);
@@ -59,7 +56,8 @@ class AddressService
         $this->modelManager->flush([$billingAddress]);
     }
 
-    public function updateSessionAddress(Order $billiOrder, DebtorCompany $company){
+    public function updateSessionAddress(Order $billiOrder, DebtorCompany $company)
+    {
         /** @var ArrayObject $sOrderVariables */
         $sOrderVariables = Shopware()->Session()->sOrderVariables;
         $userData = $sOrderVariables->offsetGet('sUserData');
@@ -69,7 +67,7 @@ class AddressService
 
         $billingAddress['company'] = $company->name;
         $billingAddress['ustid'] = $billiOrder->debtorCompany->taxId;
-        $billingAddress['street'] = $company->addressStreet . ' '. $company->addressHouseNumber;
+        $billingAddress['street'] = $company->addressStreet . ' ' . $company->addressHouseNumber;
         $billingAddress['additionalAddressLine1'] = $company->addressAddition;
         $billingAddress['zipcode'] = $company->addressPostalCode;
         $billingAddress['city'] = $company->addressCity;
@@ -82,7 +80,7 @@ class AddressService
         $billingAddress['attributes']['billie_legalform'] = $billiOrder->debtorCompany->legalForm;
 
         $userData['billingaddress'] = $billingAddress;
-        if($billingAddress['id'] === $shippingAddress['id']) {
+        if ($billingAddress['id'] === $shippingAddress['id']) {
             $userData['shippingaddress'] = $userData['billingaddress'];
         }
         $sOrderVariables->offsetSet('sUserData', $userData);
@@ -90,10 +88,12 @@ class AddressService
 
     /**
      * @param string $code
+     *
      * @return Country
      */
-    private function getCountry($code) {
-        /** @var Country $country */
+    private function getCountry($code)
+    {
+        /* @var Country $country */
         return $country = $this->modelManager->getRepository(Country::class)
             ->findOneBy(['iso' => $code]);
     }

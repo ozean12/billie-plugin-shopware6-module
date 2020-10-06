@@ -7,6 +7,7 @@ use Enlight\Event\SubscriberInterface;
 
 /**
  * Subscriber to assign api messages to the checkout view
+ *
  * @SuppressWarnings(PHPMD.StaticAccess)
  */
 class Checkout implements SubscriberInterface
@@ -26,7 +27,6 @@ class Checkout implements SubscriberInterface
     /**
      * Add API Messages to the Checkout View.
      *
-     * @param \Enlight_Event_EventArgs $args
      * @return void
      */
     public function addApiMessagesToView(\Enlight_Event_EventArgs $args)
@@ -36,8 +36,8 @@ class Checkout implements SubscriberInterface
 
         /** @var \Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
-        $request    = $controller->Request();
-        $view       = $controller->View();
+        $request = $controller->Request();
+        $view = $controller->View();
 
         // Only valid actions.
         if (!in_array($request->getActionName(), ['finish', 'payment', 'confirm'])) {
@@ -46,8 +46,8 @@ class Checkout implements SubscriberInterface
 
         // Error Checking
         if (PaymentMethods::exists($view->sPayment['name'])) {
-            $error     = ['code' => null, 'invalid' => false];
-            $company   = $view->sUserData['billingaddress']['company'];
+            $error = ['code' => null, 'invalid' => false];
+            $company = $view->sUserData['billingaddress']['company'];
 
             // Display Error if not a company.
             if (!isset($company) || is_null($company)) {

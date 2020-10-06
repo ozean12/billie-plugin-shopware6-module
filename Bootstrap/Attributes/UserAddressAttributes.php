@@ -1,24 +1,11 @@
 <?php
 
-
 namespace BilliePayment\Bootstrap\Attributes;
 
-
-use Billie\Util\LegalFormProvider;
 use Shopware\Models\Customer\Address;
 
 class UserAddressAttributes extends AbstractAttributes
 {
-
-    protected function getEntityClass()
-    {
-        return Address::class;
-    }
-
-    protected function createUpdateAttributes()
-    {
-    }
-
     public function install()
     {
         // these attributes are not required anymore
@@ -29,6 +16,15 @@ class UserAddressAttributes extends AbstractAttributes
     {
         // these attributes are not required anymore
         $this->uninstall(false);
+    }
+
+    protected function getEntityClass()
+    {
+        return Address::class;
+    }
+
+    protected function createUpdateAttributes()
+    {
     }
 
     protected function uninstallAttributes()

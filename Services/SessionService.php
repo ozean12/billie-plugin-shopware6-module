@@ -1,8 +1,6 @@
 <?php
 
-
 namespace BilliePayment\Services;
-
 
 use Billie\Command\CheckoutSessionConfirm;
 use Billie\Model\DebtorCompany;
@@ -18,7 +16,6 @@ use stdClass;
 
 class SessionService
 {
-
     /**
      * @var Api
      */
@@ -28,6 +25,7 @@ class SessionService
      * @var Enlight_Components_Session_Namespace
      */
     private $session;
+
     /**
      * @var ModelManager
      */
@@ -49,6 +47,7 @@ class SessionService
         $model->amount->grossAmount = $amount['gross'] * 100;
         $model->amount->netAmount = $amount['net'] * 100;
         $model->amount->taxAmount = $amount['tax'] * 100;
+
         return $model;
     }
 
@@ -57,10 +56,11 @@ class SessionService
         if ($createNew) {
             $sessionId = $this->api->createCheckoutSession($this->getCustomer());
             $this->setData('checkoutSessionId', $sessionId);
+
             return $sessionId;
-        } else {
-            return $this->getData('checkoutSessionId');
         }
+
+        return $this->getData('checkoutSessionId');
     }
 
     public function getBillieDurationForPaymentMethod()
@@ -68,16 +68,19 @@ class SessionService
         $payment = $this->session->get('sOrderVariables')['sPayment'];
         if (isset($payment['attribute']['billie_duration'])) {
             return intval($payment['attribute']['billie_duration']);
-        } else if (isset($payment['attributes']['core'])) {
+        } elseif (isset($payment['attributes']['core'])) {
             /** @var Attribute $attributeStruct */
             $attributeStruct = $payment['attributes']['core'];
+
             return intval($attributeStruct->get('billie_duration'));
-        } else if (isset($payment['id'])) {
+        } elseif (isset($payment['id'])) {
             $repo = $this->modelManager->getRepository(Payment::class);
             /** @var Payment $attribute */
             $attribute = $repo->findOneBy(['paymentId' => $payment['id']]);
+
             return $attribute ? $attribute->getBillieDuration() : 0;
         }
+
         return 0;
     }
 
@@ -85,6 +88,7 @@ class SessionService
     {
         $basket = $this->session->get('sOrderVariables')['sBasket'];
         $totals = BasketHelper::getTotalAmount($basket);
+
         return $key ? $totals[$key] : $totals;
     }
 
@@ -93,8 +97,10 @@ class SessionService
         $addressId = $this->session->get('checkoutBillingAddressId');
         if ($addressId === null) {
             $customer = $this->getCustomer();
+
             return $customer ? $customer->getDefaultBillingAddress() : null;
         }
+
         return $this->modelManager->find(Address::class, $addressId);
     }
 
@@ -103,14 +109,17 @@ class SessionService
         $addressId = $this->session->get('checkoutShippingAddressId');
         if ($addressId === null) {
             $customer = $this->getCustomer();
+
             return $customer ? $customer->getDefaultShippingAddress() : null;
         }
+
         return $this->modelManager->find(Address::class, $addressId);
     }
 
     public function getCustomer()
     {
         $userId = $this->session->get('sUserId');
+
         return $userId ? $this->modelManager->find(Customer::class, $userId) : null;
     }
 
@@ -119,7 +128,7 @@ class SessionService
         $this->session->offsetUnset('BilliePayment');
     }
 
-    public final function setData($key, $value = null)
+    final public function setData($key, $value = null)
     {
         $session = $this->session->get('BilliePayment', []);
         if ($value) {
@@ -133,6 +142,7 @@ class SessionService
     public function getData($key)
     {
         $session = $this->session->get('BilliePayment');
+
         return isset($session[$key]) ? $session[$key] : null;
     }
 
@@ -148,13 +158,13 @@ class SessionService
     {
         if ($address instanceof DebtorCompany) {
             $address = [
-                "name" => $address->name,
-                "address_street" => $address->addressStreet,
-                "address_house_number" => $address->addressHouseNumber,
-                "address_addition" => $address->addressAddition,
-                "address_postal_code" => $address->addressPostalCode,
-                "address_city" => $address->addressCity,
-                "address_country" => $address->addressCountry
+                'name' => $address->name,
+                'address_street' => $address->addressStreet,
+                'address_house_number' => $address->addressHouseNumber,
+                'address_addition' => $address->addressAddition,
+                'address_postal_code' => $address->addressPostalCode,
+                'address_city' => $address->addressCity,
+                'address_country' => $address->addressCountry,
             ];
         }
         $this->setData('approved_address', $address);
@@ -176,7 +186,7 @@ class SessionService
             $address->addressCity = $sessionAddress['address_city'];
             $address->addressCountry = $sessionAddress['address_country'];
         }
+
         return $address;
     }
-
 }
