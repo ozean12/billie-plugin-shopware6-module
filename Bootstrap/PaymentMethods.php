@@ -118,7 +118,7 @@ class PaymentMethods extends AbstractBootstrap
 
     public function activate()
     {
-        $this->setActiveFlag(true);
+        $this->setActiveFlag(true, true);
     }
 
     public function deactivate()
@@ -128,11 +128,17 @@ class PaymentMethods extends AbstractBootstrap
 
     /**
      * @param $flag bool
+     * @param bool $onlyFirst
      */
-    private function setActiveFlag($flag)
+    private function setActiveFlag($flag, $onlyFirst = false)
     {
-        /** @var Payment[] $methods */
-        $methods = $this->installContext->getPlugin()->getPayments()->toArray();
+        $methods = $this->installContext->getPlugin()->getPayments();
+        if ($onlyFirst) {
+            $methods = [$methods->first()];
+        } else {
+            $methods = $methods->toArray();
+        }
+        /** @var Payment[] $payment */
         foreach ($methods as $payment) {
             $payment->setActive($flag);
         }
