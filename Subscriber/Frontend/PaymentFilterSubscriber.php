@@ -33,8 +33,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
         ModelManager $modelManager,
         Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         SessionService $sessionService
-    )
-    {
+    ) {
         $this->modelManager = $modelManager;
         $this->db = $db;
         $this->sessionService = $sessionService;

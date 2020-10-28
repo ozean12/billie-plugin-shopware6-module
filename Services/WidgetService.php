@@ -122,9 +122,9 @@ class WidgetService
             return 'm';
         } elseif (in_array($salutation, $salutations['female'])) {
             return 'f';
-        } else {
-            return $this->configService->getFallbackSalutation();
         }
+
+        return $this->configService->getFallbackSalutation();
     }
 
     protected function getLineItems(array $content)
