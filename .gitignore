@@ -1,4 +1,3 @@
-.vscode
 /vendor/
-/billie-shop-plugin-sdk-master/
-build
+/build
+/lib/api-php-sdk/vendor
