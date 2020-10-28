@@ -1,7 +1,7 @@
 .git
 .github
 build
-bin/
+bin
 Jenkinsfile
 phpunit.xml.dist
 sonar-project.properties

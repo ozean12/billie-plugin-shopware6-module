@@ -12,8 +12,10 @@ mkdir -p "$BUILD_DIR"/dist/BilliePayment
 tar -xzf "$BUILD_DIR"/dist.tar.gz -C "$BUILD_DIR"/dist/
 
 rm -r "$BUILD_DIR"/dist/BilliePayment/composer*
-composer install --ignore-platform-reqs --no-dev -o -d "$BUILD_DIR"/dist/BilliePayment/lib/api-php-sdk
+/usr/bin/php5.6 /usr/local/bin/composer install --ignore-platform-reqs --no-dev -o -d "$BUILD_DIR"/dist/BilliePayment/lib/api-php-sdk
 
+## root vendor is not required
+rm -rf "$BUILD_DIR"/dist/BilliePayment/vendor/
 rm -rf "$BUILD_DIR"/dist.tar.gz
 
 (cd "$BUILD_DIR"/dist && zip -r BilliePayment.zip BilliePayment)

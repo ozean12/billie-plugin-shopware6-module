@@ -1,5 +1,5 @@
 {
-    "name": "s360/billie-payment",
+    "name": "billie/shopware5-module",
     "authors": [
         {
             "name": "Pascal Kleindienst",
@@ -7,18 +7,9 @@
         }
     ],
     "require": {
-        "php": "^5.6 || 7.0"
+        "php": "^5.6 || ^7.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.16"
-    },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "lib/*",
-            "options": {
-                "symlink": true
-            }
-        }
-    ]
+    }
 }
