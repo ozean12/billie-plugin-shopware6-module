@@ -2,6 +2,7 @@
 
 namespace Billie\Command;
 
+use Billie\Model\Address;
 use Billie\Model\Amount;
 use Billie\Model\DebtorCompany;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -31,9 +32,15 @@ class CheckoutSessionConfirm
     public $amount;
 
     /**
-     * @var debtorCompany
+     * @var DebtorCompany
      */
     public $debtorCompany;
+
+    /**
+     * @var Address
+     */
+    public $deliveryAdress;
+
     /**
      * RetrieveOrder constructor.
      *

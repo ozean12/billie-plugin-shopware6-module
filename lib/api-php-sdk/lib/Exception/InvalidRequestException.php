@@ -12,16 +12,19 @@ class InvalidRequestException extends BillieException
 {
 
     protected $message;
+    private $response;
 
     /**
      * InvalidRequestException constructor.
      *
      * @param string $message
+     * @param $response
      */
-    public function __construct($message)
+    public function __construct($message, $response)
     {
         parent::__construct();
         $this->message = $message;
+        $this->response = $response;
     }
 
     /**
@@ -38,5 +41,13 @@ class InvalidRequestException extends BillieException
     public function getBillieMessage()
     {
         return $this->message;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getResponse()
+    {
+        return $this->response;
     }
 }

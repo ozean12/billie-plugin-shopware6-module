@@ -2,6 +2,7 @@
 
 namespace BilliePayment\Services;
 
+use Billie\Util\AddressHelper;
 use BilliePayment\Helper\BasketHelper;
 use kamermans\OAuth2\Exception\AccessTokenRequestException;
 use Monolog\Logger;
@@ -62,6 +63,8 @@ class WidgetService
             $this->logger->addCritical($e->getMessage());
             $checkoutSessionId = '';
         }
+        $shippingAddressParts = AddressHelper::getPartsFromFullAddress($shippingAddress->getStreet());
+        $billingAddressParts = AddressHelper::getPartsFromFullAddress($shippingAddress->getStreet());
 
         $widgetData = [
             'src' => $this->configService->isSandbox() ? 'https://static-paella-sandbox.billie.io/checkout/billie-checkout.js' : 'https://static.billie.io/checkout/billie-checkout.js',
@@ -70,8 +73,8 @@ class WidgetService
                 'amount' => $this->sessionService->getTotalAmount(),
                 'duration' => $this->sessionService->getBillieDurationForPaymentMethod(),
                 'delivery_address' => [
-                    'street' => $this->extractStreet($shippingAddress->getStreet()),
-                    'house_number' => $this->extractStreetNumber($shippingAddress->getStreet()),
+                    'street' => $shippingAddressParts->street,
+                    'house_number' => $shippingAddressParts->houseNumber,
                     'addition' => $shippingAddress->getAdditional() ? implode(', ', $shippingAddress->getAdditional()) : null,
                     'city' => $shippingAddress->getCity(),
                     'postal_code' => $shippingAddress->getZipcode(),
@@ -80,8 +83,8 @@ class WidgetService
                 'debtor_company' => [
                     'name' => $billingAddress->getCompany() ? $billingAddress->getCompany() : $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname(),
                     'established_customer' => false,
-                    'address_street' => $this->extractStreet($billingAddress->getStreet()),
-                    'address_house_number' => $this->extractStreetNumber($billingAddress->getStreet()),
+                    'address_street' => $billingAddressParts->street,
+                    'address_house_number' => $billingAddressParts->houseNumber,
                     'address_addition' => $billingAddress->getAdditional() ? implode(', ', $billingAddress->getAdditional()) : null,
                     'address_city' => $billingAddress->getCity(),
                     'address_postal_code' => $billingAddress->getZipcode(),
@@ -99,20 +102,6 @@ class WidgetService
         ];
 
         return $widgetData;
-    }
-
-    protected function extractStreet($street)
-    {
-        preg_match('/(.*) [0-9]+ {0,1}[A-Za-z]*/', $street, $matches);
-
-        return isset($matches[1]) ? $matches[1] : $street;
-    }
-
-    protected function extractStreetNumber($street)
-    {
-        preg_match('/.* ([0-9]+ {0,1}[A-Za-z]*)/', $street, $matches);
-
-        return $matches[1];
     }
 
     protected function transformSalutation($salutation)

@@ -14,6 +14,7 @@ use Billie\Model\Amount;
 use Billie\Model\Company;
 use Billie\Model\DebtorCompany;
 use Billie\Model\Person;
+use Billie\Util\AddressHelper;
 use Billie\Util\LegalFormProvider;
 use BilliePayment\Components\MissingDocumentsException;
 use BilliePayment\Components\MissingLegalFormException;
@@ -186,12 +187,13 @@ class CommandFactory
         return new ConfirmPayment($refId, $amount * 100); // amount are in cents!
     }
 
-    public function createConfirmCheckoutSessionCommand($refId, DebtorCompany $debtorCompany, array $amount, $duration)
+    public function createConfirmCheckoutSessionCommand($refId, DebtorCompany $debtorCompany, Address $deliveryAddress, array $amount, $duration)
     {
         $model = new CheckoutSessionConfirm($refId);
         $model->duration = $duration;
         $model->amount = new Amount($amount['net'], $amount['currency'], $amount['tax']);
         $model->debtorCompany = $debtorCompany;
+        $model->deliveryAdress = $deliveryAddress;
 
         return $model;
     }
@@ -199,17 +201,30 @@ class CommandFactory
     /**
      * Fill Address Model
      *
+     * @param \Shopware\Models\Customer\Address|array $address
+     * @param array $country
      * @return Address
      */
-    public function createAddress(array $billing, array $country)
+    public function createAddress($address, $country = null)
     {
-        $address = new Address();
-        $address->fullAddress = $billing['street'];
-        $address->postalCode = $billing['zipcode'];
-        $address->city = $billing['city'];
-        $address->countryCode = $country['countryiso'];
+        $addressModel = new Address();
+        if ($address instanceof \Shopware\Models\Customer\Address) {
+            $addressParts = AddressHelper::getPartsFromFullAddress($address->getStreet());
+            $addressModel->fullAddress = $address->getStreet();
+            $addressModel->street = $addressParts->street;
+            $addressModel->houseNumber = $addressParts->houseNumber;
+            $addressModel->postalCode = $address->getZipcode();
+            $addressModel->city = $address->getCity();
+            $addressModel->countryCode = $address->getCountry()->getIso();
+            $addressModel->addition = $address->getAdditional();
+        } else if (is_array($address)) {
+            $addressModel->fullAddress = $address['street'];
+            $addressModel->postalCode = $address['zipcode'];
+            $addressModel->city = $address['city'];
+            $addressModel->countryCode = $country['countryiso'];
+        }
 
-        return $address;
+        return $addressModel;
     }
 
     public function createDebtorCompany(\Shopware\Models\Customer\Address $address)

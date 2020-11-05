@@ -2,7 +2,6 @@
 
 namespace Billie\Util;
 
-use Billie\Exception\InvalidFullAddressException;
 use Billie\Model\AddressPartial;
 
 class AddressHelper
@@ -10,14 +9,16 @@ class AddressHelper
     /**
      * @param $fullAddress
      * @return AddressPartial
-     * @throws InvalidFullAddressException
      */
     public static function getPartsFromFullAddress($fullAddress)
     {
         $parts = self::getParts($fullAddress);
 
         if (!isset($parts[1]) || !isset($parts[2])) {
-            throw new InvalidFullAddressException('The full address cannot be resolved.');
+            $parts = [
+                1 => $fullAddress,
+                2 => ''
+            ];
         }
 
         return new AddressPartial($parts[1], $parts[2]);

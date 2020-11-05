@@ -91,20 +91,22 @@ class Api
     /**
      * @param $refId
      * @param Address|DebtorCompany $address
+     * @param Address $deliveryAdress
+     * @param Payment $paymentMethod
      * @param $amount
      * @param $currency
      *
-     * @throws InvalidCommandException
-     *
      * @return \Billie\Model\Order
+     * @throws InvalidCommandException
      */
-    public function confirmCheckoutSession($refId, $address, Payment $paymentMethod, $amount, $currency)
+    public function confirmCheckoutSession($refId, $address, Address $deliveryAddress, Payment $paymentMethod, $amount, $currency)
     {
         $amount['currency'] = $currency;
 
         $model = $this->factory->createConfirmCheckoutSessionCommand(
             $refId,
             $address instanceof Address ? $this->factory->createDebtorCompany($address) : $address,
+            $this->factory->createAddress($deliveryAddress),
             $amount,
             $paymentMethod->getAttribute()->getBillieDuration()
         );

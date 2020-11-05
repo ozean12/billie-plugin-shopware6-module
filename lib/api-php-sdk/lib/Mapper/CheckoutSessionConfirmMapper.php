@@ -18,7 +18,7 @@ class CheckoutSessionConfirmMapper
      * @param $object
      * @return array
      */
-    public static function arrayFromCommandObject($object)
+    public static function arrayFromCommandObject(CheckoutSessionConfirm $object)
     {
         return [
             'duration' => $object->duration,
@@ -35,7 +35,8 @@ class CheckoutSessionConfirmMapper
                 'address_country' => $object->debtorCompany->addressCountry,
                 'address_addition' => $object->debtorCompany->addressAddition,
                 'address_house_number' => $object->debtorCompany->addressHouseNumber
-            ]
+            ],
+            'delivery_address' => $object->deliveryAdress->toArray()
         ];
     }
 

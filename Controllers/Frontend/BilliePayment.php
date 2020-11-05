@@ -93,6 +93,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     $billieOrder = $this->billieApi->confirmCheckoutSession(
                         $sessionId,
                         $approvedAddress,
+                        $this->sessionService->getShippingAddress(),
                         $paymentMethod,
                         [
                             'net' => $totals['net'] * 100,

@@ -71,4 +71,16 @@ class Address
         $metadata->addPropertyConstraint('countryCode', new Assert\NotBlank());
         $metadata->addPropertyConstraint('countryCode', new Assert\Country());
     }
+
+    public function toArray()
+    {
+        return [
+            'street' => $this->street,
+            'house_number' => $this->houseNumber,
+            'postal_code' => $this->postalCode,
+            'city' => $this->city,
+            'country' => $this->countryCode,
+            'addition' => $this->addition,
+        ];
+    }
 }
