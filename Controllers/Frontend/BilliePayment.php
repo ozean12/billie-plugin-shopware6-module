@@ -1,5 +1,6 @@
 <?php
 
+use Billie\Command\UpdateOrder;
 use BilliePayment\Components\Api\Api;
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Services\AddressService;
@@ -123,14 +124,18 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
 
                     // if we set the orderNumber for the billie order, we are not able to mark the order as shipped on the billie gateway.
                     // also see BILLSWPL-21
-                    //$billieOrder->orderId = $orderNumber;
-                    //$this->billieApi->updateOrder($order, $billieOrder);
+                    $billieOrder = $this->billieApi->updateOrder(new UpdateOrder($order, $billieOrder->referenceId));
 
                     // write determined address to shopware order address
                     $billingAddress = $order->getBilling();
 
                     $bank = $this->bankService->getBankData($order, $billieOrder);
                     $orderAttribute = $order->getAttribute();
+                    if ($orderAttribute === null) {
+                        $orderAttribute = new \Shopware\Models\Attribute\Order();
+                        $orderAttribute->setOrderId($order->getId());
+                        $order->setAttribute($orderAttribute);
+                    }
                     $orderAttribute->setBillieBic($billieOrder->bankAccount->bic);
                     $orderAttribute->setBillieIban($billieOrder->bankAccount->iban);
                     $orderAttribute->setBillieBank($bank ? $bank['name'] : null);

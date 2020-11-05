@@ -3,6 +3,7 @@
 namespace Billie\Command;
 
 use Billie\Model\Amount;
+use Shopware\Models\Order\Order;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 
@@ -41,12 +42,18 @@ class UpdateOrder
     public $orderId;
 
     /**
-     * ReduceOrderAmount constructor.
-     *
+     * @var Order
+     */
+    private $order;
+
+    /**
+     * @param Order $order
      * @param string $referenceId
      */
-    public function __construct($referenceId)
+    public function __construct(Order $order, $referenceId)
     {
+        $this->order = $order;
+        $this->orderId = $order->getNumber();
         $this->referenceId = $referenceId;
     }
 
@@ -60,5 +67,13 @@ class UpdateOrder
             new Assert\NotBlank()
         ]);
 
+    }
+
+    /**
+     * @return Order
+     */
+    public function getOrder()
+    {
+        return $this->order;
     }
 }

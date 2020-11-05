@@ -312,20 +312,20 @@ class Api
     /**
      * Mark order as shipped
      *
-     * @param int         $order
+     * @param int         $orderId
      * @param string|null $invoice
      * @param string|null $url
      *
      * @return array
      */
-    public function shipOrder($order, $invoice = null, $url = null)
+    public function shipOrder($orderId, $invoice = null, $url = null)
     {
         // Get Order
         $local = [];
-        $item = $this->helper->getOrder($order);
+        $item = $this->helper->getOrder($orderId);
 
         if (!$item) {
-            return $this->helper->orderNotFoundMessage($order);
+            return $this->helper->orderNotFoundMessage($orderId);
         }
 
         // Already shipped/canceled
@@ -337,9 +337,9 @@ class Api
         // run POST /v1/order/{order_id}/ship
         try {
             /** @var \Billie\Model\Order $response */
-            $response = $this->client->shipOrder($this->factory->createShipCommand($item, $invoice, $url), true);
+            $response = $this->client->shipOrder($this->factory->createShipCommand($item, $invoice, $url), false);
             $local['state'] = $response->state;
-            $this->utils->getLogger()->info("POST /v1/order/{$order}/ship");
+            $this->utils->getLogger()->info("POST /v1/order/{$orderId}/ship");
             // $dueDate = $order->invoice->dueDate;
         }
         // Missing Documents
@@ -390,25 +390,24 @@ class Api
     /**
      * Update an order
      *
+     * @param UpdateOrder $updateOrder
      * @return \Billie\Model\Order|bool
      */
-    public function updateOrder(Order $order, \Billie\Model\Order $billieOrder)
+    public function updateOrder(UpdateOrder $updateOrder)
     {
         try {
-            $updateOrder = new UpdateOrder($billieOrder->referenceId);
-            $updateOrder->orderId = $billieOrder->orderId;
             $response = $this->client->updateOrder($updateOrder);
 
             if ($response instanceof \Billie\Model\Order) {
-                $order->getAttribute()->setBillieState($response->state);
-                $this->modelManager->flush($order);
+                $updateOrder->getOrder()->getAttribute()->setBillieState($response->state);
+                $this->modelManager->flush($updateOrder->getOrder());
 
-                return $billieOrder;
+                return $response;
             }
 
             return false;
         } catch (\Exception $e) {
-            $this->utils->getLogger()->info('Error during `updateOrderAmount`. Message: ' . $e->getMessage());
+            $this->utils->getLogger()->info('Error during `updateOrder`. Message: ' . $e->getMessage());
 
             return false;
         }
