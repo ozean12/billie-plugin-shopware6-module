@@ -46,7 +46,6 @@ class BilliePayment extends Plugin
             $bootstrap->postInstall();
         }
         parent::install($context);
-        $context->scheduleClearCache($context::CACHE_LIST_ALL);
     }
 
     public function update(Plugin\Context\UpdateContext $context)
