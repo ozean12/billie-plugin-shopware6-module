@@ -3,20 +3,17 @@
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.5/engine/Shopware/Components/Plugin/schema/plugin.xsd">
 
     <label lang="en">Billie Payment After Delivery</label>
-    <label lang="de">Billie Payment After Delivery</label>
+    <label>Billie Payment After Delivery</label>
 
-    <version>1.1</version>
+    <version>1.1.0</version>
     <copyright>(c) Billie GmbH</copyright>
     <author>Billie GmbH</author>
     <link>https://www.billie.io/rechnungskauf/</link>
     <license>proprietary</license>
+    <compatibility minVersion="5.5.0"/>
 
     <description lang="de"><![CDATA[
-        <div style="text-align: center">
-            <img src="/custom/plugins/BilliePayment/Resources/views/backend/_resources/images/billie_logo_vertical.png" width="69" height="96">
-        </div>
-        <br />
-        <div style="text-align: center"><h1>B2B-Rechnungskauf für das 21. Jahrhundert</h1>
+        <div><h1>B2B-Rechnungskauf für das 21. Jahrhundert</h1>
         <p>Jetzt durchstarten mit der beliebtesten Zahlungsart für B2B-Shops: Sofortige Auszahlung für Sie, 30 Tage Zahlungsziel für Ihre Kunden. Whitelabel Mahnprozess & 100% Ausfallschutz immer inklusive</p>
         <br />
         <h2>Maximale Akzeptanzrate</h2>
@@ -36,26 +33,20 @@
         </div>
     ]]></description>
 
-    <description lang="en"><![CDATA[
-        <div style="text-align: center">
-            <img src="/custom/plugins/BilliePayment/Resources/views/backend/_resources/images/billie_logo_vertical.png" width="69" height="96">
-        </div>
-        <br />
-        <div style="text-align: center">
+    <description><![CDATA[
+        <div>
         <h1>B2B-Invoicing</h1>
         <p>Get started now with the most popular payment method for B2B shops: Guaranteed payout for you, 30 days payment term for your customers. Whitelabel dunning process & 100% default protection always included.</p>
         </div>
     ]]></description>
 
-    <compatibility minVersion="5.5.0"/>
-
     <changelog version="1.1">
         <changes lang="en">moved sdk from composer-dependencies to plugin</changes>
-        <changes lang="de">SDK von Composer-Abhängigkeiten in das Plugin verschoben</changes>
+        <changes>SDK von Composer-Abhängigkeiten in das Plugin verschoben</changes>
     </changelog>
 
     <changelog version="1.0.2">
-        <changes lang="en">first release</changes>
         <changes lang="de">Erstveröffentlichung</changes>
+        <changes>first release</changes>
     </changelog>
 </plugin>
