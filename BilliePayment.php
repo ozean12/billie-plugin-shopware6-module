@@ -12,7 +12,8 @@ use BilliePayment\Services\Logger\FileLogger;
 use Shopware\Components\Plugin;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-require_once __DIR__ . '/lib/api-php-sdk/vendor/autoload.php';
+require_once __DIR__ . '/lib/old-sdk/vendor/autoload.php';
+require_once __DIR__ . '/lib/new-sdk/vendor/autoload.php';
 
 /**
  * Main Plugin Class with plugin options.

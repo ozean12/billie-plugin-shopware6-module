@@ -1,7 +1,5 @@
-The SDK will be removed from the github repo.
+the sdk of billie will be completly replaced by a new one. 
 
-So we have to integrate it into the module completely.
+the folder `api-php-sdk` contains the old sdk
 
-Please also have a look to BILLSWPL-56.
-
-You are allowed to edit the SDK cause it is not maintained anymore.
+the folder `new-sdk` contains the new sdk which is still in development and has not been released officially 
