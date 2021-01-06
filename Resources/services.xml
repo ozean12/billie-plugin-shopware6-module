@@ -95,7 +95,5 @@
         <service id="BilliePayment\Services\BankService">
             <argument>%billie_payment.plugin_dir%</argument>
         </service>
-
-
     </services>
 </container>

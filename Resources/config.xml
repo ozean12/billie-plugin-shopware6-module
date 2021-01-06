@@ -27,21 +27,57 @@
             <description lang="en">Your Billie client-secret.</description>
         </element>
 
+        <element type="button">
+            <name>billiepayment/credentials/test</name>
+            <label lang="de">Zugangsdaten testen</label>
+            <label lang="en">Test credentials</label>
+            <options>
+                <handler>
+                    <![CDATA[
+                    function() {
+                      Ext.Ajax.request({
+                        url: 'BillieConfig/test',
+                        success: function (response) {
+                            response = Ext.JSON.decode(response.responseText);
+                            Shopware.Msg.createGrowlMessage(response.statusText, response.message)
+                        },
+                        failure: function (response) {
+                            if (response.status === 404) {
+                                Shopware.Msg.createGrowlMessage('Plugin Manager', 'Please activate plugin before testing api.');
+                            } else {
+                                Shopware.Msg.createGrowlMessage(response.statusText, response.responseText)
+                            }
+                        }
+                      });
+                    }
+                    ]]>
+                </handler>
+            </options>
+        </element>
+
         <element type="boolean" scope="locale">
             <name>billiepayment/override_address</name>
             <label lang="de">Überschreibe Adresse</label>
             <label lang="en">Override address</label>
             <value>true</value>
-            <description lang="de">Wenn aktiviert, wird die Adresse im Kundenaccount überschrieben. Wenn deaktivert, wird lediglich die Adresse in der Bestellung überschrieben.</description>
-            <description lang="en">If enabled, the address in the customer account got overridden. If disabled, Billie will only override the address in the order.</description>
+            <description lang="de">Wenn aktiviert, wird die Adresse im Kundenaccount überschrieben. Wenn deaktivert,
+                wird lediglich die Adresse in der Bestellung überschrieben.
+            </description>
+            <description lang="en">If enabled, the address in the customer account got overridden. If disabled, Billie
+                will only override the address in the order.
+            </description>
         </element>
 
         <element required="true" type="select" scope="locale">
             <name>billiepayment/salutation/fallback</name>
             <label lang="de">Fallback-Anrede</label>
             <label lang="en">Fallback salutation</label>
-            <description lang="de">Bitte geben Sie eine Fallback Anrede an. (Diese wird verwendet, wenn die korrekte Anrede nicht ermittelt werden kann)</description>
-            <description lang="en">Please select a fallback salutation. (It will be used, if the correct salutation can be not found)</description>
+            <description lang="de">Bitte geben Sie eine Fallback Anrede an. (Diese wird verwendet, wenn die korrekte
+                Anrede nicht ermittelt werden kann)
+            </description>
+            <description lang="en">Please select a fallback salutation. (It will be used, if the correct salutation can
+                be not found)
+            </description>
             <store>
                 <option>
                     <value>m</value>
@@ -61,8 +97,12 @@
             <label lang="de">Anreden Herren</label>
             <label lang="en">Salutations males</label>
             <value>Herr</value>
-            <description lang="de">Bitte geben Sie die Anreden ein, welche in Ihrem Shop für die Herren gepflegt sind. (einschließlich Übersetzungen) (kommasepariert)</description>
-            <description lang="en">Please insert all salutations which are setup for males. (incl. the translation for them) (comma separated)</description>
+            <description lang="de">Bitte geben Sie die Anreden ein, welche in Ihrem Shop für die Herren gepflegt sind.
+                (einschließlich Übersetzungen) (kommasepariert)
+            </description>
+            <description lang="en">Please insert all salutations which are setup for males. (incl. the translation for
+                them) (comma separated)
+            </description>
         </element>
 
         <element required="true" type="textarea" scope="locale">
@@ -70,8 +110,12 @@
             <label lang="de">Anreden Frauen</label>
             <label lang="en">Salutations females</label>
             <value>Frau</value>
-            <description lang="de">Bitte geben Sie die Anreden ein, welche in Ihrem Shop für die Frauen gepflegt sind. (einschließlich Übersetzungen) (kommasepariert)</description>
-            <description lang="en">Please insert all salutations which are setup for females. (incl. the translation for them) (comma separated)</description>
+            <description lang="de">Bitte geben Sie die Anreden ein, welche in Ihrem Shop für die Frauen gepflegt sind.
+                (einschließlich Übersetzungen) (kommasepariert)
+            </description>
+            <description lang="en">Please insert all salutations which are setup for females. (incl. the translation for
+                them) (comma separated)
+            </description>
         </element>
 
         <element type="boolean" scope="locale">
@@ -79,8 +123,12 @@
             <label lang="de">Billie-Icon anzeigen</label>
             <label lang="en">Show Billie-Icon</label>
             <value>true</value>
-            <description lang="de">Wenn auf "Ja" gestellt ist, wird das Billie-Icon neben der Zahlart auf der Zahlartenseite angezeigt.</description>
-            <description lang="en">If set to "Yes", the Billie-Icon will be displayed on the selectionpage of the payment method.</description>
+            <description lang="de">Wenn auf "Ja" gestellt ist, wird das Billie-Icon neben der Zahlart auf der
+                Zahlartenseite angezeigt.
+            </description>
+            <description lang="en">If set to "Yes", the Billie-Icon will be displayed on the selectionpage of the
+                payment method.
+            </description>
         </element>
 
     </elements>
