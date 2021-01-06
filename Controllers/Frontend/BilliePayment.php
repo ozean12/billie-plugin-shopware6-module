@@ -156,6 +156,8 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
 
     public function validateAddressAction()
     {
+        Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender();
+
         $responseArray = [];
         $billingAddress = $this->sessionService->getBillingAddress();
 
