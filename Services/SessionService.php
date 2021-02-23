@@ -2,24 +2,25 @@
 
 namespace BilliePayment\Services;
 
-use Billie\Command\CheckoutSessionConfirm;
-use Billie\Model\DebtorCompany;
-use BilliePayment\Components\Api\Api;
+use ArrayObject;
+use Billie\Sdk\Model\Address;
+use Billie\Sdk\Model\Address as BillieAddress;
+use Billie\Sdk\Model\Amount;
+use Billie\Sdk\Model\DebtorCompany;
+use Billie\Sdk\Model\Request\CreateSessionRequestModel;
+use Billie\Sdk\Service\Request\CreateSessionRequest;
+use Billie\Sdk\Util\AddressHelper;
 use BilliePayment\Helper\BasketHelper;
 use Enlight_Components_Session_Namespace;
 use Shopware\Bundle\StoreFrontBundle\Struct\Attribute;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Attribute\Payment;
-use Shopware\Models\Customer\Address;
+use Shopware\Models\Country\Country;
+use Shopware\Models\Customer\Address as ShopwareAddress;
 use Shopware\Models\Customer\Customer;
-use stdClass;
 
 class SessionService
 {
-    /**
-     * @var Api
-     */
-    private $api;
 
     /**
      * @var Enlight_Components_Session_Namespace
@@ -31,32 +32,30 @@ class SessionService
      */
     private $modelManager;
 
-    public function __construct(Enlight_Components_Session_Namespace $session, ModelManager $modelManager, Api $api)
+    /**
+     * @var CreateSessionRequest
+     */
+    private $createSessionRequest;
+
+    public function __construct(
+        Enlight_Components_Session_Namespace $session,
+        ModelManager $modelManager,
+        CreateSessionRequest $createSessionRequest
+    )
     {
         $this->session = $session;
         $this->modelManager = $modelManager;
-        $this->api = $api;
-    }
-
-    public function getSessionConfirmModel()
-    {
-        $model = new CheckoutSessionConfirm($this->getCheckoutSessionId(false) ?: false);
-        $model->duration = $this->getBillieDurationForPaymentMethod();
-        $amount = $this->getTotalAmount();
-        $model->amount = new stdClass();
-        $model->amount->grossAmount = $amount['gross'] * 100;
-        $model->amount->netAmount = $amount['net'] * 100;
-        $model->amount->taxAmount = $amount['tax'] * 100;
-
-        return $model;
+        $this->createSessionRequest = $createSessionRequest;
     }
 
     public function getCheckoutSessionId($createNew = false)
     {
         if ($createNew) {
-            $sessionId = $this->api->createCheckoutSession($this->getCustomer());
+            $sessionId = $this->createSessionRequest->execute(
+                (new CreateSessionRequestModel())
+                    ->setMerchantCustomerId($this->getCustomer()->getNumber())
+            )->getCheckoutSessionId();
             $this->setData('checkoutSessionId', $sessionId);
-
             return $sessionId;
         }
 
@@ -65,34 +64,32 @@ class SessionService
 
     public function getBillieDurationForPaymentMethod()
     {
-        $payment = $this->session->get('sOrderVariables')['sPayment'];
+        $payment = $this->getOrderVariables()['sPayment'];
         if (isset($payment['attribute']['billie_duration'])) {
             return intval($payment['attribute']['billie_duration']);
         } elseif (isset($payment['attributes']['core'])) {
             /** @var Attribute $attributeStruct */
             $attributeStruct = $payment['attributes']['core'];
-
             return intval($attributeStruct->get('billie_duration'));
         } elseif (isset($payment['id'])) {
             $repo = $this->modelManager->getRepository(Payment::class);
             /** @var Payment $attribute */
             $attribute = $repo->findOneBy(['paymentId' => $payment['id']]);
-
             return $attribute ? $attribute->getBillieDuration() : 0;
         }
-
         return 0;
     }
 
-    public function getTotalAmount($key = null)
+    public function getTotalAmount(): Amount
     {
-        $basket = $this->session->get('sOrderVariables')['sBasket'];
-        $totals = BasketHelper::getTotalAmount($basket);
-
-        return $key ? $totals[$key] : $totals;
+        $basket = $this->getOrderVariables()['sBasket'];
+        return BasketHelper::getTotalAmount($basket);
     }
 
-    public function getBillingAddress()
+    /**
+     * @interal
+     */
+    public function getShopwareBillingAddress()
     {
         $addressId = $this->session->get('checkoutBillingAddressId');
         if ($addressId === null) {
@@ -101,10 +98,13 @@ class SessionService
             return $customer ? $customer->getDefaultBillingAddress() : null;
         }
 
-        return $this->modelManager->find(Address::class, $addressId);
+        return $this->modelManager->find(ShopwareAddress::class, $addressId);
     }
 
-    public function getShippingAddress()
+    /**
+     * @interal
+     */
+    public function getShopwareShippingAddress()
     {
         $addressId = $this->session->get('checkoutShippingAddressId');
         if ($addressId === null) {
@@ -113,8 +113,50 @@ class SessionService
             return $customer ? $customer->getDefaultShippingAddress() : null;
         }
 
-        return $this->modelManager->find(Address::class, $addressId);
+        return $this->modelManager->find(ShopwareAddress::class, $addressId);
     }
+
+    /**
+     * @return DebtorCompany|null
+     */
+    public function getDebtorCompany()
+    {
+        $userData = $this->getUserData();
+
+        if (isset($userData['billingaddress'])) {
+            return (new DebtorCompany())
+                ->setValidateOnSet(false)
+                ->setName($userData['billingaddress']['company'])
+                ->setAddress($this->getAddress($userData['billingaddress']));
+        }
+        return null;
+    }
+
+    /**
+     * @return Address|null
+     */
+    public function getShippingAddress()
+    {
+        $userData = $this->getUserData();
+
+        if (isset($userData['shippingaddress'])) {
+            return $this->getAddress($userData['shippingaddress']);
+        }
+        return null;
+    }
+
+    private function getAddress($addressDataFromSession)
+    {
+        return (new Address())
+            ->setValidateOnSet(false)
+            ->setStreet(AddressHelper::getStreetName($addressDataFromSession['street']))
+            ->setHouseNumber(AddressHelper::getHouseNumber($addressDataFromSession['street']))
+            ->setAddition($addressDataFromSession['additional_address_line1'])
+            ->setPostalCode($addressDataFromSession['zipcode'])
+            ->setCity($addressDataFromSession['city'])
+            ->setCountryCode($this->getCountry($addressDataFromSession['countryID'])->getIso() ?: 'DE');
+    }
+
 
     public function getCustomer()
     {
@@ -139,11 +181,11 @@ class SessionService
         $this->session->offsetSet('BilliePayment', $session);
     }
 
-    public function getData($key)
+    public function getData($key, $default = null)
     {
         $session = $this->session->get('BilliePayment');
 
-        return isset($session[$key]) ? $session[$key] : null;
+        return isset($session[$key]) ? $session[$key] : $default;
     }
 
     public function getSession()
@@ -152,41 +194,86 @@ class SessionService
     }
 
     /**
-     * @param DebtorCompany|array $address
+     * Write the Billie shipping address to the shopware session (shipping address)
+     *
+     * @param BillieAddress $address
      */
-    public function setApprovedAddress($address)
+    public function updateShippingAddress(BillieAddress $address)
     {
-        if ($address instanceof DebtorCompany) {
-            $address = [
-                'name' => $address->name,
-                'address_street' => $address->addressStreet,
-                'address_house_number' => $address->addressHouseNumber,
-                'address_addition' => $address->addressAddition,
-                'address_postal_code' => $address->addressPostalCode,
-                'address_city' => $address->addressCity,
-                'address_country' => $address->addressCountry,
-            ];
-        }
-        $this->setData('approved_address', $address);
+        $userData = $this->getUserData();
+
+        $userData['shippingaddress'] = $this->updateAddress($userData['shippingaddress'], $address);
+
+        $this->setUserData($userData);
     }
 
     /**
-     * @return DebtorCompany
+     * Write the Billie billing address to the shopware session (billing address)
+     *
+     * @param DebtorCompany $debtorCompany
      */
-    public function getApprovedAddress()
+    public function updateBillingAddress(DebtorCompany $debtorCompany)
     {
-        $address = null;
-        if ($sessionAddress = $this->getData('approved_address')) {
-            $address = new DebtorCompany();
-            $address->name = $sessionAddress['name'];
-            $address->addressStreet = $sessionAddress['address_street'];
-            $address->addressHouseNumber = $sessionAddress['address_house_number'];
-            $address->addressAddition = $sessionAddress['address_addition'];
-            $address->addressPostalCode = $sessionAddress['address_postal_code'];
-            $address->addressCity = $sessionAddress['address_city'];
-            $address->addressCountry = $sessionAddress['address_country'];
-        }
+        $userData = $this->getUserData();
 
-        return $address;
+        $userData['billingaddress']['company'] = $debtorCompany->getName();
+        $userData['billingaddress'] = $this->updateAddress($userData['billingaddress'], $debtorCompany->getAddress());
+
+        $this->setUserData($userData);
+    }
+
+    /**
+     * @param array $shopwareAddress
+     * @param BillieAddress $billieAddress
+     * @return array
+     */
+    private function updateAddress($shopwareAddress, BillieAddress $billieAddress)
+    {
+        $shopwareAddress['street'] = $billieAddress->getStreet() . ' ' . $billieAddress->getHouseNumber();
+        $shopwareAddress['additionalAddressLine1'] = $billieAddress->getAddition();
+        $shopwareAddress['zipcode'] = $billieAddress->getPostalCode();
+        $shopwareAddress['city'] = $billieAddress->getCity();
+        $country = $this->getCountry($billieAddress->getCountryCode());
+        if ($country) {
+            $shopwareAddress['country'] = $country->getId();
+        }
+        return $shopwareAddress;
+    }
+
+    /**
+     * gets the country model by the iso code or the ID
+     *
+     * @param string|int $identifier
+     * @return Country
+     */
+    private function getCountry($identifier)
+    {
+        if (is_numeric($identifier)) {
+            $filter = ['id' => $identifier];
+        } else {
+            $filter = ['iso' => $identifier];
+        }
+        /* @var Country $country */
+        return $this->modelManager->getRepository(Country::class)->findOneBy($filter);
+    }
+
+    private function getUserData()
+    {
+        $sOrderVariables = $this->getOrderVariables();
+        return $sOrderVariables ? $sOrderVariables->offsetGet('sUserData') : [];
+    }
+
+    private function setUserData($userData)
+    {
+        $sOrderVariables = $this->getOrderVariables();
+        $sOrderVariables->offsetSet('sUserData', $userData);
+    }
+
+    /**
+     * @return ArrayObject
+     */
+    private function getOrderVariables()
+    {
+        return Shopware()->Session()->offsetGet('sOrderVariables');
     }
 }

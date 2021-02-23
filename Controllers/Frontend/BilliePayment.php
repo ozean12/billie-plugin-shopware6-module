@@ -1,7 +1,13 @@
 <?php
 
+use Billie\Sdk\Exception\BillieException;
+use Billie\Sdk\Model\Address;
+use Billie\Sdk\Model\DebtorCompany;
+use Billie\Sdk\Model\Request\CheckoutSessionConfirmRequestModel;
+use Billie\Sdk\Service\Request\CheckoutSessionConfirmRequest;
 use BilliePayment\Components\Api\Api;
 use BilliePayment\Enum\PaymentMethods;
+use BilliePayment\Helper\AddressHelper;
 use BilliePayment\Services\AddressService;
 use BilliePayment\Services\BankService;
 use BilliePayment\Services\ConfigService;
@@ -32,11 +38,6 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     const PAYMENTSTATUSPAID = 12; // TODO config
 
     /**
-     * @var Api
-     */
-    private $billieApi;
-
-    /**
      * @var SessionService
      */
     private $sessionService;
@@ -61,6 +62,11 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
      */
     private $bankService;
 
+    /**
+     * @var CheckoutSessionConfirmRequest
+     */
+    private $checkoutSessionConfirmService;
+
     public function setContainer(Container $loader = null)
     {
         parent::setContainer($loader);
@@ -68,8 +74,8 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $this->addressService = $this->container->get(AddressService::class);
         $this->sessionService = $this->container->get(SessionService::class);
         $this->bankService = $this->container->get(BankService::class);
-        $this->billieApi = $this->container->get('billie_payment.api');
         $this->logger = $this->container->get('billie_payment.logger');
+        $this->checkoutSessionConfirmService = $this->container->get(CheckoutSessionConfirmRequest::class);
     }
 
     /**
@@ -84,39 +90,31 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             /** @var Payment $paymentMethod */
             $paymentMethod = $this->getModelManager()->getRepository(Payment::class)->findOneBy(['name' => $this->getPaymentShortName()]);
             $sessionId = $this->sessionService->getCheckoutSessionId(false);
-            $approvedAddress = $this->sessionService->getApprovedAddress();
-            if ($sessionId !== null && $approvedAddress !== null) {
+
+            if ($sessionId !== null) {
                 try {
-                    $totals = $this->sessionService->getTotalAmount();
-                    $currency = $this->sessionService->getSession()->offsetGet('sOrderVariables')['sBasket']['sCurrencyName'];
-
-                    $billieOrder = $this->billieApi->confirmCheckoutSession(
-                        $sessionId,
-                        $approvedAddress,
-                        $paymentMethod,
-                        [
-                            'net' => $totals['net'] * 100,
-                            'tax' => $totals['tax'] * 100,
-                        ],
-                        $currency
+                    $sessionDebtorCompany = $this->sessionService->getDebtorCompany();
+                    $sessionShippingAddress = $this->sessionService->getShippingAddress();
+                    $billieOrder = $this->checkoutSessionConfirmService->execute(
+                        (new CheckoutSessionConfirmRequestModel())
+                            ->setSessionUuid($sessionId)
+                            ->setCompany($sessionDebtorCompany)
+                            ->setAmount($this->sessionService->getTotalAmount())
+                            ->setDuration($paymentMethod->getAttribute()->getBillieDuration())
+                            ->setDeliveryAddress($sessionShippingAddress)
                     );
-                } catch (Exception $e) {
-                    $this->logger->addCritical($e->getMessage());
-
-                    return $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
-                }
-                if ($billieOrder) {
-                    if ($this->configService->isOverrideCustomerAddress()) {
-                        $this->addressService->updateBillingAddress($billieOrder, $approvedAddress);
-                    }
-
-                    $this->addressService->updateSessionAddress($billieOrder, $approvedAddress);
 
                     $orderNumber = $this->saveOrder(
-                        $billieOrder->referenceId,
-                        $billieOrder->referenceId,
+                        $billieOrder->getUuid(),
+                        $billieOrder->getUuid(),
                         self::PAYMENTSTATUSPAID //TODO replace by config
                     );
+
+                    if($this->configService->isOverrideCustomerAddress()) {
+                        $this->addressService->updateBillingAddress($sessionDebtorCompany);
+                        $this->addressService->updateShippingAddress($sessionShippingAddress);
+                    }
+
                     $repo = $this->getModelManager()->getRepository(Order::class);
                     /** @var Order $order */
                     $order = $repo->findOneBy(['number' => $orderNumber]);
@@ -126,32 +124,19 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     //$billieOrder->orderId = $orderNumber;
                     //$this->billieApi->updateOrder($order, $billieOrder);
 
-                    // write determined address to shopware order address
-                    $billingAddress = $order->getBilling();
-
-                    $bank = $this->bankService->getBankData($order, $billieOrder);
-                    $orderAttribute = $order->getAttribute();
-                    $orderAttribute->setBillieBic($billieOrder->bankAccount->bic);
-                    $orderAttribute->setBillieIban($billieOrder->bankAccount->iban);
-                    $orderAttribute->setBillieBank($bank ? $bank['name'] : null);
-                    $orderAttribute->setBillieReferenceid($billieOrder->referenceId);
-                    $orderAttribute->setBillieState($billieOrder->state);
-                    $orderAttribute->setBillieDuration($paymentMethod->getAttribute()->getBillieDuration());
-                    $date = new DateTime();
-                    $date->modify('+' . $orderAttribute->getBillieDuration() . ' days');
-                    $orderAttribute->setBillieDurationDate($date->format('d.m.Y'));
-
-                    $this->getModelManager()->flush([$orderAttribute, $billingAddress]);
+                    $this->container->get(Api::class)->updateShopwareOrder($order, $billieOrder);
 
                     // remove all billie payment data from session
                     $this->sessionService->clearData();
-
-                    return $this->redirect(['controller' => 'checkout', 'action' => 'finish']);
+                    $this->redirect(['controller' => 'checkout', 'action' => 'finish']);
+                } catch (BillieException $e) {
+                    $this->logger->error($e->getMessage());
+                    $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
                 }
+                return;
             }
         }
-
-        return $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
+        $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
     }
 
     public function validateAddressAction()
@@ -159,22 +144,37 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender();
 
         $responseArray = [];
-        $billingAddress = $this->sessionService->getBillingAddress();
 
         $params = $this->Request()->getParams();
         $errorCode = null;
-        if ($billingAddress && $params['state'] === 'authorized' && is_array($params['debtor_company'])) {
-            /** @var Country $country */
-            $country = $this->getModelManager()->getRepository(Country::class)
-                ->findOneBy(['iso' => $params['debtor_company']['address_country']]);
+        if($params['state'] === 'authorized') {
+            if (is_array($params['debtor_company'])) {
+                /** @var Country $country */
+                $country = $this->getModelManager()->getRepository(Country::class)
+                    ->findOneBy(['iso' => $params['debtor_company']['address_country']]);
 
-            if ($country === null) {
-                $errorCode = '_SwCountryNotAvailable';
+                if ($country === null) {
+                    $errorCode = '_SwCountryNotAvailable';
+                } else {
+                    $this->sessionService->updateBillingAddress(new DebtorCompany($params['debtor_company']));
+                }
             } else {
-                $this->sessionService->setApprovedAddress($params['debtor_company']);
+                $errorCode = '_UnknownError';
             }
-        } else {
-            $errorCode = '_UnknownError';
+
+            if (is_array($params['delivery_address'])) {
+                /** @var Country $country */
+                $country = $this->getModelManager()->getRepository(Country::class)
+                    ->findOneBy(['iso' => $params['delivery_address']['country']]);
+
+                if ($country === null) {
+                    $errorCode = '_SwCountryNotAvailable';
+                } else {
+                    $this->sessionService->updateShippingAddress(new Address($params['delivery_address']));
+                }
+            } else {
+                $errorCode = '_UnknownError';
+            }
         }
 
         $responseArray['status'] = $errorCode === null;

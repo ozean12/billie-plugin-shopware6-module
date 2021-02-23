@@ -4,43 +4,45 @@
 {block name="content/main"}
 <div class="wrapper">
     <div class="page-header">
-        <h1>{s name="order/heading"}{/s} <small><code>order_id: {$order_number}</code></small></h1>
-        <button
-            class="btn btn-primary confirm-payment"
-            data-order_id="{$order_id}"
-            data-action="{url controller="BillieOverview" action="confirmPayment" __csrf_token=$csrfToken}"
-            >
-            {s name="order/confirm_payment"}{/s}
-        </button>
+        <h1>{s name="order/heading"}{/s} <small><code>order_id: {$shopwareOrder->getNumber()}</code></small></h1>
+        {if $billieOrder.state eq 'shipped'}
+            <button
+                class="btn btn-primary confirm-payment"
+                data-order_id="{$shopwareOrder->getId()}"
+                data-action="{url controller="BillieOverview" action="confirmPayment"}"
+                >
+                {s name="order/confirm_payment"}{/s}
+            </button>
+        {/if}
         <!--button
             class="btn btn-primary cancel-order"
-            data-order_id="{$order_id}"
-            data-action="{url controller="BillieOverview" action="cancelOrder" __csrf_token=$csrfToken}"
+            data-order_id="{$shopwareOrder->getId()}"
+            data-action="{url controller="BillieOverview" action="cancelOrder"}"
             >
             {s name="order/cancel_order"}{/s}
         </button-->
-        {if $state != 'canceled'}
+        {if $billieOrder.state != 'canceled'}
             <button
                 class="btn btn-primary refund-order"
-                data-order_id="{$order_id}"
-                data-amount-net="{$amountNet}"
-                data-amount-gross="{$amount}"
-                data-amount-tax="{$amountTax}"
-                data-action="{url controller="BillieOverview" action="refundOrder" __csrf_token=$csrfToken}"
+                data-order_id="{$shopwareOrder->getId()}"
+                data-amount-net="{$billieOrder.amount.net}"
+                data-amount-gross="{$billieOrder.amount.gross}"
+                data-amount-tax="{$billieOrder.amount.tax}"
+                data-action="{url controller="BillieOverview" action="refundOrder"}"
                 >
                 {s name="order/refund_order"}{/s}
             </button>
         {/if}
-        {if $state eq 'created'}
+        {if $billieOrder.state eq 'created'}
             <button
                 class="btn btn-primary ship-order"
-                data-order_id="{$order_id}"
-                data-action="{url controller="BillieOverview" action="shipOrder" __csrf_token=$csrfToken}"
+                data-order_id="{$shopwareOrder->getId()}"
+                data-action="{url controller="BillieOverview" action="shipOrder"}"
             >
                 {s name="order/ship_order"}{/s}
             </button>
         {/if}
-        <a class="btn btn-primary pull-right" href="{url controller="BillieOverview" action="index" __csrf_token=$csrfToken}">
+        <a class="btn btn-primary pull-right" href="{url controller="BillieOverview" action="index"}">
             {s name="back"}{/s}
         </a>
     </div>
@@ -52,19 +54,19 @@
             <label for="state" class="col-sm-2 control-label">{s name="order/state/state"}{/s}</label>
             <div class="col-sm-10">
                 <span class="state">
-                    {if $state == 'created'}
+                    {if $billieOrder.state == 'created'}
                         {s namespace="backend/billie/states" name="created"}{/s}
-                    {elseif $state == 'declined'}
+                    {elseif $billieOrder.state == 'declined'}
                         {s namespace="backend/billie/states" name="declined"}{/s}
-                    {elseif $state == 'shipped'}
+                    {elseif $billieOrder.state == 'shipped'}
                         {s namespace="backend/billie/states" name="shipped"}{/s}
-                    {elseif $state == 'paid_out'}
+                    {elseif $billieOrder.state == 'paid_out'}
                         {s namespace="backend/billie/states" name="paid_out"}{/s}
-                    {elseif $state == 'late'}
+                    {elseif $billieOrder.state == 'late'}
                         {s namespace="backend/billie/states" name="late"}{/s}
-                    {elseif $state == 'complete'}
+                    {elseif $billieOrder.state == 'complete'}
                         {s namespace="backend/billie/states" name="complete"}{/s}
-                    {elseif $state == 'canceled'}
+                    {elseif $billieOrder.state == 'canceled'}
                         {s namespace="backend/billie/states" name="canceled"}{/s}
                     {/if}
                 </span>
@@ -77,15 +79,15 @@
         <div class="form-group">
             <label class="col-sm-2 control-label">{s name="order/amount/shopware"}{/s}</label>
             <div class="col-sm-10">
-                <span>{$shopwareOrder.invoiceAmountNet|string_format:"%.2f"} {s name="order/amount/net"}{/s}</span><br>
-                <span>{$shopwareOrder.invoiceAmount|string_format:"%.2f"} {s name="order/amount/gross"}{/s}</span>
+                <span>{$shopwareOrder->getInvoiceAmountNet()|string_format:"%.2f"} {s name="order/amount/net"}{/s}</span><br>
+                <span>{$shopwareOrder->getInvoiceAmount()|string_format:"%.2f"} {s name="order/amount/gross"}{/s}</span>
             </div>
         </div>
         <div class="form-group">
             <label class="col-sm-2 control-label">{s name="order/amount/billie"}{/s}</label>
             <div class="col-sm-10">
-                <span>{$amountNet|string_format:"%.2f"} {s name="order/amount/net"}{/s}</span><br>
-                <span>{$amount|string_format:"%.2f"} {s name="order/amount/gross"}{/s}</span>
+                <span>{$billieOrder.amount.net|string_format:"%.2f"} {s name="order/amount/net"}{/s}</span><br>
+                <span>{$billieOrder.amount.gross|string_format:"%.2f"} {s name="order/amount/gross"}{/s}</span>
             </div>
         </div>
 
@@ -95,19 +97,19 @@
         <div class="form-group">
             <label for="IBAN" class="col-sm-2 control-label">{s name="order/payment/iban"}{/s}</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="IBAN" value="{$bank_account.iban}" readonly>
+                <input type="text" class="form-control" id="IBAN" value="{$billieOrder.bankAccount.iban}" readonly>
             </div>
         </div>
         <div class="form-group">
             <label for="BIC" class="col-sm-2 control-label">{s name="order/payment/bic"}{/s}</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="BIC" value="{$bank_account.bic}" readonly>
+                <input type="text" class="form-control" id="BIC" value="{$billieOrder.bankAccount.bic}" readonly>
             </div>
         </div>
         <div class="form-group">
             <label for="BIC" class="col-sm-2 control-label">{s name="order/payment/bank"}{/s}</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="BIC" value="{$bank_account.bank}" readonly>
+                <input type="text" class="form-control" id="BIC" value="{$shopwareOrder->getAttribute()->getBillieBank()}" readonly>
             </div>
         </div>
 
@@ -117,37 +119,37 @@
         <div class="form-group">
             <label for="name" class="col-sm-2 control-label">{s name="order/debtor/name"}{/s}</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="name" value="{$debtor_company.name}" readonly>
+                <input type="text" class="form-control" id="name" value="{$billieOrder.company.name}" readonly>
             </div>
         </div>
         <div class="form-group">
             <label for="address_house_number" class="col-sm-2 control-label">{s name="order/debtor/house_number"}{/s}</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="address_house_number" value="{$debtor_company.address_house_number}" readonly>
+                <input type="text" class="form-control" id="address_house_number" value="{$billieOrder.company.address_house_number}" readonly>
             </div>
         </div>
         <div class="form-group">
             <label for="address_house_street" class="col-sm-2 control-label">{s name="order/debtor/street"}{/s}</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="address_house_street" value="{$debtor_company.address_house_street}" readonly>
+                <input type="text" class="form-control" id="address_house_street" value="{$billieOrder.company.address_street}" readonly>
             </div>
         </div>
         <div class="form-group">
             <label for="address_house_city" class="col-sm-2 control-label">{s name="order/debtor/city"}{/s}</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="address_house_city" value="{$debtor_company.address_house_city}" readonly>
+                <input type="text" class="form-control" id="address_house_city" value="{$billieOrder.company.address_city}" readonly>
             </div>
         </div>
         <div class="form-group">
             <label for="address_house_postal_code" class="col-sm-2 control-label">{s name="order/debtor/postal_code"}{/s}</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="address_house_postal_code" value="{$debtor_company.address_house_postal_code}" readonly>
+                <input type="text" class="form-control" id="address_house_postal_code" value="{$billieOrder.company.address_postal_code}" readonly>
             </div>
         </div>
         <div class="form-group">
             <label for="address_house_country" class="col-sm-2 control-label">{s name="order/debtor/country"}{/s}</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="address_house_country" value="{$debtor_company.address_house_country}" readonly>
+                <input type="text" class="form-control" id="address_house_country" value="{$billieOrder.company.address_country}" readonly>
             </div>
         </div>
 

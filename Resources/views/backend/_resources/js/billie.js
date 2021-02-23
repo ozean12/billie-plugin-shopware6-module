@@ -15,12 +15,13 @@ $(function () {
             method: 'POST',
             data: {
                 'order_id': order,
-                'amount': amount
+                'amount': amount,
+                '__csrf_token': window.parent.Ext.CSRFService.getToken()
             },
             success: function (response) {
                 postMessageApi.createAlertMessage(
                     response.success ? _BILLIE_SNIPPETS_.errorCodes.success : _BILLIE_SNIPPETS_.errorCodes.error,
-                    response.success ? _BILLIE_SNIPPETS_.confirm_payment.success : _BILLIE_SNIPPETS_.errorCodes[response.data]
+                    response.success ? _BILLIE_SNIPPETS_.confirm_payment.success : response.message
                 );
             }
         });
@@ -54,7 +55,8 @@ $(function () {
             url: $target.data('action'),
             method: 'POST',
             data: {
-                'order_id': $target.data('order_id')
+                'order_id': $target.data('order_id'),
+                '__csrf_token': window.parent.Ext.CSRFService.getToken()
             },
             success: function (response) {
                 if (response.success) {
@@ -63,7 +65,7 @@ $(function () {
                     $target.attr('disabled', 'disabled');
                 }
                 else {
-                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.error, _BILLIE_SNIPPETS_.errorCodes[response.data]);
+                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.error, response.message);
                 }
             }
         });
@@ -80,7 +82,8 @@ $(function () {
             method: 'POST',
             data: {
                 'order_id': $target.data('order_id'),
-                'amount': amount
+                'amount': amount,
+                '__csrf_token': window.parent.Ext.CSRFService.getToken()
             },
             success: function (response) {
                 if (response.success === true) {
@@ -90,7 +93,7 @@ $(function () {
                     );
                     window.location.reload();
                 } else {
-                    postMessageApi.createAlertMessage(response.title ? response.title : 'Error', response.error);
+                    postMessageApi.createAlertMessage(response.title ? response.title : 'Error', response.message);
                 }
             }
         });
@@ -147,6 +150,7 @@ $(function () {
      * @param {Object} data
      */
     var shipOrderRequest = function($target, data) {
+        data.__csrf_token = window.parent.Ext.CSRFService.getToken();
         $.ajax({
             url: $target.data('action'),
             method: 'POST',
@@ -161,7 +165,7 @@ $(function () {
                     missingShippingDocuments($target);
                 }
                 else {
-                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.error, _BILLIE_SNIPPETS_.errorCodes[response.data]);
+                    postMessageApi.createAlertMessage(_BILLIE_SNIPPETS_.errorCodes.error, response.message);
                 }
             }
         });
@@ -194,8 +198,8 @@ $(function () {
 
                     shipOrderRequest($target, {
                         'order_id': $target.data('order_id'),
-                        'invoice': invoice,
-                        'url': url
+                        'invoice_number': invoice,
+                        'invoice_url': url
                     });
                 }
             },

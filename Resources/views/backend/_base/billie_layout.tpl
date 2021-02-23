@@ -30,7 +30,7 @@
 
 <div class="container theme-showcase" role="main">
     {if $errorCode}
-        <div class="alert alert-danger" role="alert">{$errorCode|snippet:$errorCode:'backend/billie_overview/errors'}</div>
+        <div class="alert alert-danger" role="alert">{$errorCode|snippet:$errorCode:'backend/billie_overview/messages'}</div>
     {/if}
     {block name="content/main"}{/block}
 </div> <!-- /container -->
@@ -74,16 +74,16 @@
             canceled: '{s name="canceled" namespace="backend/billie/states"}{/s}'
         },
         errorCodes: {
-            error: '{s name="error" namespace="backend/billie_overview/errors"}{/s}',
-            success: '{s name="success" namespace="backend/billie_overview/errors"}{/s}',
-            InvalidCommandException: '{s name="InvalidCommandException" namespace="backend/billie_overview/errors"}{/s}',
-            INVALID_REQUEST: '{s name="INVALID_REQUEST" namespace="backend/billie_overview/errors"}{/s}',
-            NOT_ALLOWED: '{s name="NOT_ALLOWED" namespace="backend/billie_overview/errors"}{/s}',
-            NOT_AUTHORIZED: '{s name="NOT_AUTHORIZED" namespace="backend/billie_overview/errors"}{/s}',
-            SERVER_ERROR: '{s name="SERVER_ERROR" namespace="backend/billie_overview/errors"}{/s}',
-            ORDER_NOT_CANCELLED: '{s name="ORDER_NOT_CANCELLED" namespace="backend/billie_overview/errors"}{/s}',
-            ORDER_CANNOT_BE_SHIPPED: '{s name="ORDER_CANNOT_BE_SHIPPED" namespace="backend/billie_overview/errors"}{/s}',
-            MISSING_DOCUMENTS: '{s name="MISSING_DOCUMENTS" namespace="backend/billie_overview/errors"}{/s}'
+            error: '{s name="error" namespace="backend/billie_overview/messages"}{/s}',
+            success: '{s name="success" namespace="backend/billie_overview/messages"}{/s}',
+            InvalidCommandException: '{s name="InvalidCommandException" namespace="backend/billie_overview/messages"}{/s}',
+            INVALID_REQUEST: '{s name="INVALID_REQUEST" namespace="backend/billie_overview/messages"}{/s}',
+            NOT_ALLOWED: '{s name="NOT_ALLOWED" namespace="backend/billie_overview/messages"}{/s}',
+            NOT_AUTHORIZED: '{s name="NOT_AUTHORIZED" namespace="backend/billie_overview/messages"}{/s}',
+            SERVER_ERROR: '{s name="SERVER_ERROR" namespace="backend/billie_overview/messages"}{/s}',
+            ORDER_NOT_CANCELLED: '{s name="ORDER_NOT_CANCELLED" namespace="backend/billie_overview/messages"}{/s}',
+            ORDER_CANNOT_BE_SHIPPED: '{s name="ORDER_CANNOT_BE_SHIPPED" namespace="backend/billie_overview/messages"}{/s}',
+            MISSING_DOCUMENTS: '{s name="MISSING_DOCUMENTS" namespace="backend/billie_overview/messages"}{/s}'
         }
     };
 </script>

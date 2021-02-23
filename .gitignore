@@ -1,3 +1,4 @@
 /vendor/
 /build
 /lib/api-php-sdk/vendor
+/composer.lock

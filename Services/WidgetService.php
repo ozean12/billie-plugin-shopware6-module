@@ -2,6 +2,9 @@
 
 namespace BilliePayment\Services;
 
+use Billie\Sdk\Model\LineItem;
+use Billie\Sdk\Model\Person;
+use BilliePayment\Helper\AddressHelper;
 use BilliePayment\Helper\BasketHelper;
 use kamermans\OAuth2\Exception\AccessTokenRequestException;
 use Monolog\Logger;
@@ -40,87 +43,52 @@ class WidgetService
         ProductServiceInterface $productService,
         ConfigService $configService,
         SessionService $sessionService,
-        ContextServiceInterface $contextService,
-        Logger $logger
-    ) {
+        ContextServiceInterface $contextService
+    )
+    {
         $this->productService = $productService;
         $this->configService = $configService;
         $this->sessionService = $sessionService;
         $this->contextService = $contextService;
-        $this->logger = $logger;
     }
 
+    /** @noinspection NullPointerExceptionInspection */
     public function getWidgetData(array $sOrderVariables)
     {
         $customer = $this->sessionService->getCustomer();
-        $billingAddress = $this->sessionService->getBillingAddress();
-        $shippingAddress = $this->sessionService->getShippingAddress();
+        $shopwareBillingAddress = $this->sessionService->getShopwareBillingAddress();
 
-        try {
-            $checkoutSessionId = $this->sessionService->getCheckoutSessionId(true);
-        } catch (AccessTokenRequestException $e) {
-            $this->logger->addCritical($e->getMessage());
-            $checkoutSessionId = '';
-        }
+        $checkoutSessionId = $this->sessionService->getCheckoutSessionId(true);
 
-        $widgetData = [
+        return [
             'src' => $this->configService->isSandbox() ? 'https://static-paella-sandbox.billie.io/checkout/billie-checkout.js' : 'https://static.billie.io/checkout/billie-checkout.js',
             'checkoutSessionId' => $checkoutSessionId,
             'checkoutData' => [
-                'amount' => $this->sessionService->getTotalAmount(),
+                'amount' => $this->sessionService->getTotalAmount()->toArray(),
                 'duration' => $this->sessionService->getBillieDurationForPaymentMethod(),
-                'delivery_address' => [
-                    'street' => $this->extractStreet($shippingAddress->getStreet()),
-                    'house_number' => $this->extractStreetNumber($shippingAddress->getStreet()),
-                    'addition' => $shippingAddress->getAdditional() ? implode(', ', $shippingAddress->getAdditional()) : null,
-                    'city' => $shippingAddress->getCity(),
-                    'postal_code' => $shippingAddress->getZipcode(),
-                    'country' => $shippingAddress->getCountry()->getIso(),
-                ],
-                'debtor_company' => [
-                    'name' => $billingAddress->getCompany() ? $billingAddress->getCompany() : $billingAddress->getFirstname() . ' ' . $billingAddress->getLastname(),
-                    'established_customer' => false,
-                    'address_street' => $this->extractStreet($billingAddress->getStreet()),
-                    'address_house_number' => $this->extractStreetNumber($billingAddress->getStreet()),
-                    'address_addition' => $billingAddress->getAdditional() ? implode(', ', $billingAddress->getAdditional()) : null,
-                    'address_city' => $billingAddress->getCity(),
-                    'address_postal_code' => $billingAddress->getZipcode(),
-                    'address_country' => $billingAddress->getCountry()->getIso(),
-                ],
-                'debtor_person' => [
-                    'salutation' => $this->transformSalutation($billingAddress->getSalutation()),
-                    'first_name' => $billingAddress->getFirstname(),
-                    'last_name' => $billingAddress->getLastname(),
-                    'phone_number' => $billingAddress->getPhone(),
-                    'email' => $customer->getEmail(),
-                ],
+                'debtor_company' => $this->sessionService->getDebtorCompany()->toArray(),
+                'delivery_address' => $this->sessionService->getShippingAddress()->toArray(),
+                'debtor_person' => (new Person())
+                    ->setValidateOnSet(false)
+                    ->setSalutation($this->transformSalutation($shopwareBillingAddress->getSalutation()))
+                    ->setFirstname($shopwareBillingAddress->getFirstname())
+                    ->setLastname($shopwareBillingAddress->getLastname())
+                    ->setPhone($shopwareBillingAddress->getPhone())
+                    ->setMail($customer->getEmail())
+                    ->toArray(),
                 'line_items' => $this->getLineItems($sOrderVariables['sBasket']['content']),
             ],
         ];
-
-        return $widgetData;
-    }
-
-    protected function extractStreet($street)
-    {
-        preg_match('/(.*) [0-9]+ {0,1}[A-Za-z]*/', $street, $matches);
-
-        return isset($matches[1]) ? $matches[1] : $street;
-    }
-
-    protected function extractStreetNumber($street)
-    {
-        preg_match('/.* ([0-9]+ {0,1}[A-Za-z]*)/', $street, $matches);
-
-        return $matches[1];
     }
 
     protected function transformSalutation($salutation)
     {
         $salutations = $this->configService->getSalutationMapping();
-        if (in_array($salutation, $salutations['male'])) {
+        if (in_array($salutation, $salutations['male'], true)) {
             return 'm';
-        } elseif (in_array($salutation, $salutations['female'])) {
+        }
+
+        if (in_array($salutation, $salutations['female'], true)) {
             return 'f';
         }
 
@@ -138,20 +106,6 @@ class WidgetService
             $product = $this->productService->get($item['ordernumber'], $this->contextService->getProductContext());
             $lineItems[] = $this->getLineItem($item, $product);
         }
-        /* Shipping costs are currently not needed
-         * if ($basket['sShippingcosts'] > 0) {
-            $lineItems[] = [
-                'external_id' => 'shipping',
-                'title' => 'Versandkosten',
-                'description' => null,
-                'quantity' => 1,
-                'category' => null,
-                'brand' => null,
-                'gtin' => null,
-                'mpn' => null,
-                'amount' => BasketHelper::getShippingAmount($basket)
-            ];
-        }*/
         return $lineItems;
     }
 
@@ -159,16 +113,16 @@ class WidgetService
     {
         $categories = $product ? $product->getCategories() : null;
 
-        return [
-            'external_id' => $item['ordernumber'],
-            'title' => $item['articlename'],
-            'description' => $product ? substr($product->getShortDescription(), 0, 255) : null,
-            'quantity' => $item['quantity'],
-            'category' => $categories && isset($categories[0]) ? implode(' > ', $categories[0]->getPath()) : null,
-            'brand' => $product && $product->getManufacturer() ? $product->getManufacturer()->getName() : null,
-            'gtin' => $product ? $product->getEan() : null,
-            'mpn' => null, // is not supported by shopware
-            'amount' => BasketHelper::getProductAmount($item),
-        ];
+        return (new LineItem())
+            ->setExternalId($item['ordernumber'])
+            ->setTitle($item['articlename'])
+            ->setDescription($product ? substr($product->getShortDescription(), 0, 255) : null)
+            ->setQuantity((int)$item['quantity'])
+            ->setCategory($categories && isset($categories[0]) ? implode(' > ', $categories[0]->getPath()) : null)
+            ->setBrand($product && $product->getManufacturer() ? $product->getManufacturer()->getName() : null)
+            ->setGtin($product ? $product->getEan() : null)
+            ->setMpn(null)
+            ->setAmount(BasketHelper::getProductAmount($item))
+            ->toArray();
     }
 }

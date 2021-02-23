@@ -2,52 +2,26 @@
 <container xmlns="http://symfony.com/schema/dic/services"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <imports>
+        <import resource="services/sdk.xml"/>
+        <import resource="services/subscriber.xml"/>
+    </imports>
+
     <services>
 
-        <defaults public="true" />
+        <defaults public="true" autowire="true" >
+            <bind key="$logger" type="service" id="billie_payment.logger" />
+        </defaults>
 
-        <!-- Event Subscribers -->
-        <service id="BilliePayment\Subscriber\TemplateRegistration">
-            <argument>%billie_payment.plugin_dir%</argument>
-            <argument type="service" id="template" />
-            <tag name="shopware.event_subscriber" />
-        </service>
-        <service id="billie_payment.subscriber.checkout" class="BilliePayment\Subscriber\Checkout">
-            <tag name="shopware.event_subscriber" />
-        </service>
-        <service id="billie_payment.subscriber.order" class="BilliePayment\Subscriber\Order">
-            <tag name="shopware.event_subscriber" />
-            <argument type="service" id="billie_payment.api" />
-            <argument type="service" id="billie_payment.utils" />
-            <argument type="service" id="billie_payment.payment_service" />
-        </service>
-        <service id="billie_payment.subscriber.payment" class="BilliePayment\Subscriber\Payment">
-            <tag name="shopware.event_subscriber" />
-            <argument type="service" id="billie_payment.payment_service" />
-        </service>
-        <service id="BilliePayment\Subscriber\Frontend\CheckoutSubscriber">
-            <argument id="session" type="service"/>
-            <argument id="BilliePayment\Services\ConfigService" type="service"/>
-            <argument id="BilliePayment\Services\WidgetService" type="service"/>
-            <tag name="shopware.event_subscriber"/>
-        </service>
-        <service id="BilliePayment\Subscriber\Frontend\PaymentFilterSubscriber">
-            <tag name="shopware.event_subscriber"/>
-            <argument id="models" type="service"/>
-            <argument id="db" type="service"/>
-            <argument id="BilliePayment\Services\SessionService" type="service"/>
-        </service>
-        <service id="BilliePayment\Subscriber\Document">
-            <tag name="shopware.event_subscriber"/>
-        </service>
+        <service id="BilliePayment\Components\Api\Api"/>
 
         <!-- Billie Payment Service -->
-        <service id="billie_payment.payment_service" class="BilliePayment\Components\Payment\Service" />
+        <service id="BilliePayment\Components\Payment\Service" />
 
         <!-- Utils & Helpers -->
-        <service id="billie_payment.utils" class="BilliePayment\Components\Utils">
-            <argument type="service" id="shopware.plugin.cached_config_reader" />
-            <argument>%billie_payment.plugin_name%</argument>
+        <service id="BilliePayment\Components\Utils">
+            <argument key="$configReader" type="service" id="shopware.plugin.cached_config_reader"/>
+            <argument key="$pluginName">%billie_payment.plugin_name%</argument>
         </service>
         <service id="BilliePayment\Services\ConfigService">
             <argument id="shopware.plugin.cached_config_reader" type="service"/>
@@ -55,26 +29,9 @@
             <argument>%billie_payment.plugin_name%</argument>
         </service>
         <service id="BilliePayment\Services\SessionService">
-            <argument id="session" type="service"/>
-            <argument id="models" type="service"/>
-            <argument id="billie_payment.api" type="service"/>
+            <argument id="session" type="service" key="$session"/>
         </service>
 
-
-        <!-- API Components -->
-        <service id="billie_payment.helper" class="BilliePayment\Components\Api\Helper">
-            <argument type="service" id="billie_payment.utils" />
-        </service>
-        <service id="billie_payment.factory" class="BilliePayment\Components\Api\CommandFactory">
-            <argument type="service" id="billie_payment.utils" />
-        </service>
-        <service id="billie_payment.api" class="BilliePayment\Components\Api\Api">
-            <argument type="service" id="billie_payment.helper" />
-            <argument type="service" id="billie_payment.utils" />
-            <argument type="service" id="billie_payment.factory" />
-            <argument type="service" id="BilliePayment\Services\ConfigService" />
-            <argument type="service" id="BilliePayment\Services\BankService" />
-        </service>
 
         <service id="BilliePayment\Subscriber\Backend\BaseSubscriber">
             <argument>%billie_payment.plugin_dir%</argument>
@@ -91,12 +48,10 @@
 
         <service id="BilliePayment\Services\AddressService">
             <argument id="models" type="service"/>
-            <argument id="BilliePayment\Services\ConfigService" type="service"/>
             <argument id="BilliePayment\Services\SessionService" type="service"/>
         </service>
 
-        <service id="BilliePayment\Services\BankService">
-            <argument>%billie_payment.plugin_dir%</argument>
-        </service>
+        <service id="BilliePayment\Services\BankService" />
+
     </services>
 </container>

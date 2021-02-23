@@ -2,42 +2,24 @@
 
 namespace BilliePayment\Services;
 
-use Billie\Model\Order as BillieOrder;
-use Shopware\Models\Order\Order;
+use Billie\Sdk\Model\Request\GetBankDataRequestModel;
+use Billie\Sdk\Service\Request\GetBankDataRequest;
 
 class BankService
 {
     /**
-     * @var string
+     * @var GetBankDataRequest
      */
-    private $pluginDir;
+    private $bankDataRequest;
 
-    public function __construct($pluginDir)
+    public function __construct(GetBankDataRequest $bankDataRequest)
     {
-        $this->pluginDir = $pluginDir;
+        $this->bankDataRequest = $bankDataRequest;
     }
 
-    public function getBankData(Order $order, BillieOrder $billieOrder)
+    public function getBankData(\Billie\Sdk\Model\Order $billieOrder)
     {
-        $fileName = $this->pluginDir . '/Resources/bankdata/de.csv';
-        $banks = $this->parseCsv($fileName);
-
-        return isset($banks[strtoupper($billieOrder->bankAccount->bic)]) ? $banks[$billieOrder->bankAccount->bic] : null;
-    }
-
-    protected function parseCsv($fileName)
-    {
-        $data = [];
-        if (($handle = fopen($fileName, 'r')) !== false) {
-            while (($row = fgetcsv($handle, 1000, ';')) !== false) {
-                $data[$row[0]] = [
-                    'bic' => $row[0],
-                    'name' => $row[1],
-                ];
-            }
-            fclose($handle);
-        }
-
-        return $data;
+        $response = $this->bankDataRequest->execute(new GetBankDataRequestModel());
+        return $response->getBankName($billieOrder->getBankAccount()->getBic());
     }
 }

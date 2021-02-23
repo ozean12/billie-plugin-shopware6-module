@@ -2,17 +2,14 @@
 
 namespace BilliePayment\Helper;
 
+use Billie\Sdk\Model\Amount;
+
 class BasketHelper
 {
-    /* Shipping costs currently are not needed
-     * public static function getShippingAmount(array $basket)
-    {
-        return self::round(self::addTax([
-            'gross' => $basket['sShippingcostsWithTax'],
-            'net' => $basket['sShippingcostsNet'],
-        ]));
-    }*/
-
+    /**
+     * @param array $product
+     * @return Amount
+     */
     public static function getProductAmount(array $product)
     {
         $fetchKeys = [
@@ -48,33 +45,18 @@ class BasketHelper
             }
         }
 
-        return self::round(self::addTax([
-            'gross' => $gross,
-            'net' => $net,
-        ]));
+        return (new Amount())
+            ->setGross($gross)
+            ->setNet($net);
     }
 
     public static function getTotalAmount(array $basket)
     {
-        return self::round(self::addTax([
-            'gross' => empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'],
-            'net' => $basket['AmountNetNumeric'],
-        ]));
-    }
+        $net = $basket['AmountNetNumeric'];
+        $gross = empty($basket['AmountWithTaxNumeric']) ? $basket['AmountNumeric'] : $basket['AmountWithTaxNumeric'];
 
-    private static function round(array $data)
-    {
-        $data['tax'] = round($data['tax'], 2);
-        $data['gross'] = round($data['gross'], 2);
-        $data['net'] = round($data['net'], 2);
-
-        return $data;
-    }
-
-    private static function addTax(array $data)
-    {
-        $data['tax'] = $data['gross'] - $data['net'];
-
-        return $data;
+        return (new Amount())
+            ->setNet($net)
+            ->setGross($gross);
     }
 }

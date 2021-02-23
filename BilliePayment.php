@@ -12,13 +12,7 @@ use BilliePayment\Services\Logger\FileLogger;
 use Shopware\Components\Plugin;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-require_once __DIR__ . '/lib/old-sdk/vendor/autoload.php';
-require_once __DIR__ . '/lib/new-sdk/vendor/autoload.php';
 
-/**
- * Main Plugin Class with plugin options.
- * Handles (un-)installation and (de-)activation.
- */
 class BilliePayment extends Plugin
 {
     public function build(ContainerBuilder $container)
@@ -138,4 +132,18 @@ class BilliePayment extends Plugin
 
         return $bootstrapper;
     }
+
+    public static function isPackage()
+    {
+        return file_exists(self::getPackageVendorAutoload());
+    }
+
+    public static function getPackageVendorAutoload()
+    {
+        return __DIR__ . '/vendor/autoload.php';
+    }
+}
+
+if (BilliePayment::isPackage()) {
+    require_once BilliePayment::getPackageVendorAutoload();
 }

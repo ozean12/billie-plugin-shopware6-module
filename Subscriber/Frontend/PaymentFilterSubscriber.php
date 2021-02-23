@@ -50,14 +50,14 @@ class PaymentFilterSubscriber implements SubscriberInterface
     {
         $paymentMethods = $args->getReturn();
 
-        $billingAddress = $this->sessionService->getBillingAddress();
+        $debtorCompany = $this->sessionService->getDebtorCompany();
 
-        if ($billingAddress) {
-            if (empty($billingAddress->getCompany())) {
+        if ($debtorCompany) {
+            if (empty($debtorCompany->getName())) {
                 // remove all payment methods cause the customer is not a B2B customer.
                 foreach (PaymentMethods::getNames() as $name) {
                     foreach ($paymentMethods as $i => $paymentMethod) {
-                        if ($name == $paymentMethod['name']) {
+                        if ($name === $paymentMethod['name']) {
                             unset($paymentMethods[$i]);
                         }
                     }
@@ -65,7 +65,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
             } else {
                 foreach ($paymentMethods as $i => $paymentMethod) {
                     if ($billieMethod = PaymentMethods::getMethod($paymentMethod['name'])) {
-                        if (in_array($billingAddress->getCountry()->getIso(), $billieMethod['billie_config']['allowed_in_countries']) == false) {
+                        if (in_array($debtorCompany->getAddress()->getCountryCode(), $billieMethod['billie_config']['allowed_in_countries'], true) === false) {
                             unset($paymentMethods[$i]);
                         } else {
                             // add backward compatibility

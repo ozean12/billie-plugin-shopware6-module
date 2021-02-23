@@ -2,19 +2,16 @@
 
 namespace BilliePayment\Services;
 
-use ArrayObject;
-use Billie\Model\Address;
-use Billie\Model\DebtorCompany;
-use Billie\Model\Order;
+use Billie\Sdk\Model\Address;
+use Billie\Sdk\Model\DebtorCompany;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Country\Country;
+use Shopware\Models\Customer\Address as ShopwareAddress;
 
 class AddressService
 {
-    /**
-     * @var ConfigService
-     */
-    private $configService;
 
     /**
      * @var SessionService
@@ -28,73 +25,67 @@ class AddressService
 
     public function __construct(
         ModelManager $modelManager,
-        ConfigService $configService,
         SessionService $sessionService
-    ) {
+    )
+    {
         $this->modelManager = $modelManager;
-        $this->configService = $configService;
         $this->sessionService = $sessionService;
     }
 
-    public function updateBillingAddress(Order $billiOrder, DebtorCompany $company)
+    /**
+     * writes the Billie-DebtorCompany Model to the Shopware billing address
+     *
+     * @param DebtorCompany $debtorCompany
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function updateBillingAddress(DebtorCompany $debtorCompany)
     {
-        $billingAddress = $this->sessionService->getBillingAddress();
-        // write determined address to shopware order address
-        $billingAddress->setCompany($company->name);
-        $billingAddress->setStreet($company->addressStreet . ' ' . $company->addressHouseNumber);
-        $billingAddress->setAdditionalAddressLine1($company->addressAddition);
-        $billingAddress->setZipCode($company->addressPostalCode);
-        $billingAddress->setCity($company->addressCity);
-        $billingAddress->setVatId($billiOrder->debtorCompany->taxId);
-
-        $country = $this->getCountry($company->addressCountry);
-        if ($country) {
-            $billingAddress->setCountry($country);
-            $billingAddress->setCountry($country);
+        $shopwareAddress = $this->sessionService->getShopwareBillingAddress();
+        if ($shopwareAddress) {
+            $shopwareAddress->setCompany($debtorCompany->getName());
+            $shopwareAddress = $this->updateAddress($shopwareAddress, $debtorCompany->getAddress());
+            $this->modelManager->flush([$shopwareAddress]);
         }
-
-        $this->modelManager->flush([$billingAddress]);
-    }
-
-    public function updateSessionAddress(Order $billiOrder, DebtorCompany $company)
-    {
-        /** @var ArrayObject $sOrderVariables */
-        $sOrderVariables = Shopware()->Session()->sOrderVariables;
-        $userData = $sOrderVariables->offsetGet('sUserData');
-
-        $billingAddress = $userData['billingaddress'];
-        $shippingAddress = $userData['shippingaddress'];
-
-        $billingAddress['company'] = $company->name;
-        $billingAddress['ustid'] = $billiOrder->debtorCompany->taxId;
-        $billingAddress['street'] = $company->addressStreet . ' ' . $company->addressHouseNumber;
-        $billingAddress['additionalAddressLine1'] = $company->addressAddition;
-        $billingAddress['zipcode'] = $company->addressPostalCode;
-        $billingAddress['city'] = $company->addressCity;
-        $country = $this->getCountry($company->addressCountry);
-        if ($country) {
-            $billingAddress['country'] = $country->getId();
-        }
-
-        $billingAddress['attributes']['billie_registrationnumber'] = $billiOrder->debtorCompany->registrationNumber;
-        $billingAddress['attributes']['billie_legalform'] = $billiOrder->debtorCompany->legalForm;
-
-        $userData['billingaddress'] = $billingAddress;
-        if ($billingAddress['id'] === $shippingAddress['id']) {
-            $userData['shippingaddress'] = $userData['billingaddress'];
-        }
-        $sOrderVariables->offsetSet('sUserData', $userData);
     }
 
     /**
-     * @param string $code
+     * writes a Billie-Address Model to the Shopware shipping address
      *
+     * @param Address $billieAddress
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function updateShippingAddress(Address $billieAddress)
+    {
+        $shopwareAddress = $this->sessionService->getShopwareShippingAddress();
+        if ($shopwareAddress) {
+            $shopwareAddress = $this->updateAddress($shopwareAddress, $billieAddress);
+            $this->modelManager->flush([$shopwareAddress]);
+        }
+    }
+
+    protected function updateAddress(ShopwareAddress $shopwareAddress, Address $billieAddress)
+    {
+        $shopwareAddress->setStreet($billieAddress->getStreet() . ' ' . $billieAddress->getHouseNumber());
+        $shopwareAddress->setAdditionalAddressLine1($billieAddress->getAddition());
+        $shopwareAddress->setZipCode($billieAddress->getPostalCode());
+        $shopwareAddress->setCity($billieAddress->getCity());
+        if ($country = $this->getCountry($billieAddress->getCountryCode())) {
+            $shopwareAddress->setCountry($country);
+        }
+        return $shopwareAddress;
+    }
+
+    /**
+     * gets the country model by the iso code
+     *
+     * @param string $code
      * @return Country
      */
     private function getCountry($code)
     {
         /* @var Country $country */
-        return $country = $this->modelManager->getRepository(Country::class)
-            ->findOneBy(['iso' => $code]);
+        return $this->modelManager->getRepository(Country::class)->findOneBy(['iso' => $code]);
     }
 }

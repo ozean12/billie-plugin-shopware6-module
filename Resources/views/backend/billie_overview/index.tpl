@@ -53,7 +53,7 @@
                                 class="btn btn-success ship-order"
                                 {if $order.attribute.billieState neq 'created'}disabled="disabled"{/if}
                                 data-order_id="{$order.id}"
-                                data-action="{url controller="BillieOverview" action="shipOrder" __csrf_token=$csrfToken}"
+                                data-action="{url controller="BillieOverview" action="shipOrder"}"
                             >
                                 <i class="glyphicon glyphicon-send"></i>
                             </button>
@@ -61,7 +61,7 @@
                                 class="btn btn-danger cancel-order"
                                 {if $order.attribute.billieState eq 'canceled' or $order.attribute.billieState eq 'complete'}disabled="disabled"{/if}
                                 data-order_id="{$order.id}"
-                                data-action="{url controller="BillieOverview" action="cancelOrder" __csrf_token=$csrfToken}"
+                                data-action="{url controller="BillieOverview" action="cancelOrder"}"
                             >
                                 <i class="glyphicon glyphicon-remove"></i>
                             </button>
