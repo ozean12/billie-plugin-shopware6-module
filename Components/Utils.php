@@ -4,7 +4,9 @@ namespace BilliePayment\Components;
 
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\ConfigReader;
+use Shopware\Components\Routing\Context;
 use Shopware\Models\Order\Document\Document;
+use Shopware\Models\Shop\Shop;
 
 /**
  * Utility Class

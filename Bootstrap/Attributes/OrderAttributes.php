@@ -20,10 +20,28 @@ class OrderAttributes extends AbstractAttributes
         $this->crudService->update($this->tableName, 'billie_bank', 'string');
         $this->crudService->update($this->tableName, 'billie_duration', 'integer');
         $this->crudService->update($this->tableName, 'billie_duration_date', 'string');
+        $this->crudService->update($this->tableName, 'billie_external_invoice_number', 'string', [
+            'displayInBackend' => true,
+            'label' => 'Billie Payment: External invoice number',
+            'translatable' => false
+        ]);
+        $this->crudService->update($this->tableName, 'billie_external_invoice_url', 'string', [
+            'displayInBackend' => true,
+            'label' => 'Billie Payment: External invoice url',
+            'translatable' => false
+        ]);
     }
 
     protected function uninstallAttributes()
     {
-        // TODO: Implement uninstallAttributes() method.
+        $this->crudService->delete($this->tableName, 'billie_referenceId');
+        $this->crudService->delete($this->tableName, 'billie_state');
+        $this->crudService->delete($this->tableName, 'billie_iban');
+        $this->crudService->delete($this->tableName, 'billie_bic');
+        $this->crudService->delete($this->tableName, 'billie_bank');
+        $this->crudService->delete($this->tableName, 'billie_duration');
+        $this->crudService->delete($this->tableName, 'billie_duration_date');
+        $this->crudService->delete($this->tableName, 'billie_external_invoice_number');
+        $this->crudService->delete($this->tableName, 'billie_external_invoice_url');
     }
 }

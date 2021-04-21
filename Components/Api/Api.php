@@ -109,17 +109,17 @@ class Api
 
     /**
      * @param Order $shopwareOrder
-     * @param $invoiceUrl
-     * @param null $invoiceNumber
+     * @param string $invoiceNumber
+     * @param string|null $invoiceUrl
      * @return \Billie\Sdk\Model\Order|string|bool errorCode as string in case of an error or the BillieOrder model
      */
-    public function shipOrder(Order $shopwareOrder, $invoiceUrl, $invoiceNumber = null)
+    public function shipOrder(Order $shopwareOrder, $invoiceNumber, $invoiceUrl = null)
     {
         try {
             $billieOrder = $this->shipOrderRequest->execute(
                 (new ShipOrderRequestModel($shopwareOrder->getTransactionId()))
                     ->setExternalOrderId($shopwareOrder->getNumber())
-                    ->setInvoiceUrl($invoiceUrl)
+                    ->setInvoiceUrl($invoiceUrl ? : '.')
                     ->setInvoiceNumber($invoiceNumber)
             );
             $this->updateShopwareOrder($shopwareOrder, $billieOrder);

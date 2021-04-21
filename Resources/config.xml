@@ -131,5 +131,32 @@
             </description>
         </element>
 
+        <element required="true" type="boolean">
+            <name>billiepayment/status/auto-enabled</name>
+            <label lang="en">Activate status auto processing</label>
+            <label lang="de">Automatische Statusverarbeitung aktivieren</label>
+        </element>
+        <element required="true" type="combo">
+            <name>billiepayment/status/auto-ship</name>
+            <label lang="en">Order status for auto ship</label>
+            <label lang="de">Bestellstatus für automatische Versandmeldung</label>
+            <value>7</value>
+            <store>base.OrderStatus</store>
+            <options>
+                <valueField>id</valueField>
+                <displayField>description</displayField>
+            </options>
+        </element>
+        <element required="true" type="combo">
+            <name>billiepayment/status/auto-cancel</name>
+            <label lang="en">Order status for auto cancellation</label>
+            <label lang="de">Bestellstatus für automatische Stornierung</label>
+            <value>4</value>
+            <store>base.OrderStatus</store>
+            <options>
+                <valueField>id</valueField>
+                <displayField>description</displayField>
+            </options>
+        </element>
     </elements>
 </config>

@@ -15,6 +15,12 @@
 
         <service id="BilliePayment\Components\Api\Api"/>
 
+        <service id="BilliePayment\Subscriber\Cron\OrderStatusCron">
+            <argument key="$modelManager" id="models" type="service"/>
+            <argument key="$db" id="db" type="service"/>
+            <tag name="shopware.event_subscriber"/>
+        </service>
+
         <!-- Billie Payment Service -->
         <service id="BilliePayment\Components\Payment\Service" />
 
@@ -30,6 +36,10 @@
         </service>
         <service id="BilliePayment\Services\SessionService">
             <argument id="session" type="service" key="$session"/>
+        </service>
+        <service id="BilliePayment\Helper\DocumentHelper">
+            <argument key="$router" id="router" type="service"/>
+            <argument key="$modelManager" id="models" type="service"/>
         </service>
 
 

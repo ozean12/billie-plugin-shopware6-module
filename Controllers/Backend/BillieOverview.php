@@ -24,16 +24,6 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
 {
 
     /**
-     * @var Logger
-     */
-    private $logger;
-
-    /**
-     * @var Utils
-     */
-    private $utils;
-
-    /**
      * @var Api
      */
     private $api;
@@ -43,14 +33,18 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
      */
     private $snippetManager;
 
+    /**
+     * @var DocumentHelper
+     */
+    private $documentHelper;
+
     public function setContainer(Container $loader = null)
     {
         parent::setContainer($loader);
 
-        $this->logger = $this->container->get('billie_payment.logger');
-        $this->utils = $this->container->get(Utils::class);
         $this->api = $this->container->get(Api::class);
         $this->snippetManager = $this->container->get('snippets');
+        $this->documentHelper = $this->container->get(DocumentHelper::class);
     }
 
     /**
@@ -158,10 +152,10 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
             ]);
             return;
         }
-        $invoiceUrl = !empty($invoiceUrl) ? $invoiceUrl : DocumentHelper::getInvoiceUrlForOrder($order);
-        $invoiceNumber = !empty($invoiceNumber) ? $invoiceNumber : DocumentHelper::getInvoiceNumberForOrder($order);
+        $invoiceUrl = !empty($invoiceUrl) ? $invoiceUrl : $this->documentHelper->getInvoiceUrlForOrder($order);
+        $invoiceNumber = !empty($invoiceNumber) ? $invoiceNumber : $this->documentHelper->getInvoiceNumberForOrder($order);
 
-        if ($invoiceUrl === null) {
+        if ($invoiceNumber === null) {
             $this->View()->assign([
                 'success' => false,
                 'data' => 'MISSING_DOCUMENTS'
@@ -169,7 +163,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
             return;
         }
 
-        $response = $this->api->shipOrder($order, $invoiceUrl, $invoiceNumber);
+        $response = $this->api->shipOrder($order, $invoiceNumber, $invoiceUrl);
 
         $this->View()->assign([
             'success' => $response instanceof \Billie\Sdk\Model\Order,

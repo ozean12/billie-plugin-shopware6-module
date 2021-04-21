@@ -63,18 +63,24 @@ class OrderSubscriber implements SubscriberInterface
      * @var ModelManager
      */
     private $modelManager;
+    /**
+     * @var DocumentHelper
+     */
+    private $documentHelper;
 
     public function __construct(
         ModelManager $modelManager,
         Api $api,
         Utils $utils,
-        Service $service
+        Service $service,
+        DocumentHelper $documentHelper
     )
     {
         $this->modelManager = $modelManager;
         $this->api = $api;
         $this->utils = $utils;
         $this->service = $service;
+        $this->documentHelper = $documentHelper;
     }
 
     /**
@@ -197,10 +203,10 @@ class OrderSubscriber implements SubscriberInterface
                 break;
 
             case self::ORDER_SHIPPED:
-                $invoiceUrl = DocumentHelper::getInvoiceUrlForOrder($order);
-                $invoiceNumber = DocumentHelper::getInvoiceNumberForOrder($order);
-                if ($invoiceUrl && $invoiceNumber) {
-                    $response = $this->api->shipOrder($order, $invoiceUrl, $invoiceNumber);
+                $invoiceNumber = $this->documentHelper->getInvoiceNumberForOrder($order);
+                if ($invoiceNumber) {
+                    $invoiceUrl = $this->documentHelper->getInvoiceUrlForOrder($order);
+                    $response = $this->api->shipOrder($order, $invoiceNumber, $invoiceUrl);
                     $view->assign([
                         'success' => $response instanceof \Billie\Sdk\Model\Order,
                         'message' => $this->utils->getSnippet(
