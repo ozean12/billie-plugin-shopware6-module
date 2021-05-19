@@ -24,7 +24,6 @@ use Shopware\Models\Order\Order;
  */
 class Api
 {
-
     /**
      * @var Logger
      */
@@ -34,26 +33,32 @@ class Api
      * @var UpdateOrderRequest
      */
     private $updateOrderRequest;
+
     /**
      * @var ModelManager
      */
     private $modelManager;
+
     /**
      * @var BankService
      */
     private $bankService;
+
     /**
      * @var GetOrderDetailsRequest
      */
     private $orderDetailsRequest;
+
     /**
      * @var CancelOrderRequest
      */
     private $cancelOrderRequest;
+
     /**
      * @var ConfirmPaymentRequest
      */
     private $confirmPaymentRequest;
+
     /**
      * @var ShipOrderRequest
      */
@@ -68,8 +73,7 @@ class Api
         CancelOrderRequest $cancelOrderRequest,
         ConfirmPaymentRequest $confirmPaymentRequest,
         ShipOrderRequest $shipOrderRequest
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->modelManager = $modelManager;
         $this->updateOrderRequest = $updateOrderRequest;
@@ -81,9 +85,9 @@ class Api
     }
 
     /**
-     * @param Order $order
-     * @return \Billie\Sdk\Model\Order
      * @throws BillieException
+     *
+     * @return \Billie\Sdk\Model\Order
      */
     public function getOrder(Order $order)
     {
@@ -96,21 +100,23 @@ class Api
             $this->confirmPaymentRequest
                 ->execute(
                     (new ConfirmPaymentRequestModel($shopwareOrder->getTransactionId()))
-                        ->setPaidAmount((float)$grossAmount)
+                        ->setPaidAmount((float) $grossAmount)
                 );
             $billieOrder = $this->getOrder($shopwareOrder);
             $this->updateShopwareOrder($shopwareOrder, $billieOrder);
+
             return $billieOrder;
         } catch (BillieException $e) {
             $this->logError($shopwareOrder, 'PAYMENT_CONFIRM', $e);
+
             return $e->getBillieCode();
         }
     }
 
     /**
-     * @param Order $shopwareOrder
-     * @param string $invoiceNumber
+     * @param string      $invoiceNumber
      * @param string|null $invoiceUrl
+     *
      * @return \Billie\Sdk\Model\Order|string|bool errorCode as string in case of an error or the BillieOrder model
      */
     public function shipOrder(Order $shopwareOrder, $invoiceNumber, $invoiceUrl = null)
@@ -119,21 +125,23 @@ class Api
             $billieOrder = $this->shipOrderRequest->execute(
                 (new ShipOrderRequestModel($shopwareOrder->getTransactionId()))
                     ->setExternalOrderId($shopwareOrder->getNumber())
-                    ->setInvoiceUrl($invoiceUrl ? : '.')
+                    ->setInvoiceUrl($invoiceUrl ?: '.')
                     ->setInvoiceNumber($invoiceNumber)
             );
             $this->updateShopwareOrder($shopwareOrder, $billieOrder);
+
             return $billieOrder;
         } catch (BillieException $e) {
             $this->logError($shopwareOrder, 'SHIP', $e);
+
             return $e->getBillieCode();
         }
     }
 
     /**
-     * @param Order $shopwareOrder
      * @param float $gross
      * @param float $net
+     *
      * @return \Billie\Sdk\Model\Order|string|bool errorCode as string in case of an error or the BillieOrder model
      */
     public function updateAmount(Order $shopwareOrder, $gross, $net)
@@ -149,16 +157,18 @@ class Api
             );
             $billieOrder = $this->getOrder($shopwareOrder);
             $this->updateShopwareOrder($shopwareOrder, $billieOrder);
+
             return $billieOrder;
         } catch (BillieException $e) {
             $this->logError($shopwareOrder, 'UPDATE_AMOUNT', $e);
+
             return $e->getBillieCode();
         }
     }
 
     /**
-     * @param Order $shopwareOrder
      * @param $grossAmount
+     *
      * @return \Billie\Sdk\Model\Order|string|bool errorCode as string in case of an error, true if the order has been canceled
      */
     public function partlyRefund(Order $shopwareOrder, $grossAmount)
@@ -183,9 +193,11 @@ class Api
 
             $billieOrder = $this->getOrder($shopwareOrder);
             $this->updateShopwareOrder($shopwareOrder, $billieOrder);
+
             return $billieOrder;
         } catch (BillieException $e) {
             $this->logError($shopwareOrder, 'REFUND', $e);
+
             return $e->getBillieCode();
         }
     }
@@ -216,9 +228,7 @@ class Api
         $this->modelManager->flush($orderAttribute);
     }
 
-
     /**
-     * @param Order $shopwareOrder
      * @return bool|string `true` if successfull or `string` with the errorCode
      */
     public function cancelOrder(Order $shopwareOrder)
@@ -228,12 +238,14 @@ class Api
                 (new OrderRequestModel($shopwareOrder->getTransactionId()))
             );
             $attribute = $shopwareOrder->getAttribute();
-            /** @noinspection NullPointerExceptionInspection */
+            /* @noinspection NullPointerExceptionInspection */
             $attribute->setBillieState(\Billie\Sdk\Model\Order::STATE_CANCELLED);
             $this->modelManager->flush($attribute);
+
             return true;
         } catch (BillieException $e) {
             $this->logError($shopwareOrder, 'CANCEL', $e);
+
             return $e->getBillieCode();
         }
     }
@@ -245,7 +257,7 @@ class Api
             'orderId' => $order->getId(),
             'referenceId' => $order->getTransactionId(),
             'operation' => $operation,
-            'response' => $e->getResponseData()
+            'response' => $e->getResponseData(),
         ]);
     }
 }

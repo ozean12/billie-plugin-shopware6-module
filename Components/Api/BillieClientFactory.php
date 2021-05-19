@@ -1,15 +1,12 @@
 <?php
 
-
 namespace BilliePayment\Components\Api;
-
 
 use BilliePayment\Services\ConfigService;
 use Shopware\Models\Shop\Shop;
 
 class BillieClientFactory
 {
-
     /**
      * @var ConfigService
      */

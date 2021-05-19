@@ -12,7 +12,6 @@ use BilliePayment\Services\Logger\FileLogger;
 use Shopware\Components\Plugin;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-
 class BilliePayment extends Plugin
 {
     public function build(ContainerBuilder $container)
@@ -107,6 +106,16 @@ class BilliePayment extends Plugin
         $context->scheduleClearCache($context::CACHE_LIST_ALL);
     }
 
+    public static function isPackage()
+    {
+        return file_exists(self::getPackageVendorAutoload());
+    }
+
+    public static function getPackageVendorAutoload()
+    {
+        return __DIR__ . '/vendor/autoload.php';
+    }
+
     /**
      * @return AbstractBootstrap[]
      */
@@ -131,16 +140,6 @@ class BilliePayment extends Plugin
         }
 
         return $bootstrapper;
-    }
-
-    public static function isPackage()
-    {
-        return file_exists(self::getPackageVendorAutoload());
-    }
-
-    public static function getPackageVendorAutoload()
-    {
-        return __DIR__ . '/vendor/autoload.php';
     }
 }
 

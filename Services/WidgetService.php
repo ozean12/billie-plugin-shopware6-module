@@ -4,9 +4,7 @@ namespace BilliePayment\Services;
 
 use Billie\Sdk\Model\LineItem;
 use Billie\Sdk\Model\Person;
-use BilliePayment\Helper\AddressHelper;
 use BilliePayment\Helper\BasketHelper;
-use kamermans\OAuth2\Exception\AccessTokenRequestException;
 use Monolog\Logger;
 use Shopware\Bundle\StoreFrontBundle\Service\ContextServiceInterface;
 use Shopware\Bundle\StoreFrontBundle\Service\ProductServiceInterface;
@@ -44,8 +42,7 @@ class WidgetService
         ConfigService $configService,
         SessionService $sessionService,
         ContextServiceInterface $contextService
-    )
-    {
+    ) {
         $this->productService = $productService;
         $this->configService = $configService;
         $this->sessionService = $sessionService;
@@ -106,6 +103,7 @@ class WidgetService
             $product = $this->productService->get($item['ordernumber'], $this->contextService->getProductContext());
             $lineItems[] = $this->getLineItem($item, $product);
         }
+
         return $lineItems;
     }
 
@@ -117,7 +115,7 @@ class WidgetService
             ->setExternalId($item['ordernumber'])
             ->setTitle($item['articlename'])
             ->setDescription($product ? substr($product->getShortDescription(), 0, 255) : null)
-            ->setQuantity((int)$item['quantity'])
+            ->setQuantity((int) $item['quantity'])
             ->setCategory($categories && isset($categories[0]) ? implode(' > ', $categories[0]->getPath()) : null)
             ->setBrand($product && $product->getManufacturer() ? $product->getManufacturer()->getName() : null)
             ->setGtin($product ? $product->getEan() : null)

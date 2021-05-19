@@ -7,7 +7,6 @@ use Billie\Sdk\Model\Amount;
 class BasketHelper
 {
     /**
-     * @param array $product
      * @return Amount
      */
     public static function getProductAmount(array $product)

@@ -2,18 +2,13 @@
 
 namespace BilliePayment\Components;
 
-use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\ConfigReader;
-use Shopware\Components\Routing\Context;
-use Shopware\Models\Order\Document\Document;
-use Shopware\Models\Shop\Shop;
 
 /**
  * Utility Class
  */
 class Utils
 {
-
     /**
      * @var array
      */
@@ -22,14 +17,15 @@ class Utils
     public function __construct(
         ConfigReader $configReader,
         $pluginName
-    )
-    {
+    ) {
         $this->config = $configReader->getByPluginName($pluginName);
     }
 
     /**
      * Get the plugin Configuration
+     *
      * @return array
+     *
      * @deprecated
      */
     public function getPluginConfig()
@@ -39,8 +35,10 @@ class Utils
 
     /**
      * Get a snippet via the snippet mananger
+     *
      * @param string $namespace
      * @param string $snippet
+     *
      * @deprecated
      */
     public function getSnippet($namespace, $snippet, $default = null)

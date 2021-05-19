@@ -70,8 +70,26 @@ class ConfigService
     }
 
     /**
+     * @return bool
+     */
+    public function isWatchHistoryChange()
+    {
+        return (bool) $this->getConfig('billiepayment/status/auto-enabled', false);
+    }
+
+    /**
+     * @param $key string
+     *
+     * @return int|null
+     */
+    public function getOrderStatusForAutoProcessing($key)
+    {
+        return $this->getConfig('billiepayment/status/auto-' . $key, null);
+    }
+
+    /**
      * @param $configName
-     * @param null $default
+     * @param null     $default
      * @param Shop|int $shop
      */
     protected function getConfig($configName, $default = null, $shop = null)
@@ -89,22 +107,5 @@ class ConfigService
         $config = $this->configReader->getByPluginName($this->pluginName, $shop);
 
         return isset($config[$configName]) ? $config[$configName] : $default;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isWatchHistoryChange()
-    {
-        return (bool)$this->getConfig('billiepayment/status/auto-enabled', false);
-    }
-
-    /**
-     * @param $key string
-     * @return null|int
-     */
-    public function getOrderStatusForAutoProcessing($key)
-    {
-        return $this->getConfig('billiepayment/status/auto-'.$key, null);
     }
 }

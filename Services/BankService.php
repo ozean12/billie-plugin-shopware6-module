@@ -20,6 +20,7 @@ class BankService
     public function getBankData(\Billie\Sdk\Model\Order $billieOrder)
     {
         $response = $this->bankDataRequest->execute(new GetBankDataRequestModel());
+
         return $response->getBankName($billieOrder->getBankAccount()->getBic());
     }
 }

@@ -5,7 +5,6 @@ use Shopware\Models\Order\Document\Document;
 
 class Shopware_Controllers_Frontend_BillieInvoice extends Enlight_Controller_Action implements CSRFWhitelistAware
 {
-
     public function invoiceAction()
     {
         $hash = $this->request->getParam('hash');
@@ -30,12 +29,14 @@ class Shopware_Controllers_Frontend_BillieInvoice extends Enlight_Controller_Act
         // Return 404 Error if document was not found.
         if (!$document) {
             $this->Response()->setHttpResponseCode(404);
+
             return;
         }
 
         $file = Shopware()->DocPath() . "files/documents/{$hash}.pdf";
         if (!file_exists($file)) {
             $this->Response()->setHttpResponseCode(404);
+
             return;
         }
 

@@ -2,11 +2,9 @@
 
 use Billie\Sdk\Exception\BillieException;
 use BilliePayment\Components\Api\Api;
-use BilliePayment\Components\Utils;
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Helper\DocumentHelper;
 use Doctrine\ORM\AbstractQuery;
-use Monolog\Logger;
 use Shopware\Components\CSRFWhitelistAware;
 use Shopware\Components\DependencyInjection\Container;
 use Shopware\Models\Order\Order;
@@ -22,7 +20,6 @@ use Shopware\Models\Order\Order;
  */
 class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Action implements CSRFWhitelistAware
 {
-
     /**
      * @var Api
      */
@@ -118,6 +115,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
 
         if ($shopwareOrder === null) {
             $this->redirect(['controller' => 'BillieOverview', 'action' => 'index']);
+
             return;
         }
 
@@ -125,6 +123,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
             $order = $this->api->getOrder($shopwareOrder);
         } catch (BillieException $e) {
             $this->redirect(['controller' => 'BillieOverview', 'action' => 'index', 'errorCode' => $e->getBillieCode()]);
+
             return;
         }
 
@@ -148,8 +147,9 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $order = $this->getModelManager()->find(Order::class, $orderId);
         if ($order === null) {
             $this->view->assign([
-                'success' => false
+                'success' => false,
             ]);
+
             return;
         }
         $invoiceUrl = !empty($invoiceUrl) ? $invoiceUrl : $this->documentHelper->getInvoiceUrlForOrder($order);
@@ -158,8 +158,9 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         if ($invoiceNumber === null) {
             $this->View()->assign([
                 'success' => false,
-                'data' => 'MISSING_DOCUMENTS'
+                'data' => 'MISSING_DOCUMENTS',
             ]);
+
             return;
         }
 
@@ -168,7 +169,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $this->View()->assign([
             'success' => $response instanceof \Billie\Sdk\Model\Order,
             'message' => is_string($response) ? $this->snippetManager->getNamespace('backend/billie_overview/messages')
-                ->get($response) : null
+                ->get($response) : null,
         ]);
     }
 
@@ -186,7 +187,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $this->View()->assign([
             'success' => $response instanceof \Billie\Sdk\Model\Order,
             'message' => is_string($response) ? $this->snippetManager->getNamespace('backend/billie_overview/messages')
-                ->get($response) : null
+                ->get($response) : null,
         ]);
     }
 
@@ -199,11 +200,10 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $amount = floatval(str_replace(',', '.', $this->Request()->getParam('amount')));
         $order = $this->getModelManager()->find(Order::class, $orderId);
 
-
         $response = $order ? $this->api->partlyRefund($order, $amount) : false;
         if ($response instanceof \Billie\Sdk\Model\Order) {
             $success = true;
-        } else if ($response === true) {
+        } elseif ($response === true) {
             $success = true;
         } else {
             $success = false;
@@ -214,7 +214,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
             'success' => $success,
             'partly' => $response instanceof \Billie\Sdk\Model\Order,
             'message' => is_string($response) ? $this->snippetManager->getNamespace('backend/billie_overview/messages')
-                ->get($response) : null
+                ->get($response) : null,
         ]);
     }
 
@@ -235,7 +235,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         $this->View()->assign([
             'success' => $response === true,
             'message' => is_string($response) ? $this->snippetManager->getNamespace('backend/billie_overview/messages')
-                ->get($response) : null
+                ->get($response) : null,
         ]);
     }
 

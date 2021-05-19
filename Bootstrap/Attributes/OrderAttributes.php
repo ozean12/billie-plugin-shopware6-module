@@ -23,12 +23,12 @@ class OrderAttributes extends AbstractAttributes
         $this->crudService->update($this->tableName, 'billie_external_invoice_number', 'string', [
             'displayInBackend' => true,
             'label' => 'Billie Payment: External invoice number',
-            'translatable' => false
+            'translatable' => false,
         ]);
         $this->crudService->update($this->tableName, 'billie_external_invoice_url', 'string', [
             'displayInBackend' => true,
             'label' => 'Billie Payment: External invoice url',
-            'translatable' => false
+            'translatable' => false,
         ]);
     }
 

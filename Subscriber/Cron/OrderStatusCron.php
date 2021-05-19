@@ -18,7 +18,6 @@ use Shopware_Components_Cron_CronJob;
 
 class OrderStatusCron implements SubscriberInterface
 {
-
     const CRON_ACTION_NAME = 'Shopware_CronJob_BilliePaymentCronJobOrderHistoryWatch';
 
     /**
@@ -45,11 +44,11 @@ class OrderStatusCron implements SubscriberInterface
      * @var Api
      */
     private $api;
+
     /**
      * @var DocumentHelper
      */
     private $documentHelper;
-
 
     public function __construct(
         ModelManager $modelManager,
@@ -58,8 +57,7 @@ class OrderStatusCron implements SubscriberInterface
         Api $api,
         Logger $logger,
         DocumentHelper $documentHelper
-    )
-    {
+    ) {
         $this->modelManager = $modelManager;
         $this->db = $db;
         $this->configService = $configService;
@@ -99,22 +97,21 @@ class OrderStatusCron implements SubscriberInterface
                 sprintf('Order history watcher: Processing %d/%d order-id %d ...', ($key + 1), $totalOrders, $result['id']),
                 [
                     'order_id' => $order->getId(),
-                    'order_number' => $order->getNumber()
+                    'order_number' => $order->getNumber(),
                 ]
             );
 
             $logContext = [
                 'order_id' => $order->getId(),
                 'order_number' => $order->getNumber(),
-                'new_status' => $result['order_status_id']
+                'new_status' => $result['order_status_id'],
             ];
 
             try {
                 switch ($result['order_status_id']) {
                     case $this->configService->getOrderStatusForAutoProcessing('ship'):
                         $this->logger->info(sprintf('Activating order #%s', $order->getNumber()), array_merge($logContext));
-                        if($order->getAttribute()->getBillieState() !== \Billie\Sdk\Model\Order::STATE_SHIPPED) {
-
+                        if ($order->getAttribute()->getBillieState() !== \Billie\Sdk\Model\Order::STATE_SHIPPED) {
                             $invoiceNumber = $this->documentHelper->getInvoiceNumberForOrder($order);
                             if ($invoiceNumber) {
                                 $response = $this->api->shipOrder(
@@ -135,7 +132,7 @@ class OrderStatusCron implements SubscriberInterface
                         break;
                     case $this->configService->getOrderStatusForAutoProcessing('cancel'):
                         $this->logger->info(sprintf('Canceling order #%s', $order->getNumber()), array_merge($logContext));
-                        if($order->getAttribute()->getBillieState() !== \Billie\Sdk\Model\Order::STATE_CANCELLED) {
+                        if ($order->getAttribute()->getBillieState() !== \Billie\Sdk\Model\Order::STATE_CANCELLED) {
                             $response = $this->api->cancelOrder($result['id']);
                             if ($response['success']) {
                                 $this->logger->info(sprintf('Order #%s has been canceled', $order->getNumber()), array_merge($logContext));
@@ -153,13 +150,14 @@ class OrderStatusCron implements SubscriberInterface
                 $this->logger->error('Error during processing order: ' . $e->getMessage(), array_merge($logContext));
             }
         }
+
         return 'Success';
     }
 
-
     /**
-     * @return array
      * @throws Exception
+     *
+     * @return array
      */
     private function findOrderIdsToProcess()
     {
@@ -184,11 +182,11 @@ class OrderStatusCron implements SubscriberInterface
             ->joinLeft(['s_order' => 's_order'], 'history.orderID = s_order.id', ['id'])
             ->joinLeft(['payment' => 's_core_paymentmeans'], 's_order.paymentID = payment.id', null)
             ->where('history.change_date >= :changeDate')
-            ->where("s_order.status IN (" . implode(",", $allowedOrderStates) . ")")
+            ->where('s_order.status IN (' . implode(',', $allowedOrderStates) . ')')
             ->where("payment.name IN ('" . implode("','", $paymentMethods) . "')")
             ->order('history.change_date ASC')
             ->bind([
-                'changeDate' => $this->getLastRunDateTime()
+                'changeDate' => $this->getLastRunDateTime(),
             ]);
 
         return $this->db->fetchAll($query);

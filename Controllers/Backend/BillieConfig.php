@@ -1,6 +1,5 @@
 <?php
 
-
 use Billie\Sdk\Exception\BillieException;
 use Billie\Sdk\Util\BillieClientFactory;
 use Shopware\Components\CSRFWhitelistAware;
@@ -10,15 +9,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class Shopware_Controllers_Backend_BillieConfig extends Enlight_Controller_Action implements CSRFWhitelistAware
 {
-
     /**
      * @var DBALConfigReader
      */
     private $configReader;
+
     /**
      * @var string
      */
     private $pluginName;
+
     /**
      * @var Shopware_Components_Snippet_Manager|void|null
      */
@@ -46,11 +46,11 @@ class Shopware_Controllers_Backend_BillieConfig extends Enlight_Controller_Actio
         $returnData = [];
         $config = $this->configReader->getByPluginName($this->pluginName);
 
-        $isSandbox = isset($config['billiepayment/mode/sandbox']) ? $config['billiepayment/mode/sandbox']: null;
-        $clientId = isset($config['billiepayment/credentials/client_id']) ? $config['billiepayment/credentials/client_id']: null;
-        $clientSecret = isset($config['billiepayment/credentials/client_secret']) ? $config['billiepayment/credentials/client_secret']: null;
+        $isSandbox = isset($config['billiepayment/mode/sandbox']) ? $config['billiepayment/mode/sandbox'] : null;
+        $clientId = isset($config['billiepayment/credentials/client_id']) ? $config['billiepayment/credentials/client_id'] : null;
+        $clientSecret = isset($config['billiepayment/credentials/client_secret']) ? $config['billiepayment/credentials/client_secret'] : null;
 
-        if($isSandbox === null || $clientId === null || $clientSecret === null) {
+        if ($isSandbox === null || $clientId === null || $clientSecret === null) {
             $returnData['message'] = $messageNamespace->get('PluginConfigNotSaved');
             $returnData['success'] = false;
         } else {

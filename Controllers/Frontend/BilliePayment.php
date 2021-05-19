@@ -7,7 +7,6 @@ use Billie\Sdk\Model\Request\CheckoutSessionConfirmRequestModel;
 use Billie\Sdk\Service\Request\CheckoutSessionConfirmRequest;
 use BilliePayment\Components\Api\Api;
 use BilliePayment\Enum\PaymentMethods;
-use BilliePayment\Helper\AddressHelper;
 use BilliePayment\Services\AddressService;
 use BilliePayment\Services\BankService;
 use BilliePayment\Services\ConfigService;
@@ -110,7 +109,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                         self::PAYMENTSTATUSPAID //TODO replace by config
                     );
 
-                    if($this->configService->isOverrideCustomerAddress()) {
+                    if ($this->configService->isOverrideCustomerAddress()) {
                         $this->addressService->updateBillingAddress($sessionDebtorCompany);
                         $this->addressService->updateShippingAddress($sessionShippingAddress);
                     }
@@ -133,6 +132,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     $this->logger->error($e->getMessage());
                     $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
                 }
+
                 return;
             }
         }
@@ -147,7 +147,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
 
         $params = $this->Request()->getParams();
         $errorCode = null;
-        if($params['state'] === 'authorized') {
+        if ($params['state'] === 'authorized') {
             if (is_array($params['debtor_company'])) {
                 /** @var Country $country */
                 $country = $this->getModelManager()->getRepository(Country::class)

@@ -12,7 +12,6 @@ use Shopware\Models\Customer\Address as ShopwareAddress;
 
 class AddressService
 {
-
     /**
      * @var SessionService
      */
@@ -26,8 +25,7 @@ class AddressService
     public function __construct(
         ModelManager $modelManager,
         SessionService $sessionService
-    )
-    {
+    ) {
         $this->modelManager = $modelManager;
         $this->sessionService = $sessionService;
     }
@@ -35,7 +33,6 @@ class AddressService
     /**
      * writes the Billie-DebtorCompany Model to the Shopware billing address
      *
-     * @param DebtorCompany $debtorCompany
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -52,7 +49,6 @@ class AddressService
     /**
      * writes a Billie-Address Model to the Shopware shipping address
      *
-     * @param Address $billieAddress
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -74,6 +70,7 @@ class AddressService
         if ($country = $this->getCountry($billieAddress->getCountryCode())) {
             $shopwareAddress->setCountry($country);
         }
+
         return $shopwareAddress;
     }
 
@@ -81,6 +78,7 @@ class AddressService
      * gets the country model by the iso code
      *
      * @param string $code
+     *
      * @return Country
      */
     private function getCountry($code)

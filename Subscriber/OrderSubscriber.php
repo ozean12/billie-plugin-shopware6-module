@@ -26,21 +26,27 @@ class OrderSubscriber implements SubscriberInterface
 {
     /**
      * Canceled Order Code
+     *
      * @deprecated
+     *
      * @var int
      */
     const ORDER_CANCELED = 4; // TODO config
 
     /**
      * Shipped Order Code
+     *
      * @deprecated
+     *
      * @var int
      */
     const ORDER_SHIPPED = 7; // TODO config
 
     /**
      * Clarification required order code
+     *
      * @deprecated
+     *
      * @var int
      */
     const ORDER_STATE_CLARIFICATION_REQUIRED = 8; // TODO config
@@ -59,10 +65,12 @@ class OrderSubscriber implements SubscriberInterface
      * @var Api
      */
     private $api;
+
     /**
      * @var ModelManager
      */
     private $modelManager;
+
     /**
      * @var DocumentHelper
      */
@@ -74,8 +82,7 @@ class OrderSubscriber implements SubscriberInterface
         Utils $utils,
         Service $service,
         DocumentHelper $documentHelper
-    )
-    {
+    ) {
         $this->modelManager = $modelManager;
         $this->api = $api;
         $this->utils = $utils;
@@ -178,7 +185,6 @@ class OrderSubscriber implements SubscriberInterface
      */
     protected function processOrder(Enlight_Controller_Request_RequestHttp $request, array $orderArray, Enlight_View_Default $view)
     {
-
         /** @var Service $service */
         $service = Shopware()->Container()->get(Service::class);
         if (!$service->isBilliePayment(['id' => $orderArray['paymentId']])) {

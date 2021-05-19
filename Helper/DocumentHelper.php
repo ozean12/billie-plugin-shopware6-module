@@ -1,8 +1,6 @@
 <?php
 
-
 namespace BilliePayment\Helper;
-
 
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Routing\Context;
@@ -13,15 +11,16 @@ use Shopware\Models\Shop\Shop;
 
 class DocumentHelper
 {
-
     /**
      * @var ModelManager
      */
     private $modelManager;
+
     /**
      * @var Router
      */
     private $router;
+
     /**
      * @var \Shopware_Components_Config
      */
@@ -37,7 +36,7 @@ class DocumentHelper
     public function getInvoiceUrlForOrder(Order $order)
     {
         $external = $order->getAttribute()->getBillieExternalInvoiceUrl();
-        if(!empty($external)) {
+        if (!empty($external)) {
             return $external;
         }
 
@@ -47,13 +46,14 @@ class DocumentHelper
                 return $this->getInvoiceUrl($document);
             }
         }
+
         return null;
     }
 
     public function getInvoiceNumberForOrder(Order $order)
     {
         $external = $order->getAttribute()->getBillieExternalInvoiceNumber();
-        if(!empty($external)) {
+        if (!empty($external)) {
             return $external;
         }
 
@@ -63,6 +63,7 @@ class DocumentHelper
                 return $document->getDocumentId();
             }
         }
+
         return null;
     }
 
@@ -89,7 +90,7 @@ class DocumentHelper
 
         // restore old context
         $this->router->setContext($oldContext);
+
         return $url;
     }
-
 }

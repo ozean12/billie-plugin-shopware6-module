@@ -21,7 +21,6 @@ use Shopware\Models\Customer\Customer;
 
 class SessionService
 {
-
     /**
      * @var Enlight_Components_Session_Namespace
      */
@@ -41,8 +40,7 @@ class SessionService
         Enlight_Components_Session_Namespace $session,
         ModelManager $modelManager,
         CreateSessionRequest $createSessionRequest
-    )
-    {
+    ) {
         $this->session = $session;
         $this->modelManager = $modelManager;
         $this->createSessionRequest = $createSessionRequest;
@@ -56,6 +54,7 @@ class SessionService
                     ->setMerchantCustomerId($this->getCustomer()->getNumber())
             )->getCheckoutSessionId();
             $this->setData('checkoutSessionId', $sessionId);
+
             return $sessionId;
         }
 
@@ -70,19 +69,23 @@ class SessionService
         } elseif (isset($payment['attributes']['core'])) {
             /** @var Attribute $attributeStruct */
             $attributeStruct = $payment['attributes']['core'];
+
             return intval($attributeStruct->get('billie_duration'));
         } elseif (isset($payment['id'])) {
             $repo = $this->modelManager->getRepository(Payment::class);
             /** @var Payment $attribute */
             $attribute = $repo->findOneBy(['paymentId' => $payment['id']]);
+
             return $attribute ? $attribute->getBillieDuration() : 0;
         }
+
         return 0;
     }
 
     public function getTotalAmount(): Amount
     {
         $basket = $this->getOrderVariables()['sBasket'];
+
         return BasketHelper::getTotalAmount($basket);
     }
 
@@ -129,6 +132,7 @@ class SessionService
                 ->setName($userData['billingaddress']['company'])
                 ->setAddress($this->getAddress($userData['billingaddress']));
         }
+
         return null;
     }
 
@@ -142,21 +146,9 @@ class SessionService
         if (isset($userData['shippingaddress'])) {
             return $this->getAddress($userData['shippingaddress']);
         }
+
         return null;
     }
-
-    private function getAddress($addressDataFromSession)
-    {
-        return (new Address())
-            ->setValidateOnSet(false)
-            ->setStreet(AddressHelper::getStreetName($addressDataFromSession['street']))
-            ->setHouseNumber(AddressHelper::getHouseNumber($addressDataFromSession['street']))
-            ->setAddition($addressDataFromSession['additional_address_line1'])
-            ->setPostalCode($addressDataFromSession['zipcode'])
-            ->setCity($addressDataFromSession['city'])
-            ->setCountryCode($this->getCountry($addressDataFromSession['countryID'])->getIso() ?: 'DE');
-    }
-
 
     public function getCustomer()
     {
@@ -195,8 +187,6 @@ class SessionService
 
     /**
      * Write the Billie shipping address to the shopware session (shipping address)
-     *
-     * @param BillieAddress $address
      */
     public function updateShippingAddress(BillieAddress $address)
     {
@@ -209,8 +199,6 @@ class SessionService
 
     /**
      * Write the Billie billing address to the shopware session (billing address)
-     *
-     * @param DebtorCompany $debtorCompany
      */
     public function updateBillingAddress(DebtorCompany $debtorCompany)
     {
@@ -222,9 +210,21 @@ class SessionService
         $this->setUserData($userData);
     }
 
+    private function getAddress($addressDataFromSession)
+    {
+        return (new Address())
+            ->setValidateOnSet(false)
+            ->setStreet(AddressHelper::getStreetName($addressDataFromSession['street']))
+            ->setHouseNumber(AddressHelper::getHouseNumber($addressDataFromSession['street']))
+            ->setAddition($addressDataFromSession['additional_address_line1'])
+            ->setPostalCode($addressDataFromSession['zipcode'])
+            ->setCity($addressDataFromSession['city'])
+            ->setCountryCode($this->getCountry($addressDataFromSession['countryID'])->getIso() ?: 'DE');
+    }
+
     /**
      * @param array $shopwareAddress
-     * @param BillieAddress $billieAddress
+     *
      * @return array
      */
     private function updateAddress($shopwareAddress, BillieAddress $billieAddress)
@@ -237,6 +237,7 @@ class SessionService
         if ($country) {
             $shopwareAddress['country'] = $country->getId();
         }
+
         return $shopwareAddress;
     }
 
@@ -244,6 +245,7 @@ class SessionService
      * gets the country model by the iso code or the ID
      *
      * @param string|int $identifier
+     *
      * @return Country
      */
     private function getCountry($identifier)
@@ -260,6 +262,7 @@ class SessionService
     private function getUserData()
     {
         $sOrderVariables = $this->getOrderVariables();
+
         return $sOrderVariables ? $sOrderVariables->offsetGet('sUserData') : [];
     }
 

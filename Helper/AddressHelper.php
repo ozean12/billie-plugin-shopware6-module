@@ -1,16 +1,13 @@
 <?php
 
-
 namespace BilliePayment\Helper;
 
-
 use Billie\Sdk\Model\DebtorCompany;
-use Shopware\Models\Customer\Address;
 use Billie\Sdk\Util\AddressHelper as SdkHelper;
+use Shopware\Models\Customer\Address;
 
 class AddressHelper
 {
-
     public static function createDebtorCompany(Address $address, $validateOnSet = true)
     {
         return (new DebtorCompany())
@@ -38,7 +35,7 @@ class AddressHelper
                 (!empty($addition1) ? $addition1 . ', ' : null) . $addition2
             );
         }
+
         return $addressModel;
     }
-
 }
