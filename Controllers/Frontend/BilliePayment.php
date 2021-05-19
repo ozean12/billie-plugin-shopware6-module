@@ -4,7 +4,9 @@ use Billie\Sdk\Exception\BillieException;
 use Billie\Sdk\Model\Address;
 use Billie\Sdk\Model\DebtorCompany;
 use Billie\Sdk\Model\Request\CheckoutSessionConfirmRequestModel;
+use Billie\Sdk\Model\Request\UpdateOrderRequestModel;
 use Billie\Sdk\Service\Request\CheckoutSessionConfirmRequest;
+use Billie\Sdk\Service\Request\UpdateOrderRequest;
 use BilliePayment\Components\Api\Api;
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Services\AddressService;
@@ -118,12 +120,22 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     /** @var Order $order */
                     $order = $repo->findOneBy(['number' => $orderNumber]);
 
-                    // if we set the orderNumber for the billie order, we are not able to mark the order as shipped on the billie gateway.
-                    // also see BILLSWPL-21
-                    //$billieOrder->orderId = $orderNumber;
-                    //$this->billieApi->updateOrder($order, $billieOrder);
+                    try {
+                        // set order number on billie gateway
+                        $this->container->get(UpdateOrderRequest::class)->execute(
+                            (new UpdateOrderRequestModel($billieOrder->getUuid()))
+                                ->setOrderId($order->getNumber())
+                        );
+                    } catch (\Exception $e) {
+                        $this->logger->error('Error during setting ordernumber on billie gateway during checkout', [
+                            'order-id' => $order->getId(),
+                            'order-number' => $order->getNumber(),
+                            'tx-id' => $billieOrder->getUuid(),
+                        ]);
+                    }
 
-                    $this->container->get(Api::class)->updateShopwareOrder($order, $billieOrder);
+                    $api = $this->container->get(Api::class);
+                    $api->updateShopwareOrder($order, $billieOrder);
 
                     // remove all billie payment data from session
                     $this->sessionService->clearData();

@@ -124,7 +124,6 @@ class Api
         try {
             $billieOrder = $this->shipOrderRequest->execute(
                 (new ShipOrderRequestModel($shopwareOrder->getTransactionId()))
-                    ->setExternalOrderId($shopwareOrder->getNumber())
                     ->setInvoiceUrl($invoiceUrl ?: '.')
                     ->setInvoiceNumber($invoiceNumber)
             );
@@ -258,6 +257,7 @@ class Api
             'referenceId' => $order->getTransactionId(),
             'operation' => $operation,
             'response' => $e->getResponseData(),
+            'request' => $e->getRequestData(),
         ]);
     }
 }
