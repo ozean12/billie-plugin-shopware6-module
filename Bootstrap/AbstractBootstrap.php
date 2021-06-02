@@ -2,7 +2,6 @@
 
 namespace BilliePayment\Bootstrap;
 
-use Monolog\Logger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
@@ -48,11 +47,6 @@ abstract class AbstractBootstrap
      */
     protected $modelManager;
 
-    /**
-     * @var Logger
-     */
-    protected $logger;
-
     protected $pluginDir;
 
     final public function __construct()
@@ -90,11 +84,6 @@ abstract class AbstractBootstrap
             $this->deactivateContext = $context;
         }
         $this->installContext = $context;
-    }
-
-    final public function setLogger(Logger $logger)
-    {
-        $this->logger = $logger;
     }
 
     final public function setPluginDir($pluginDir)

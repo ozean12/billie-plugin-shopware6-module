@@ -8,9 +8,9 @@ use Billie\Sdk\Model\Request\UpdateOrderRequestModel;
 use Billie\Sdk\Service\Request\CheckoutSessionConfirmRequest;
 use Billie\Sdk\Service\Request\UpdateOrderRequest;
 use BilliePayment\Components\Api\Api;
+use BilliePayment\Components\Api\RequestServiceContainer;
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Services\AddressService;
-use BilliePayment\Services\BankService;
 use BilliePayment\Services\ConfigService;
 use BilliePayment\Services\SessionService;
 use Monolog\Logger;
@@ -59,14 +59,9 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
     private $addressService;
 
     /**
-     * @var BankService
+     * @var RequestServiceContainer
      */
-    private $bankService;
-
-    /**
-     * @var CheckoutSessionConfirmRequest
-     */
-    private $checkoutSessionConfirmService;
+    private $requestServiceContainer;
 
     public function setContainer(Container $loader = null)
     {
@@ -74,9 +69,8 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $this->configService = $this->container->get(ConfigService::class);
         $this->addressService = $this->container->get(AddressService::class);
         $this->sessionService = $this->container->get(SessionService::class);
-        $this->bankService = $this->container->get(BankService::class);
         $this->logger = $this->container->get('billie_payment.logger');
-        $this->checkoutSessionConfirmService = $this->container->get(CheckoutSessionConfirmRequest::class);
+        $this->requestServiceContainer = $this->container->get(RequestServiceContainer::class);
     }
 
     /**
@@ -90,13 +84,13 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         if (PaymentMethods::exists($this->getPaymentShortName())) {
             /** @var Payment $paymentMethod */
             $paymentMethod = $this->getModelManager()->getRepository(Payment::class)->findOneBy(['name' => $this->getPaymentShortName()]);
-            $sessionId = $this->sessionService->getCheckoutSessionId(false);
+            try {
+                $sessionId = $this->sessionService->getCheckoutSessionId(false);
 
-            if ($sessionId !== null) {
-                try {
+                if ($sessionId !== null) {
                     $sessionDebtorCompany = $this->sessionService->getDebtorCompany();
                     $sessionShippingAddress = $this->sessionService->getShippingAddress();
-                    $billieOrder = $this->checkoutSessionConfirmService->execute(
+                    $billieOrder = $this->requestServiceContainer->get(CheckoutSessionConfirmRequest::class)->execute(
                         (new CheckoutSessionConfirmRequestModel())
                             ->setSessionUuid($sessionId)
                             ->setCompany($sessionDebtorCompany)
@@ -140,12 +134,11 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     // remove all billie payment data from session
                     $this->sessionService->clearData();
                     $this->redirect(['controller' => 'checkout', 'action' => 'finish']);
-                } catch (BillieException $e) {
-                    $this->logger->error($e->getMessage());
-                    $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
-                }
 
-                return;
+                    return;
+                }
+            } catch (BillieException $e) {
+                $this->logger->error($e->getMessage());
             }
         }
         $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);

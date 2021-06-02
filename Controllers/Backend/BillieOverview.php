@@ -120,7 +120,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         }
 
         try {
-            $order = $this->api->getOrder($shopwareOrder);
+            $order = $this->api->getBillieOrder($shopwareOrder);
         } catch (BillieException $e) {
             $this->redirect(['controller' => 'BillieOverview', 'action' => 'index', 'errorCode' => $e->getBillieCode()]);
 

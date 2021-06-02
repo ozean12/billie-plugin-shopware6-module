@@ -8,7 +8,7 @@ use BilliePayment\Bootstrap\Attributes\PaymentMethodAttributes;
 use BilliePayment\Bootstrap\Attributes\UserAddressAttributes;
 use BilliePayment\Bootstrap\Attributes\UserAttributes;
 use BilliePayment\Bootstrap\PaymentMethods;
-use BilliePayment\Services\Logger\FileLogger;
+use BilliePayment\Compiler\FileLoggerPass;
 use Shopware\Components\Plugin;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -17,14 +17,7 @@ class BilliePayment extends Plugin
     public function build(ContainerBuilder $container)
     {
         parent::build($container);
-
-        $loggerServiceName = $this->getContainerPrefix() . '.logger';
-        if ($container->has($loggerServiceName) === false) {
-            // SW 5.6 auto register a logger for each plugin - so if service not found
-            // (cause lower sw-version than 5.6), we will register our own logger
-            $container->register($loggerServiceName, FileLogger::class)
-                ->addArgument($container->getParameter('kernel.logs_dir'));
-        }
+        $container->addCompilerPass(new FileLoggerPass($this->getContainerPrefix()));
     }
 
     public function install(Plugin\Context\InstallContext $context)
@@ -106,16 +99,6 @@ class BilliePayment extends Plugin
         $context->scheduleClearCache($context::CACHE_LIST_ALL);
     }
 
-    public static function isPackage()
-    {
-        return file_exists(self::getPackageVendorAutoload());
-    }
-
-    public static function getPackageVendorAutoload()
-    {
-        return __DIR__ . '/vendor/autoload.php';
-    }
-
     /**
      * @return AbstractBootstrap[]
      */
@@ -130,11 +113,9 @@ class BilliePayment extends Plugin
             new PaymentMethods(),
         ];
 
-        $logger = new FileLogger($this->container->getParameter('kernel.logs_dir'));
         // initialize all bootstraps
         foreach ($bootstrapper as $bootstrap) {
             $bootstrap->setContext($context);
-            $bootstrap->setLogger($logger);
             $bootstrap->setContainer($this->container);
             $bootstrap->setPluginDir($this->getPath());
         }
@@ -143,6 +124,6 @@ class BilliePayment extends Plugin
     }
 }
 
-if (BilliePayment::isPackage()) {
-    require_once BilliePayment::getPackageVendorAutoload();
+if (!class_exists(\Billie\Sdk\Model\Order::class)) {
+    require_once __DIR__ . '/vendor/autoload.php';
 }

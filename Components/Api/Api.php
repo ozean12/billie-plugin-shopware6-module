@@ -5,15 +5,16 @@ namespace BilliePayment\Components\Api;
 use Billie\Sdk\Exception\BillieException;
 use Billie\Sdk\Model\Amount;
 use Billie\Sdk\Model\Request\ConfirmPaymentRequestModel;
+use Billie\Sdk\Model\Request\GetBankDataRequestModel;
 use Billie\Sdk\Model\Request\OrderRequestModel;
 use Billie\Sdk\Model\Request\ShipOrderRequestModel;
 use Billie\Sdk\Model\Request\UpdateOrderRequestModel;
 use Billie\Sdk\Service\Request\CancelOrderRequest;
 use Billie\Sdk\Service\Request\ConfirmPaymentRequest;
+use Billie\Sdk\Service\Request\GetBankDataRequest;
 use Billie\Sdk\Service\Request\GetOrderDetailsRequest;
 use Billie\Sdk\Service\Request\ShipOrderRequest;
 use Billie\Sdk\Service\Request\UpdateOrderRequest;
-use BilliePayment\Services\BankService;
 use DateTime;
 use Monolog\Logger;
 use Shopware\Components\Model\ModelManager;
@@ -30,79 +31,45 @@ class Api
     private $logger;
 
     /**
-     * @var UpdateOrderRequest
-     */
-    private $updateOrderRequest;
-
-    /**
      * @var ModelManager
      */
     private $modelManager;
 
     /**
-     * @var BankService
+     * @var RequestServiceContainer
      */
-    private $bankService;
-
-    /**
-     * @var GetOrderDetailsRequest
-     */
-    private $orderDetailsRequest;
-
-    /**
-     * @var CancelOrderRequest
-     */
-    private $cancelOrderRequest;
-
-    /**
-     * @var ConfirmPaymentRequest
-     */
-    private $confirmPaymentRequest;
-
-    /**
-     * @var ShipOrderRequest
-     */
-    private $shipOrderRequest;
+    private $container;
 
     public function __construct(
+        RequestServiceContainer $container,
         Logger $logger,
-        ModelManager $modelManager,
-        BankService $bankService,
-        GetOrderDetailsRequest $orderDetailsRequest,
-        UpdateOrderRequest $updateOrderRequest,
-        CancelOrderRequest $cancelOrderRequest,
-        ConfirmPaymentRequest $confirmPaymentRequest,
-        ShipOrderRequest $shipOrderRequest
+        ModelManager $modelManager
     ) {
+        $this->container = $container;
         $this->logger = $logger;
         $this->modelManager = $modelManager;
-        $this->updateOrderRequest = $updateOrderRequest;
-        $this->bankService = $bankService;
-        $this->orderDetailsRequest = $orderDetailsRequest;
-        $this->cancelOrderRequest = $cancelOrderRequest;
-        $this->confirmPaymentRequest = $confirmPaymentRequest;
-        $this->shipOrderRequest = $shipOrderRequest;
     }
 
     /**
-     * @throws BillieException
+     * @throws \Billie\Sdk\Exception\BillieException
      *
      * @return \Billie\Sdk\Model\Order
      */
-    public function getOrder(Order $order)
+    public function getBillieOrder(Order $shopwareOrder)
     {
-        return $this->orderDetailsRequest->execute(new OrderRequestModel($order->getTransactionId()));
+        return $this->container->get(GetOrderDetailsRequest::class)
+            ->execute(new OrderRequestModel($shopwareOrder->getTransactionId()));
     }
 
     public function confirmPayment(Order $shopwareOrder, $grossAmount)
     {
         try {
-            $this->confirmPaymentRequest
+            $this->container->get(ConfirmPaymentRequest::class)
                 ->execute(
                     (new ConfirmPaymentRequestModel($shopwareOrder->getTransactionId()))
                         ->setPaidAmount((float) $grossAmount)
                 );
-            $billieOrder = $this->getOrder($shopwareOrder);
+            $billieOrder = $this->getBillieOrder($shopwareOrder);
             $this->updateShopwareOrder($shopwareOrder, $billieOrder);
 
             return $billieOrder;
@@ -122,7 +89,7 @@ class Api
     public function shipOrder(Order $shopwareOrder, $invoiceNumber, $invoiceUrl = null)
     {
         try {
-            $billieOrder = $this->shipOrderRequest->execute(
+            $billieOrder = $this->container->get(ShipOrderRequest::class)->execute(
                 (new ShipOrderRequestModel($shopwareOrder->getTransactionId()))
                     ->setInvoiceUrl($invoiceUrl ?: '.')
                     ->setInvoiceNumber($invoiceNumber)
@@ -146,7 +113,7 @@ class Api
     public function updateAmount(Order $shopwareOrder, $gross, $net)
     {
         try {
-            $this->updateOrderRequest->execute(
+            $this->container->get(UpdateOrderRequest::class)->execute(
                 (new UpdateOrderRequestModel($shopwareOrder->getTransactionId()))
                     ->setAmount(
                         (new Amount())
@@ -154,7 +121,7 @@ class Api
                             ->setGross($gross)
                     )
             );
-            $billieOrder = $this->getOrder($shopwareOrder);
+            $billieOrder = $this->getBillieOrder($shopwareOrder);
             $this->updateShopwareOrder($shopwareOrder, $billieOrder);
 
             return $billieOrder;
@@ -166,13 +133,13 @@ class Api
     }
 
     /**
-     * @param $grossAmount
+     * @param float $grossAmount
      *
      * @return \Billie\Sdk\Model\Order|string|bool errorCode as string in case of an error, true if the order has been canceled
      */
     public function partlyRefund(Order $shopwareOrder, $grossAmount)
     {
-        $billieOrder = $this->getOrder($shopwareOrder);
+        $billieOrder = $this->getBillieOrder($shopwareOrder);
 
         if ($grossAmount >= $billieOrder->getAmount()->getGross()) {
             return $this->cancelOrder($shopwareOrder);
@@ -181,7 +148,7 @@ class Api
         $newAmount = ($billieOrder->getAmount()->getGross() - $grossAmount);
         $taxRate = (round(($billieOrder->getAmount()->getGross() / $billieOrder->getAmount()->getNet()), 2) - 1) * 100;
         try {
-            $this->updateOrderRequest->execute(
+            $this->container->get(UpdateOrderRequest::class)->execute(
                 (new UpdateOrderRequestModel($shopwareOrder->getTransactionId()))
                     ->setAmount(
                         (new Amount())
@@ -190,7 +157,7 @@ class Api
                     )
             );
 
-            $billieOrder = $this->getOrder($shopwareOrder);
+            $billieOrder = $this->getBillieOrder($shopwareOrder);
             $this->updateShopwareOrder($shopwareOrder, $billieOrder);
 
             return $billieOrder;
@@ -204,7 +171,7 @@ class Api
     public function updateShopwareOrder(Order $shopwareOrder, \Billie\Sdk\Model\Order $billieOrder = null)
     {
         if ($billieOrder === null) {
-            $billieOrder = $this->getOrder($shopwareOrder);
+            $billieOrder = $this->getBillieOrder($shopwareOrder);
         }
 
         $orderAttribute = $shopwareOrder->getAttribute();
@@ -214,9 +181,11 @@ class Api
             $this->modelManager->persist($orderAttribute);
         }
 
+        $bankModel = $this->container->get(GetBankDataRequest::class)->execute(new GetBankDataRequestModel());
+
         $orderAttribute->setBillieBic($billieOrder->getBankAccount()->getBic());
         $orderAttribute->setBillieIban($billieOrder->getBankAccount()->getIban());
-        $orderAttribute->setBillieBank($this->bankService->getBankData($billieOrder));
+        $orderAttribute->setBillieBank($bankModel->getBankName($billieOrder->getBankAccount()->getBic()));
         $orderAttribute->setBillieReferenceid($billieOrder->getUuid());
         $orderAttribute->setBillieState($billieOrder->getState());
         $orderAttribute->setBillieDuration($billieOrder->getDuration());
@@ -228,12 +197,12 @@ class Api
     }
 
     /**
-     * @return bool|string `true` if successfull or `string` with the errorCode
+     * @return bool|string `true` if successful or `string` with the errorCode
      */
     public function cancelOrder(Order $shopwareOrder)
     {
         try {
-            $this->cancelOrderRequest->execute(
+            $this->container->get(CancelOrderRequest::class)->execute(
                 (new OrderRequestModel($shopwareOrder->getTransactionId()))
             );
             $attribute = $shopwareOrder->getAttribute();
@@ -249,15 +218,18 @@ class Api
         }
     }
 
-    private function logError(Order $order, $operation, BillieException $e)
+    private function logError(Order $order, $operation, BillieException $exception)
     {
-        $this->logger->error($e->getMessage(), [
-            'errorCode' => $e->getBillieCode(),
+        $requestData = $exception->getRequestData();
+        unset($requestData['client_id'], $requestData['client_secret']); // do not log credentials!
+
+        $this->logger->error($exception->getMessage(), [
+            'code' => $exception->getBillieCode(),
             'orderId' => $order->getId(),
             'referenceId' => $order->getTransactionId(),
             'operation' => $operation,
-            'response' => $e->getResponseData(),
-            'request' => $e->getRequestData(),
+            'request' => $requestData,
+            'response' => $exception->getResponseData(),
         ]);
     }
 }

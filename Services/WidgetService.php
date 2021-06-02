@@ -5,7 +5,6 @@ namespace BilliePayment\Services;
 use Billie\Sdk\Model\LineItem;
 use Billie\Sdk\Model\Person;
 use BilliePayment\Helper\BasketHelper;
-use Monolog\Logger;
 use Shopware\Bundle\StoreFrontBundle\Service\ContextServiceInterface;
 use Shopware\Bundle\StoreFrontBundle\Service\ProductServiceInterface;
 use Shopware\Bundle\StoreFrontBundle\Struct\Product;
@@ -32,11 +31,6 @@ class WidgetService
      */
     private $contextService;
 
-    /**
-     * @var Logger
-     */
-    private $logger;
-
     public function __construct(
         ProductServiceInterface $productService,
         ConfigService $configService,
@@ -57,7 +51,7 @@ class WidgetService
 
         $checkoutSessionId = $this->sessionService->getCheckoutSessionId(true);
 
-        return [
+        return $checkoutSessionId ? [
             'src' => $this->configService->isSandbox() ? 'https://static-paella-sandbox.billie.io/checkout/billie-checkout.js' : 'https://static.billie.io/checkout/billie-checkout.js',
             'checkoutSessionId' => $checkoutSessionId,
             'checkoutData' => [
@@ -75,7 +69,7 @@ class WidgetService
                     ->toArray(),
                 'line_items' => $this->getLineItems($sOrderVariables['sBasket']['content']),
             ],
-        ];
+        ] : null;
     }
 
     protected function transformSalutation($salutation)

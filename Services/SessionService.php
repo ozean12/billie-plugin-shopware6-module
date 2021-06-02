@@ -3,15 +3,18 @@
 namespace BilliePayment\Services;
 
 use ArrayObject;
+use Billie\Sdk\Exception\BillieException;
+use Billie\Sdk\Exception\GatewayException;
 use Billie\Sdk\Model\Address;
 use Billie\Sdk\Model\Address as BillieAddress;
-use Billie\Sdk\Model\Amount;
 use Billie\Sdk\Model\DebtorCompany;
 use Billie\Sdk\Model\Request\CreateSessionRequestModel;
 use Billie\Sdk\Service\Request\CreateSessionRequest;
 use Billie\Sdk\Util\AddressHelper;
+use BilliePayment\Components\Api\RequestServiceContainer;
 use BilliePayment\Helper\BasketHelper;
 use Enlight_Components_Session_Namespace;
+use Monolog\Logger;
 use Shopware\Bundle\StoreFrontBundle\Struct\Attribute;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Attribute\Payment;
@@ -32,27 +35,51 @@ class SessionService
     private $modelManager;
 
     /**
-     * @var CreateSessionRequest
+     * @var \BilliePayment\Components\Api\RequestServiceContainer
      */
-    private $createSessionRequest;
+    private $container;
+
+    /**
+     * @var \Monolog\Logger
+     */
+    private $logger;
 
     public function __construct(
+        Logger $logger,
         Enlight_Components_Session_Namespace $session,
         ModelManager $modelManager,
-        CreateSessionRequest $createSessionRequest
+        RequestServiceContainer $container
     ) {
         $this->session = $session;
         $this->modelManager = $modelManager;
-        $this->createSessionRequest = $createSessionRequest;
+        $this->container = $container;
+        $this->logger = $logger;
     }
 
     public function getCheckoutSessionId($createNew = false)
     {
         if ($createNew) {
-            $sessionId = $this->createSessionRequest->execute(
-                (new CreateSessionRequestModel())
-                    ->setMerchantCustomerId($this->getCustomer()->getNumber())
-            )->getCheckoutSessionId();
+            try {
+                $sessionId = $this->container->get(CreateSessionRequest::class)->execute(
+                    (new CreateSessionRequestModel())
+                        ->setMerchantCustomerId($this->getCustomer()->getNumber())
+                )->getCheckoutSessionId();
+            } catch (BillieException $exception) {
+                $context = [];
+                if ($exception instanceof GatewayException) {
+                    $requestData = $exception->getRequestData();
+                    unset($requestData['client_id'], $requestData['client_secret']); // do not log credentials!
+
+                    $context = array_merge($context, [
+                        'code' => $exception->getBillieCode(),
+                        'request' => $requestData,
+                        'response' => $exception->getResponseData(),
+                    ]);
+                }
+                $this->logger->error('Session ID can not be created, Exception: ' . $exception->getMessage(), $context);
+
+                return null;
+            }
             $this->setData('checkoutSessionId', $sessionId);
 
             return $sessionId;
@@ -82,7 +109,10 @@ class SessionService
         return 0;
     }
 
-    public function getTotalAmount(): Amount
+    /**
+     * @return \Billie\Sdk\Model\Amount
+     */
+    public function getTotalAmount()
     {
         $basket = $this->getOrderVariables()['sBasket'];
 

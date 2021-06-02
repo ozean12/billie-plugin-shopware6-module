@@ -14,6 +14,7 @@
         </defaults>
 
         <service id="BilliePayment\Components\Api\Api"/>
+        <service id="BilliePayment\Components\Api\RequestServiceContainer" />
 
         <service id="BilliePayment\Subscriber\Cron\OrderStatusCron">
             <argument key="$modelManager" id="models" type="service"/>
@@ -53,15 +54,12 @@
             <argument id="BilliePayment\Services\ConfigService" type="service"/>
             <argument id="BilliePayment\Services\SessionService" type="service"/>
             <argument id="shopware_storefront.context_service" type="service"/>
-            <argument id="billie_payment.logger" type="service"/>
         </service>
 
         <service id="BilliePayment\Services\AddressService">
             <argument id="models" type="service"/>
             <argument id="BilliePayment\Services\SessionService" type="service"/>
         </service>
-
-        <service id="BilliePayment\Services\BankService" />
 
     </services>
 </container>

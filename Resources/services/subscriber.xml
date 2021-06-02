@@ -12,7 +12,6 @@
             <argument>%billie_payment.plugin_dir%</argument>
             <argument type="service" id="template" />
         </service>
-        <service id="billie_payment.subscriber.checkout" class="BilliePayment\Subscriber\Checkout"/>
         <service id="BilliePayment\Subscriber\OrderSubscriber"/>
         <service id="billie_payment.subscriber.payment" class="BilliePayment\Subscriber\Payment"/>
         <service id="BilliePayment\Subscriber\Frontend\CheckoutSubscriber">
