@@ -13,12 +13,16 @@
             <argument type="service" id="template" />
         </service>
         <service id="BilliePayment\Subscriber\OrderSubscriber"/>
+        <service id="BilliePayment\Subscriber\Document"/>
         <service id="billie_payment.subscriber.payment" class="BilliePayment\Subscriber\Payment"/>
+
         <service id="BilliePayment\Subscriber\Frontend\CheckoutSubscriber">
             <argument key="$session" id="session" type="service"/>
         </service>
         <service id="BilliePayment\Subscriber\Frontend\PaymentFilterSubscriber"/>
-        <service id="BilliePayment\Subscriber\Document"/>
+        <service id="BilliePayment\Subscriber\Frontend\CookieSubscriber" >
+            <argument key="$snippets" id="snippets" type="service"/>
+        </service>
 
     </services>
 </container>
