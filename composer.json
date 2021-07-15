@@ -1,7 +1,6 @@
 {
     "name": "billie/shopware5-module",
     "description": "B2B-Invoicing for Shopware 5",
-    "version": "2.0.0-alpha3",
     "license": "MIT",
     "authors": [
         {
