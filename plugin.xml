@@ -2,8 +2,8 @@
 <plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.5/engine/Shopware/Components/Plugin/schema/plugin.xsd">
 
-    <label lang="en">Billie Payment After Delivery</label>
     <label>Billie Payment After Delivery</label>
+    <label lang="de">Billie Rechnungskauf</label>
 
     <version>2.0.0-alpha3</version>
     <copyright>(c) Billie GmbH</copyright>
