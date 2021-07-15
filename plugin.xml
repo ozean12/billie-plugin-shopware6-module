@@ -5,7 +5,7 @@
     <label>Billie Payment After Delivery</label>
     <label lang="de">Billie Rechnungskauf</label>
 
-    <version>2.0.0-alpha3</version>
+    <version>2.0.0</version>
     <copyright>(c) Billie GmbH</copyright>
     <author>Billie GmbH</author>
     <link>https://www.billie.io/rechnungskauf/</link>
@@ -39,6 +39,21 @@
         <p>Get started now with the most popular payment method for B2B shops: Guaranteed payout for you, 30 days payment term for your customers. Whitelabel dunning process & 100% default protection always included.</p>
         </div>
     ]]></description>
+
+    <changelog version="2.0.0">
+        <changes lang="en"><![CDATA[
+            <ul>
+                <li>integration of new SDK</li>
+                <li>reworked module</li>
+            </ul>
+        ]]></changes>
+        <changes lang="de"><![CDATA[
+            <ul>
+                <li>Integration neues SDK</li>
+                <li>Modul großflächig überarbeitet</li>
+            </ul>
+        ]]></changes>
+    </changelog>
 
     <changelog version="1.1.1">
         <changes lang="en"><![CDATA[
