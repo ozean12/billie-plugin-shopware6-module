@@ -1,5 +1,5 @@
 {
-    "name": "billie/shopware5-module",
+    "name": "billie/shopware5-payment-module",
     "description": "B2B-Invoicing for Shopware 5",
     "license": "MIT",
     "authors": [
