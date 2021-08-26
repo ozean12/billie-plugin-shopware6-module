@@ -106,7 +106,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     );
 
                     if ($this->configService->isOverrideCustomerAddress()) {
-                        $this->addressService->updateBillingAddress($sessionDebtorCompany);
+                        $this->addressService->updateBillingAddress($billieOrder);
                         $this->addressService->updateShippingAddress($sessionShippingAddress);
                     }
 

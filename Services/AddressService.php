@@ -4,6 +4,7 @@ namespace BilliePayment\Services;
 
 use Billie\Sdk\Model\Address;
 use Billie\Sdk\Model\DebtorCompany;
+use Billie\Sdk\Model\Order;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Shopware\Components\Model\ModelManager;
@@ -36,12 +37,12 @@ class AddressService
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function updateBillingAddress(DebtorCompany $debtorCompany)
+    public function updateBillingAddress(Order $billieOrder)
     {
         $shopwareAddress = $this->sessionService->getShopwareBillingAddress();
         if ($shopwareAddress) {
-            $shopwareAddress->setCompany($debtorCompany->getName());
-            $shopwareAddress = $this->updateAddress($shopwareAddress, $debtorCompany->getAddress());
+            $shopwareAddress->setCompany($billieOrder->getCompany()->getName());
+            $shopwareAddress = $this->updateAddress($shopwareAddress, $billieOrder->getBillingAddress());
             $this->modelManager->flush([$shopwareAddress]);
         }
     }
