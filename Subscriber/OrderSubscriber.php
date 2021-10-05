@@ -7,6 +7,7 @@ use BilliePayment\Components\Payment\Service;
 use BilliePayment\Components\Utils;
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Helper\DocumentHelper;
+use BilliePayment\Services\ConfigService;
 use DateInterval;
 use DateTime;
 use Enlight\Event\SubscriberInterface;
@@ -24,23 +25,6 @@ use Shopware\Models\Order\Status;
  */
 class OrderSubscriber implements SubscriberInterface
 {
-    /**
-     * Canceled Order Code
-     *
-     * @deprecated
-     *
-     * @var int
-     */
-    const ORDER_CANCELED = 4; // TODO config
-
-    /**
-     * Shipped Order Code
-     *
-     * @deprecated
-     *
-     * @var int
-     */
-    const ORDER_SHIPPED = 7; // TODO config
 
     /**
      * Clarification required order code
@@ -76,18 +60,25 @@ class OrderSubscriber implements SubscriberInterface
      */
     private $documentHelper;
 
+    /**
+     * @var \BilliePayment\Services\ConfigService
+     */
+    private $configService;
+
     public function __construct(
         ModelManager $modelManager,
         Api $api,
         Utils $utils,
         Service $service,
-        DocumentHelper $documentHelper
+        DocumentHelper $documentHelper,
+        ConfigService $configService
     ) {
         $this->modelManager = $modelManager;
         $this->api = $api;
         $this->utils = $utils;
         $this->service = $service;
         $this->documentHelper = $documentHelper;
+        $this->configService = $configService;
     }
 
     /**
@@ -190,13 +181,14 @@ class OrderSubscriber implements SubscriberInterface
         if (!$service->isBilliePayment(['id' => $orderArray['paymentId']])) {
             return;
         }
+        /** @var Order $order */
         $order = $this->modelManager->find(Order::class, $orderArray['id']);
         if ($order === null) {
             return;
         }
 
         switch ($orderArray['status']) {
-            case self::ORDER_CANCELED:
+            case $this->configService->getOrderStatusForAutoProcessing('cancel'):
                 $response = $this->api->cancelOrder($order);
                 $view->assign([
                     'success' => $response === true,
@@ -208,7 +200,7 @@ class OrderSubscriber implements SubscriberInterface
                 ]);
                 break;
 
-            case self::ORDER_SHIPPED:
+            case $this->configService->getOrderStatusForAutoProcessing('ship'):
                 $invoiceNumber = $this->documentHelper->getInvoiceNumberForOrder($order);
                 if ($invoiceNumber) {
                     $invoiceUrl = $this->documentHelper->getInvoiceUrlForOrder($order);
