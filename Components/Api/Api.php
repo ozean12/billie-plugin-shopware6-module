@@ -3,6 +3,7 @@
 namespace BilliePayment\Components\Api;
 
 use Billie\Sdk\Exception\BillieException;
+use Billie\Sdk\Exception\GatewayException;
 use Billie\Sdk\Model\Amount;
 use Billie\Sdk\Model\Request\ConfirmPaymentRequestModel;
 use Billie\Sdk\Model\Request\GetBankDataRequestModel;
@@ -92,7 +93,7 @@ class Api
             $billieOrder = $this->container->get(ShipOrderRequest::class)->execute(
                 (new ShipOrderRequestModel($shopwareOrder->getTransactionId()))
                     ->setInvoiceUrl($invoiceUrl ?: '.')
-                    ->setInvoiceNumber($invoiceNumber)
+                    ->setInvoiceNumber((string)$invoiceNumber)
             );
             $this->updateShopwareOrder($shopwareOrder, $billieOrder);
 
@@ -220,16 +221,20 @@ class Api
 
     private function logError(Order $order, $operation, BillieException $exception)
     {
-        $requestData = $exception->getRequestData();
-        unset($requestData['client_id'], $requestData['client_secret']); // do not log credentials!
-
-        $this->logger->error($exception->getMessage(), [
+        $context = [
             'code' => $exception->getBillieCode(),
             'orderId' => $order->getId(),
             'referenceId' => $order->getTransactionId(),
-            'operation' => $operation,
-            'request' => $requestData,
-            'response' => $exception->getResponseData(),
-        ]);
+            'operation' => $operation
+        ];
+
+        if ($exception instanceof GatewayException) {
+            $requestData = $exception->getRequestData();
+            unset($requestData['client_id'], $requestData['client_secret']); // do not log credentials!
+            $context['requestData'] = $requestData;
+            $context['responseData'] = $exception->getResponseData();
+        }
+
+        $this->logger->error($exception->getMessage(), $context);
     }
 }

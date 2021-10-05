@@ -1,6 +1,7 @@
 <?php
 
 use Billie\Sdk\Exception\BillieException;
+use Billie\Sdk\Exception\GatewayException;
 use Billie\Sdk\Model\Address;
 use Billie\Sdk\Model\DebtorCompany;
 use Billie\Sdk\Model\Request\CheckoutSessionConfirmRequestModel;
@@ -120,14 +121,19 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                             (new UpdateOrderRequestModel($billieOrder->getUuid()))
                                 ->setOrderId($order->getNumber())
                         );
-                    } catch (\Exception $e) {
+                    } catch (GatewayException $e) {
                         $this->logger->error('Error during setting ordernumber on billie gateway during checkout', [
                             'order-id' => $order->getId(),
                             'order-number' => $order->getNumber(),
                             'tx-id' => $billieOrder->getUuid(),
+                            'request' => $e->getRequestData(),
+                            'response' => $e->getResponseData()
                         ]);
+                        // keep going, cause the order is already completed by shopware and by billie. Only the order number is missing
+                        // it is required that this order will be handled by hand.
                     }
 
+                    /** @var Api $api */
                     $api = $this->container->get(Api::class);
                     $api->updateShopwareOrder($order, $billieOrder);
 
@@ -137,11 +143,21 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
 
                     return;
                 }
+            } catch (GatewayException $e) {
+                $this->logger->error('Gateway Error', [
+                    'request' => $e->getRequestData(),
+                    'response' => $e->getResponseData()
+                ]);
             } catch (BillieException $e) {
                 $this->logger->error($e->getMessage());
             }
         }
-        $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => '_UnknownError']);
+        $this->handleError();
+    }
+
+    private function handleError($code = '_UnknownError')
+    {
+        $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $code]);
     }
 
     public function validateAddressAction()

@@ -45,8 +45,8 @@ class BasketHelper
         }
 
         return (new Amount())
-            ->setGross($gross)
-            ->setNet($net);
+            ->setGross((float)$gross)
+            ->setNet((float)$net);
     }
 
     public static function getTotalAmount(array $basket)
