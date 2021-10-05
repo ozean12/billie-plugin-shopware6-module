@@ -31,7 +31,8 @@ class CheckoutSubscriber implements SubscriberInterface
         Enlight_Components_Session_Namespace $session,
         ConfigService $configService,
         WidgetService $widgetService
-    ) {
+    )
+    {
         $this->session = $session;
         $this->widgetService = $widgetService;
         $this->configService = $configService;
@@ -80,7 +81,7 @@ class CheckoutSubscriber implements SubscriberInterface
 
             $subject->View()->assign([
                 'billiePayment' => [
-                    'widget' => $this->widgetService->getWidgetData((array) $this->session->get('sOrderVariables')),
+                    'widget' => $this->widgetService->getWidgetData((array)$this->session->get('sOrderVariables')),
                 ],
             ]);
         } elseif ($subject->Request()->getActionName() === 'shippingPayment') {
