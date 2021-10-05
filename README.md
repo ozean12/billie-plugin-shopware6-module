@@ -20,3 +20,14 @@ Available Attributes are:
 * `billie_iban`
 * `billie_bic`
 * `billie_state`
+
+## Release notes
+
+### Version 2.0.0 - Released on 2021-10-05
+
+- Replaced outdated SDK for api request with the new SDK (Version 2.x)
+- Compatiblity to Shopware 5.7
+- Compatiblity with PHP 8
+- Fixed a few bugs
+
+**Please note:** This is the first public release. There has been a few non-public releases before. You can safly update to this version.
