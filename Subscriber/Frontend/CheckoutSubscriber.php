@@ -8,6 +8,9 @@ use BilliePayment\Services\WidgetService;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Components_Session_Namespace;
 use Enlight_Controller_ActionEventArgs;
+use Shopware\Bundle\StoreFrontBundle\Struct\Attribute;
+use Shopware\Components\Model\ModelManager;
+use Shopware\Models\Attribute\Payment as PaymentAttribute;
 use Shopware_Controllers_Frontend_Checkout;
 
 class CheckoutSubscriber implements SubscriberInterface
@@ -16,6 +19,11 @@ class CheckoutSubscriber implements SubscriberInterface
      * @var Enlight_Components_Session_Namespace
      */
     private $session;
+
+    /**
+     * @var \Shopware\Components\Model\ModelManager
+     */
+    private $modelManager;
 
     /**
      * @var WidgetService
@@ -29,11 +37,13 @@ class CheckoutSubscriber implements SubscriberInterface
 
     public function __construct(
         Enlight_Components_Session_Namespace $session,
+        ModelManager $modelManager,
         ConfigService $configService,
         WidgetService $widgetService
     )
     {
         $this->session = $session;
+        $this->modelManager = $modelManager;
         $this->widgetService = $widgetService;
         $this->configService = $configService;
     }
@@ -51,14 +61,14 @@ class CheckoutSubscriber implements SubscriberInterface
         $list = $args->getReturn();
 
         foreach ($list as &$item) {
-            /** @var \Shopware\Bundle\StoreFrontBundle\Struct\Attribute $core */
-            if (isset($item['attributes']['core']) && ($core = $item['attributes']['core']) instanceof \Shopware\Bundle\StoreFrontBundle\Struct\Attribute) {
+            /** @var Attribute $core */
+            if (isset($item['attributes']['core']) && ($core = $item['attributes']['core']) instanceof Attribute) {
                 $item['billieDuration'] = $core->get('billie_duration');
             } else {
                 // required for Shopware 5.5.x backward compatibility
                 // we dont care about translations of the attribute, cause it is a global attribute (value)
-                /** @var \Shopware\Models\Attribute\Payment $attribute */
-                $attribute = Shopware()->Models()->getRepository(\Shopware\Models\Attribute\Payment::class)
+                /** @var PaymentAttribute $attribute */
+                $attribute = $this->modelManager->getRepository(PaymentAttribute::class)
                     ->findOneBy(['paymentId' => $item['id']]);
 
                 if ($attribute) {
@@ -66,6 +76,7 @@ class CheckoutSubscriber implements SubscriberInterface
                 }
             }
         }
+
         return $list;
     }
 
