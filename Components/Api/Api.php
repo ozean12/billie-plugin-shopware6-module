@@ -92,7 +92,7 @@ class Api
             $billieOrder = $this->container->get(ShipOrderRequest::class)->execute(
                 (new ShipOrderRequestModel($shopwareOrder->getTransactionId()))
                     ->setInvoiceUrl($invoiceUrl ?: '.')
-                    ->setInvoiceNumber($invoiceNumber)
+                    ->setInvoiceNumber((string)$invoiceNumber)
             );
             $this->updateShopwareOrder($shopwareOrder, $billieOrder);
 

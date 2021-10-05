@@ -41,7 +41,31 @@ class CheckoutSubscriber implements SubscriberInterface
     {
         return [
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onCheckout',
+            'Shopware_Modules_Admin_GetPaymentMeans_DataFilter' => 'addDurationToPaymentMethodList'
         ];
+    }
+
+    public function addDurationToPaymentMethodList(\Enlight_Event_EventArgs $args)
+    {
+        $list = $args->getReturn();
+
+        foreach ($list as &$item) {
+            /** @var \Shopware\Bundle\StoreFrontBundle\Struct\Attribute $core */
+            if (isset($item['attributes']['core']) && ($core = $item['attributes']['core']) instanceof \Shopware\Bundle\StoreFrontBundle\Struct\Attribute) {
+                $item['billieDuration'] = $core->get('billie_duration');
+            } else {
+                // required for Shopware 5.5.x backward compatibility
+                // we dont care about translations of the attribute, cause it is a global attribute (value)
+                /** @var \Shopware\Models\Attribute\Payment $attribute */
+                $attribute = Shopware()->Models()->getRepository(\Shopware\Models\Attribute\Payment::class)
+                    ->findOneBy(['paymentId' => $item['id']]);
+
+                if ($attribute) {
+                    $item['billieDuration'] = $attribute->getBillieDuration();
+                }
+            }
+        }
+        return $list;
     }
 
     public function onCheckout(Enlight_Controller_ActionEventArgs $args)
