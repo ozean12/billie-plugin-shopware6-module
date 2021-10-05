@@ -16,7 +16,8 @@ mkdir -p "$BUILD_DIR"/dist/"$PLUGIN_NAME"
 tar -xzf "$BUILD_DIR"/dist.tar.gz -C "$BUILD_DIR"/dist/
 rm -rf "$BUILD_DIR"/dist.tar.gz
 
-composer remove shopware/shopware --ignore-platform-reqs -o -d "$BUILD_DIR"/dist/"$PLUGIN_NAME"
+composer remove shopware/shopware --ignore-platform-reqs -d "$BUILD_DIR"/dist/"$PLUGIN_NAME" --no-update
+composer remove friendsofphp/php-cs-fixer --ignore-platform-reqs -d "$BUILD_DIR"/dist/"$PLUGIN_NAME" --dev --no-update
 composer install --no-dev --ignore-platform-reqs -o -d "$BUILD_DIR"/dist/"$PLUGIN_NAME"
 
 rm -rf "$BUILD_DIR"/dist/"$PLUGIN_NAME"/vendor/billie/api-php-sdk/tests

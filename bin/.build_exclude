@@ -17,3 +17,4 @@ vendor/
 CODING-GUIDELINE.md
 tests/
 lib/README.md
+composer.lock
