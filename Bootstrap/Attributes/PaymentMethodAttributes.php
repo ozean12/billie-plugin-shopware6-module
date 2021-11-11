@@ -12,11 +12,6 @@ class PaymentMethodAttributes extends AbstractAttributes
      */
     private $paymentMethodRepo;
 
-    protected function getEntityClass()
-    {
-        return Payment::class;
-    }
-
     public function setContainer($container)
     {
         parent::setContainer($container);
@@ -38,6 +33,11 @@ class PaymentMethodAttributes extends AbstractAttributes
                 );
             }
         }
+    }
+
+    protected function getEntityClass()
+    {
+        return Payment::class;
     }
 
     protected function createUpdateAttributes()

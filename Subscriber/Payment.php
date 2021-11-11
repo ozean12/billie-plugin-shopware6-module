@@ -6,7 +6,7 @@ use BilliePayment\Components\Payment\Service;
 use Enlight\Event\SubscriberInterface;
 
 /**
- * Payment Subscriber to handle duration attribute
+ * Payment Subscriber to handle duration attribute.
  */
 class Payment implements SubscriberInterface
 {

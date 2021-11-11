@@ -43,7 +43,7 @@ class OrderAttributes extends AbstractAttributes
             'billie_duration',
             'billie_duration_date',
             'billie_external_invoice_number',
-            'billie_external_invoice_url'
+            'billie_external_invoice_url',
         ];
 
         foreach ($attributeList as $attributeCode) {

@@ -5,7 +5,7 @@ namespace BilliePayment\Components;
 use Shopware\Components\Plugin\ConfigReader;
 
 /**
- * Utility Class
+ * Utility Class.
  */
 class Utils
 {
@@ -22,7 +22,7 @@ class Utils
     }
 
     /**
-     * Get the plugin Configuration
+     * Get the plugin Configuration.
      *
      * @return array
      *
@@ -34,7 +34,7 @@ class Utils
     }
 
     /**
-     * Get a snippet via the snippet mananger
+     * Get a snippet via the snippet mananger.
      *
      * @param string $namespace
      * @param string $snippet

@@ -40,7 +40,7 @@ class TemplateRegistration implements SubscriberInterface
     }
 
     /**
-     * Add Menu item sprite class
+     * Add Menu item sprite class.
      */
     public function addMenuItem(Enlight_Controller_ActionEventArgs $args)
     {

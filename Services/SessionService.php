@@ -216,7 +216,7 @@ class SessionService
     }
 
     /**
-     * Write the Billie shipping address to the shopware session (shipping address)
+     * Write the Billie shipping address to the shopware session (shipping address).
      */
     public function updateShippingAddress(BillieAddress $address)
     {
@@ -228,7 +228,7 @@ class SessionService
     }
 
     /**
-     * Write the Billie billing address to the shopware session (billing address)
+     * Write the Billie billing address to the shopware session (billing address).
      */
     public function updateBillingAddress(DebtorCompany $debtorCompany)
     {
@@ -272,7 +272,7 @@ class SessionService
     }
 
     /**
-     * gets the country model by the iso code or the ID
+     * gets the country model by the iso code or the ID.
      *
      * @param string|int $identifier
      *

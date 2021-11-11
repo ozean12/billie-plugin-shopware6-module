@@ -46,7 +46,7 @@ class Service
     }
 
     /**
-     * Check if payment id belongs to billie payment
+     * Check if payment id belongs to billie payment.
      *
      * @return bool
      */

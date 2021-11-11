@@ -40,8 +40,7 @@ class CheckoutSubscriber implements SubscriberInterface
         ModelManager $modelManager,
         ConfigService $configService,
         WidgetService $widgetService
-    )
-    {
+    ) {
         $this->session = $session;
         $this->modelManager = $modelManager;
         $this->widgetService = $widgetService;
@@ -52,7 +51,7 @@ class CheckoutSubscriber implements SubscriberInterface
     {
         return [
             'Enlight_Controller_Action_PostDispatchSecure_Frontend_Checkout' => 'onCheckout',
-            'Shopware_Modules_Admin_GetPaymentMeans_DataFilter' => 'addDurationToPaymentMethodList'
+            'Shopware_Modules_Admin_GetPaymentMeans_DataFilter' => 'addDurationToPaymentMethodList',
         ];
     }
 
@@ -92,7 +91,7 @@ class CheckoutSubscriber implements SubscriberInterface
 
             $subject->View()->assign([
                 'billiePayment' => [
-                    'widget' => $this->widgetService->getWidgetData((array)$this->session->get('sOrderVariables')),
+                    'widget' => $this->widgetService->getWidgetData((array) $this->session->get('sOrderVariables')),
                 ],
             ]);
         } elseif ($subject->Request()->getActionName() === 'shippingPayment') {

@@ -22,7 +22,7 @@ use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Order;
 
 /**
- * Service Wrapper for billie API sdk
+ * Service Wrapper for billie API sdk.
  */
 class Api
 {
@@ -93,7 +93,7 @@ class Api
             $billieOrder = $this->container->get(ShipOrderRequest::class)->execute(
                 (new ShipOrderRequestModel($shopwareOrder->getTransactionId()))
                     ->setInvoiceUrl($invoiceUrl ?: '.')
-                    ->setInvoiceNumber((string)$invoiceNumber)
+                    ->setInvoiceNumber((string) $invoiceNumber)
             );
             $this->updateShopwareOrder($shopwareOrder, $billieOrder);
 
@@ -225,7 +225,7 @@ class Api
             'code' => $exception->getBillieCode(),
             'orderId' => $order->getId(),
             'referenceId' => $order->getTransactionId(),
-            'operation' => $operation
+            'operation' => $operation,
         ];
 
         if ($exception instanceof GatewayException) {

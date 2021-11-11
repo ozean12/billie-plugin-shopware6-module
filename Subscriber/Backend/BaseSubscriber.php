@@ -25,7 +25,7 @@ class BaseSubscriber implements SubscriberInterface
     }
 
     /**
-     * Extend Attribute Form to make BIC/IBAN readonly
+     * Extend Attribute Form to make BIC/IBAN readonly.
      */
     public function extendExtJS(Enlight_Controller_ActionEventArgs $args)
     {

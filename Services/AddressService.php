@@ -32,7 +32,7 @@ class AddressService
     }
 
     /**
-     * writes the Billie-DebtorCompany Model to the Shopware billing address
+     * writes the Billie-DebtorCompany Model to the Shopware billing address.
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -48,7 +48,7 @@ class AddressService
     }
 
     /**
-     * writes a Billie-Address Model to the Shopware shipping address
+     * writes a Billie-Address Model to the Shopware shipping address.
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -76,7 +76,7 @@ class AddressService
     }
 
     /**
-     * gets the country model by the iso code
+     * gets the country model by the iso code.
      *
      * @param string $code
      *

@@ -25,9 +25,8 @@ use Shopware\Models\Order\Status;
  */
 class OrderSubscriber implements SubscriberInterface
 {
-
     /**
-     * Clarification required order code
+     * Clarification required order code.
      *
      * @deprecated
      *
@@ -105,7 +104,7 @@ class OrderSubscriber implements SubscriberInterface
     }
 
     /**
-     * Calcuate Duration
+     * Calcuate Duration.
      *
      * @return void
      */

@@ -33,7 +33,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_Frontend_Payment
 {
     /**
-     * Payment Status Paid Code
+     * Payment Status Paid Code.
      *
      * @var int
      */
@@ -127,7 +127,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                             'order-number' => $order->getNumber(),
                             'tx-id' => $billieOrder->getUuid(),
                             'request' => $e->getRequestData(),
-                            'response' => $e->getResponseData()
+                            'response' => $e->getResponseData(),
                         ]);
                         // keep going, cause the order is already completed by shopware and by billie. Only the order number is missing
                         // it is required that this order will be handled by hand.
@@ -146,18 +146,13 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             } catch (GatewayException $e) {
                 $this->logger->error('Gateway Error', [
                     'request' => $e->getRequestData(),
-                    'response' => $e->getResponseData()
+                    'response' => $e->getResponseData(),
                 ]);
             } catch (BillieException $e) {
                 $this->logger->error($e->getMessage());
             }
         }
         $this->handleError();
-    }
-
-    private function handleError($code = '_UnknownError')
-    {
-        $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $code]);
     }
 
     public function validateAddressAction()
@@ -211,5 +206,10 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
      */
     public function cancelAction()
     {
+    }
+
+    private function handleError($code = '_UnknownError')
+    {
+        $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $code]);
     }
 }

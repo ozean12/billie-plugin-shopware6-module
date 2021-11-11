@@ -45,7 +45,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     }
 
     /**
-     * Index action displays list with orders paid with billie.io
+     * Index action displays list with orders paid with billie.io.
      *
      * @return void
      */
@@ -240,7 +240,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
     }
 
     /**
-     * Whitelisted CSRF actions
+     * Whitelisted CSRF actions.
      *
      * @return array
      */
