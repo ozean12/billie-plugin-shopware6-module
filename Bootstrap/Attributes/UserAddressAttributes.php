@@ -29,11 +29,7 @@ class UserAddressAttributes extends AbstractAttributes
 
     protected function uninstallAttributes()
     {
-        if ($this->crudService->get($this->tableName, 'billie_registrationNumber')) {
-            $this->crudService->delete($this->tableName, 'billie_registrationNumber');
-        }
-        if ($this->crudService->get($this->tableName, 'billie_legalform')) {
-            $this->crudService->delete($this->tableName, 'billie_legalform');
-        }
+        $this->deleteAttribute('billie_registrationNumber');
+        $this->deleteAttribute('billie_legalform');
     }
 }

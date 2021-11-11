@@ -34,14 +34,20 @@ class OrderAttributes extends AbstractAttributes
 
     protected function uninstallAttributes()
     {
-        $this->crudService->delete($this->tableName, 'billie_referenceId');
-        $this->crudService->delete($this->tableName, 'billie_state');
-        $this->crudService->delete($this->tableName, 'billie_iban');
-        $this->crudService->delete($this->tableName, 'billie_bic');
-        $this->crudService->delete($this->tableName, 'billie_bank');
-        $this->crudService->delete($this->tableName, 'billie_duration');
-        $this->crudService->delete($this->tableName, 'billie_duration_date');
-        $this->crudService->delete($this->tableName, 'billie_external_invoice_number');
-        $this->crudService->delete($this->tableName, 'billie_external_invoice_url');
+        $attributeList = [
+            'billie_referenceId',
+            'billie_state',
+            'billie_iban',
+            'billie_bic',
+            'billie_bank',
+            'billie_duration',
+            'billie_duration_date',
+            'billie_external_invoice_number',
+            'billie_external_invoice_url'
+        ];
+
+        foreach ($attributeList as $attributeCode) {
+            $this->deleteAttribute($attributeCode);
+        }
     }
 }

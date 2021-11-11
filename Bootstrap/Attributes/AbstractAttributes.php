@@ -63,4 +63,11 @@ abstract class AbstractAttributes extends AbstractBootstrap
     {
         $this->modelManager->generateAttributeModels([$this->tableName]);
     }
+
+    protected function deleteAttribute($attributeCode)
+    {
+        if ($this->crudService->get($this->tableName, $attributeCode)) {
+            $this->crudService->delete($this->tableName, $attributeCode);
+        }
+    }
 }

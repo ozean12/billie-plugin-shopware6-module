@@ -2,13 +2,42 @@
 
 namespace BilliePayment\Bootstrap\Attributes;
 
+use BilliePayment\Enum\PaymentMethods as PaymentMethodsEnum;
 use Shopware\Models\Payment\Payment;
 
 class PaymentMethodAttributes extends AbstractAttributes
 {
+    /**
+     * @var \Doctrine\ORM\EntityRepository|\Doctrine\Persistence\ObjectRepository
+     */
+    private $paymentMethodRepo;
+
     protected function getEntityClass()
     {
         return Payment::class;
+    }
+
+    public function setContainer($container)
+    {
+        parent::setContainer($container);
+        $this->paymentMethodRepo = $container->get('models')->getRepository(\Shopware\Models\Payment\Payment::class);
+    }
+
+    public function install()
+    {
+        parent::install();
+
+        foreach (PaymentMethodsEnum::PAYMENTS as $options) {
+            if ($payment = $this->paymentMethodRepo->findOneBy(['name' => $options['name']])) {
+                $this->modelManager->getConnection()->executeQuery(
+                    'REPLACE INTO ' . $this->tableName . '(paymentmeanID, billie_duration) VALUES(:id, :duration);',
+                    [
+                        'id' => $payment->getId(),
+                        'duration' => $options['billie_config']['default_duration'],
+                    ]
+                );
+            }
+        }
     }
 
     protected function createUpdateAttributes()
@@ -23,8 +52,6 @@ class PaymentMethodAttributes extends AbstractAttributes
 
     protected function uninstallAttributes()
     {
-        if ($this->crudService->get($this->tableName, 'billie_duration')) {
-            $this->crudService->delete($this->tableName, 'billie_duration');
-        }
+        $this->deleteAttribute('billie_duration');
     }
 }

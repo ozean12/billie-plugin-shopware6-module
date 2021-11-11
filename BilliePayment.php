@@ -103,13 +103,16 @@ class BilliePayment extends Plugin
      */
     protected function getBootstrapClasses(Plugin\Context\InstallContext $context)
     {
+        // install payment-method before the payment-method-attribute, cause the attributes cache will be cleared,
+        // but the model-class has been already loaded. So this will ends in an error, when the columns in the database
+        // does not exist anymore e.g. after an uninstall
         /** @var AbstractBootstrap[] $bootstrapper */
         $bootstrapper = [
+            new PaymentMethods(),
             new PaymentMethodAttributes(),
             new OrderAttributes(),
             new UserAddressAttributes(),
             new UserAttributes(),
-            new PaymentMethods(),
         ];
 
         // initialize all bootstraps

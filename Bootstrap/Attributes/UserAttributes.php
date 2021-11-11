@@ -27,11 +27,7 @@ class UserAttributes extends AbstractAttributes
 
     protected function uninstallAttributes()
     {
-        if ($this->crudService->get($this->tableName, 'billie_iban')) {
-            $this->crudService->delete($this->tableName, 'billie_iban');
-        }
-        if ($this->crudService->get($this->tableName, 'billie_bic')) {
-            $this->crudService->delete($this->tableName, 'billie_bic');
-        }
+        $this->deleteAttribute('billie_iban');
+        $this->deleteAttribute('billie_bic');
     }
 }
