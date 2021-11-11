@@ -2,12 +2,29 @@
 
 ![Screenshot Backend Dashboard](./screenshot.png)
 
-## Configuration
-### Street & Housenumber
-* Use `additional_address_line1` as housenumber! *(Has to be actived in shopware)*
-* Set the values for the following snippets under `frontend/register/billing_fieldset` and `frontend/register/shipping_fieldset` accordingly
-  * `RegisterLabelAdditionalAddressLine1` -> House Number
-  * `RegisterBillingPlaceholderStreet` -> Street
+## Installation
+
+### Installation via Shopware Store
+
+1. Search for the extension in the Shopware Store: [https://store.shopware.com/](https://store.shopware.com/)
+2. Oder the extension
+3. Download it via the Plugin Manager in your store
+4. Click Install
+5. Click Activate
+6. Clear all Caches (you will be prompted for it)
+
+### Installation via Composer (recommend)
+
+1. Open the CLI and navigation to the Shopware root
+2. Run the following Commands to install the extension via composer:
+```bash 
+composer req billie/shopware5-payment-module
+```
+3. Open the Plugin Manager in your store
+4. Search for the extension `Billie Payment After Delivery`
+4. Click Install
+5. Click Activate
+6. Clear all Caches (you will be prompted for it)
 
 ## Displaying Attributes in Documents
 To display the billie in the invoice document etc, they can be accessed in the document template files like so:
@@ -23,11 +40,11 @@ Available Attributes are:
 
 ## Release notes
 
-### Version 2.0.0 - Released on 2021-10-05
+### Version 2.0.0 - Released on 2021-11-11
 
 - Replaced outdated SDK for api request with the new SDK (Version 2.x)
-- Compatiblity to Shopware 5.7
-- Compatiblity with PHP 8
+- Compatibility to Shopware 5.7
+- Compatibility with PHP 8
 - Fixed a few bugs
 
-**Please note:** This is the first public release. There has been a few non-public releases before. You can safly update to this version.
+**Please note:** This is the first public release. There has been a few non-public releases before. You can safely update to this version.
