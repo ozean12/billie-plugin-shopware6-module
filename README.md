@@ -7,7 +7,7 @@
 ### Installation via Shopware Store
 
 1. Search for the extension in the Shopware Store: [https://store.shopware.com/](https://store.shopware.com/)
-2. Oder the extension
+2. Order the extension
 3. Download it via the Plugin Manager in your store
 4. Click Install
 5. Click Activate
