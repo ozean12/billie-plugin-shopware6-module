@@ -62,7 +62,6 @@ class BilliePayment extends Plugin
         foreach ($bootstrapClasses as $bootstrap) {
             $bootstrap->postUninstall();
         }
-        parent::uninstall($context);
     }
 
     public function deactivate(Plugin\Context\DeactivateContext $context)
