@@ -17,4 +17,5 @@ vendor/
 CODING-GUIDELINE.md
 tests/
 lib/README.md
-composer.lock
+.php-cs-fixer.php
+phpstan.neon
