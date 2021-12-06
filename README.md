@@ -13,7 +13,7 @@
 5. Click Activate
 6. Clear all Caches (you will be prompted for it)
 
-### Installation via Composer (recommend)
+### Installation via Composer (recommend, for experts)
 
 1. Open the CLI and navigation to the Shopware root
 2. Run the following Commands to install the extension via composer:
@@ -22,9 +22,9 @@ composer req billie/shopware5-payment-module
 ```
 3. Open the Plugin Manager in your store
 4. Search for the extension `Billie Payment After Delivery`
-4. Click Install
-5. Click Activate
-6. Clear all Caches (you will be prompted for it)
+5. Click Install
+6. Click Activate
+7. Clear all Caches (you will be prompted for it)
 
 ## Displaying Attributes in Documents
 To display the billie in the invoice document etc, they can be accessed in the document template files like so:
