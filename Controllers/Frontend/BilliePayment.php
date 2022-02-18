@@ -19,7 +19,7 @@ use Shopware\Components\DependencyInjection\Container;
 use Shopware\Models\Country\Country;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Payment\Payment;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Frontend Controller for Billie.io Payment.
@@ -197,8 +197,11 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         if ($errorCode) {
             $responseArray['redirect'] = $this->Front()->Router()->assemble(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $errorCode]);
         }
-        $response = new JsonResponse($responseArray, 200);
-        $response->send();
+
+        $this->response->setBody(json_encode($responseArray));
+        $this->response->setStatusCode(Response::HTTP_OK);
+        $this->response->setHeader('Content-Type', 'application/json');
+
     }
 
     private function handleError($code = '_UnknownError')
