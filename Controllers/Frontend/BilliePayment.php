@@ -201,13 +201,6 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $response->send();
     }
 
-    /**
-     * Cancel action method.
-     */
-    public function cancelAction()
-    {
-    }
-
     private function handleError($code = '_UnknownError')
     {
         $this->redirect(['controller' => 'checkout', 'action' => 'confirm', 'errorCode' => $code]);
