@@ -100,7 +100,7 @@ class SessionService
             return intval($attributeStruct->get('billie_duration'));
         } elseif (isset($payment['id'])) {
             $repo = $this->modelManager->getRepository(Payment::class);
-            /** @var Payment $attribute */
+            /** @var Payment|null $attribute */
             $attribute = $repo->findOneBy(['paymentId' => $payment['id']]);
 
             return $attribute ? $attribute->getBillieDuration() : 0;
@@ -276,7 +276,7 @@ class SessionService
      *
      * @param string|int $identifier
      *
-     * @return Country
+     * @return Country|null
      */
     private function getCountry($identifier)
     {
@@ -303,7 +303,7 @@ class SessionService
     }
 
     /**
-     * @return ArrayObject
+     * @return ArrayObject|null
      */
     private function getOrderVariables()
     {

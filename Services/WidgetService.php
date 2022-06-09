@@ -108,7 +108,7 @@ class WidgetService
         return (new LineItem())
             ->setExternalId($item['ordernumber'])
             ->setTitle($item['articlename'])
-            ->setDescription($product ? (substr($product->getShortDescription(), 0, 255) ? : null) : null)
+            ->setDescription($product ? (substr($product->getShortDescription(), 0, 255) ?: null) : null)
             ->setQuantity((int) $item['quantity'])
             ->setCategory($categories && isset($categories[0]) ? implode(' > ', $categories[0]->getPath()) : null)
             ->setBrand($product && $product->getManufacturer() ? $product->getManufacturer()->getName() : null)

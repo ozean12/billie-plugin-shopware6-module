@@ -12,6 +12,7 @@ use DateInterval;
 use DateTime;
 use Enlight\Event\SubscriberInterface;
 use Enlight_Controller_Action;
+use Enlight_Controller_ActionEventArgs;
 use Enlight_Controller_Request_RequestHttp;
 use Enlight_Event_EventArgs;
 use Enlight_View_Default;
@@ -108,7 +109,7 @@ class OrderSubscriber implements SubscriberInterface
      *
      * @return void
      */
-    public function onDocumentCreate(Enlight_Event_EventArgs $args)
+    public function onDocumentCreate(Enlight_Controller_ActionEventArgs $args)
     {
         /** @var Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
@@ -116,7 +117,7 @@ class OrderSubscriber implements SubscriberInterface
         $params = $request->getParams();
 
         if ($request->getActionName() === 'createDocument') {
-            /** @var Order $order */
+            /** @var Order|null $order */
             $order = $this->modelManager->find(Order::class, $params['orderId']);
 
             if (!$order || !$this->service->isBilliePayment(['id' => $order->getPayment()->getId()])) {
@@ -140,9 +141,8 @@ class OrderSubscriber implements SubscriberInterface
      *
      * @return void
      */
-    public function onSaveOrder(Enlight_Event_EventArgs $args)
+    public function onSaveOrder(Enlight_Controller_ActionEventArgs $args)
     {
-        /** @var Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
         $request = $controller->Request();
         $view = $controller->View();
@@ -180,7 +180,7 @@ class OrderSubscriber implements SubscriberInterface
         if (!$service->isBilliePayment(['id' => $orderArray['paymentId']])) {
             return;
         }
-        /** @var Order $order */
+        /** @var Order|null $order */
         $order = $this->modelManager->find(Order::class, $orderArray['id']);
         if ($order === null) {
             return;
@@ -222,7 +222,7 @@ class OrderSubscriber implements SubscriberInterface
                             $this->modelManager->flush($order);
                         }
 
-                        $view->data['status'] = self::ORDER_STATE_CLARIFICATION_REQUIRED;
+                        $view->assign('status', self::ORDER_STATE_CLARIFICATION_REQUIRED);
                     }
                 }
                 break;

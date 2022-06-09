@@ -4,6 +4,7 @@ namespace BilliePayment\Subscriber;
 
 use BilliePayment\Components\Payment\Service;
 use Enlight\Event\SubscriberInterface;
+use Enlight_Controller_ActionEventArgs;
 
 /**
  * Payment Subscriber to handle duration attribute.
@@ -37,9 +38,8 @@ class Payment implements SubscriberInterface
      *
      * @return void
      */
-    public function onSaveAttributeData(\Enlight_Event_EventArgs $args)
+    public function onSaveAttributeData(Enlight_Controller_ActionEventArgs $args)
     {
-        /** @var \Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
         $request = $controller->Request();
         $query = ['id' => $request->getParam('_foreignKey')];
@@ -56,14 +56,13 @@ class Payment implements SubscriberInterface
      *
      * @return void
      */
-    public function onLoadAttributeData(\Enlight_Event_EventArgs $args)
+    public function onLoadAttributeData(Enlight_Controller_ActionEventArgs $args)
     {
-        /** @var \Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
         $request = $controller->Request();
         $view = $controller->View();
-        $query = ['id' => $view->data['__attribute_paymentmeanID']];
-        $data = $view->data;
+        $query = ['id' => $view->getAssign('__attribute_paymentmeanID')];
+        $data = $view->getAssign();
 
         // Unset billie duration on load attribute data
         if ($request->getActionName() == 'loadData' && !$this->service->isBilliePayment($query)) {

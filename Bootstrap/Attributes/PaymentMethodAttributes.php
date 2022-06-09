@@ -3,19 +3,20 @@
 namespace BilliePayment\Bootstrap\Attributes;
 
 use BilliePayment\Enum\PaymentMethods as PaymentMethodsEnum;
+use Shopware\Components\Model\ModelRepository;
 use Shopware\Models\Payment\Payment;
 
 class PaymentMethodAttributes extends AbstractAttributes
 {
     /**
-     * @var \Doctrine\ORM\EntityRepository|\Doctrine\Persistence\ObjectRepository
+     * @var ModelRepository
      */
     private $paymentMethodRepo;
 
     public function setContainer($container)
     {
         parent::setContainer($container);
-        $this->paymentMethodRepo = $container->get('models')->getRepository(\Shopware\Models\Payment\Payment::class);
+        $this->paymentMethodRepo = $container->get('models')->getRepository(\Shopware\Models\Payment\Payment::class); // @phpstan-ignore-line
     }
 
     public function install()

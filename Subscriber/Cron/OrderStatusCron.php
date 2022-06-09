@@ -85,7 +85,7 @@ class OrderStatusCron implements SubscriberInterface
         $orderIds = $this->findOrderIdsToProcess();
         $totalOrders = count($orderIds);
         foreach ($orderIds as $key => $result) {
-            /** @var Order $order */
+            /** @var Order|null $order */
             $order = $this->modelManager->find(Order::class, $result['id']);
 
             if ($order === null) {
@@ -134,8 +134,10 @@ class OrderStatusCron implements SubscriberInterface
                         $this->logger->info(sprintf('Canceling order #%s', $order->getNumber()), array_merge($logContext));
                         if ($order->getAttribute()->getBillieState() !== \Billie\Sdk\Model\Order::STATE_CANCELLED) {
                             $response = $this->api->cancelOrder($result['id']);
-                            if ($response['success']) {
+                            if ($response === true) {
                                 $this->logger->info(sprintf('Order #%s has been canceled', $order->getNumber()), array_merge($logContext));
+                            } else {
+                                $this->logger->error(sprintf('Order #%s can not be canceled. Error: %s', $order->getNumber(), $response), array_merge($logContext));
                             }
                         } else {
                             $this->logger->info(sprintf('Canceling order #%s- Already canceled', $order->getNumber()), array_merge($logContext));

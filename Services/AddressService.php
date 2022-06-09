@@ -80,7 +80,7 @@ class AddressService
      *
      * @param string $code
      *
-     * @return Country
+     * @return Country|null
      */
     private function getCountry($code)
     {

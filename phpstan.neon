@@ -1,0 +1,21 @@
+parameters:
+    level: 4
+    paths:
+        - %currentWorkingDirectory%
+    excludePaths:
+        - vendor/
+        - build/
+
+    ignoreErrors:
+        - '#(Instantiated )?[cC]lass SwagBackendOrder\\.* not found.#'
+        - '#Parameter .* of method .* has invalid typehint type SwagBackendOrder\\.*.#'
+        - '#(Instantiated )?[cC]lass BogxProductConfigurator\\.* not found.#'
+        - '#Parameter .* of method .* has invalid typehint type BogxProductConfigurator\\.*.#'
+        - '#(Instantiated )?[cC]lass Shopware\\Models\\Attribute\\.* not found.#'
+        - '#Parameter .* of method .* has invalid typehint type Shopware\\Models\\Attribute\\.*.#'
+        - '#PHPDoc tag @var for variable \$attribute contains unknown class Shopware\\Models\\Attribute\\.*#'
+        - '#Call to method .* on an unknown class Shopware\\Models\\Attribute\\.*#'
+        - '#Call to an undefined method Doctrine\\ORM\\QueryBuilder::addFilter\(\).#' # cause shopware does have its own querybuilder
+
+    reportUnmatchedIgnoredErrors: false
+    tipsOfTheDay: false

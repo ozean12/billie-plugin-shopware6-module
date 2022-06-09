@@ -39,7 +39,7 @@ class Shopware_Controllers_Backend_BillieConfig extends Enlight_Controller_Actio
 
     public function testAction()
     {
-        Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender();
+        Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender(); // @phpstan-ignore-line
 
         $messageNamespace = $this->snippetManager->getNamespace('backend/billie/messages');
 

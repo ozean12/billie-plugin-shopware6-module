@@ -1,0 +1,71 @@
+
+on:
+  push:
+    branches:
+      - '*'
+      - '*/*'
+
+permissions:
+  contents: read
+
+jobs:
+  phpstan:
+    name: Run PHPSTAN (PHP ${{ matrix.php-versions }} on  ${{ matrix.operating-system }})
+    runs-on:  ${{ matrix.operating-system }}
+    strategy:
+      matrix:
+        operating-system: ['ubuntu-latest']
+        php-versions: ['7.2', '7.3', '7.4', '8.0', '8.1']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          tools: phpstan
+
+      - name: install dependencies
+        run: composer install
+        
+      - name: run PHPSTAN
+        run: phpstan analyse -c phpstan.neon --autoload-file=vendor/autoload.php
+        
+  php-cs:
+    name: Check PHP CodeStyle (PHP ${{ matrix.php-versions }} on  ${{ matrix.operating-system }})
+    runs-on:  ${{ matrix.operating-system }}
+    strategy:
+      matrix:
+        operating-system: ['ubuntu-latest']
+        php-versions: ['7.4', '8.0']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          tools: php-cs-fixer
+
+      - name: run PHP-CS
+        run: php-cs-fixer fix --dry-run --verbose
+  
+  build:
+    name: Build installable packages
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build module
+      run: ./bin/build.sh
+      
+    - name: create artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Module bundles
+        path: build/dist/*.zip

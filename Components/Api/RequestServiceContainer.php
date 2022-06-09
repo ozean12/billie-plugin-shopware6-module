@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class RequestServiceContainer
 {
     /**
-     * @var \Symfony\Component\DependencyInjection\ContainerInterface
+     * @var ContainerInterface
      */
     private $container;
 
@@ -18,7 +18,7 @@ class RequestServiceContainer
     }
 
     /**
-     * @template T
+     * @template T of \Billie\Sdk\Service\Request\AbstractRequest
      *
      * @param class-string<T> $class
      *
@@ -31,6 +31,6 @@ class RequestServiceContainer
             throw new \InvalidArgumentException('Class ' . $class . ' does not implement ' . AbstractRequest::class);
         }
 
-        return $object;
+        return $object; // @phpstan-ignore-line
     }
 }

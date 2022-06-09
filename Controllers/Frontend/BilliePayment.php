@@ -103,7 +103,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                     $orderNumber = $this->saveOrder(
                         $billieOrder->getUuid(),
                         $billieOrder->getUuid(),
-                        self::PAYMENTSTATUSPAID //TODO replace by config
+                        self::PAYMENTSTATUSPAID // TODO replace by config
                     );
 
                     if ($this->configService->isOverrideCustomerAddress()) {
@@ -157,7 +157,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
 
     public function validateAddressAction()
     {
-        Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender();
+        Shopware()->Plugins()->Controller()->ViewRenderer()->setNoRender(); // @phpstan-ignore-line
 
         $responseArray = [];
 
@@ -165,7 +165,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $errorCode = null;
         if ($params['state'] === 'authorized') {
             if (is_array($params['debtor_company'])) {
-                /** @var Country $country */
+                /** @var Country|null $country */
                 $country = $this->getModelManager()->getRepository(Country::class)
                     ->findOneBy(['iso' => $params['debtor_company']['address_country']]);
 
@@ -179,7 +179,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
             }
 
             if (is_array($params['delivery_address'])) {
-                /** @var Country $country */
+                /** @var Country|null $country */
                 $country = $this->getModelManager()->getRepository(Country::class)
                     ->findOneBy(['iso' => $params['delivery_address']['country']]);
 
@@ -201,7 +201,6 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
         $this->response->setBody(json_encode($responseArray));
         $this->response->setStatusCode(Response::HTTP_OK);
         $this->response->setHeader('Content-Type', 'application/json');
-
     }
 
     private function handleError($code = '_UnknownError')

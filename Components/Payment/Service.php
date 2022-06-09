@@ -4,6 +4,7 @@ namespace BilliePayment\Components\Payment;
 
 use BilliePayment\Enum\PaymentMethods;
 use Shopware\Models\Payment\Payment;
+use Shopware\Models\Payment\Repository as PaymentRepository;
 
 /**
  * For a better overview and a clearer separation between controller and business logic.
@@ -67,10 +68,10 @@ class Service
             unset($filters[0]['operator']);
 
             // Query all payments for their ids
-            $paymentMean = Shopware()->Models()
-                ->getRepository(Payment::class)
-                ->getActivePaymentsQuery($filters)
-                ->getArrayResult();
+
+            /** @var PaymentRepository $paymentRepo */
+            $paymentRepo = Shopware()->Models()->getRepository(Payment::class);
+            $paymentMean = $paymentRepo->getActivePaymentsQuery($filters)->getArrayResult();
 
             return $paymentMean && in_array($payment['id'], array_column($paymentMean, 'id'));
         }

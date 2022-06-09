@@ -10,6 +10,7 @@ use Billie\Sdk\Model\Request\GetBankDataRequestModel;
 use Billie\Sdk\Model\Request\OrderRequestModel;
 use Billie\Sdk\Model\Request\ShipOrderRequestModel;
 use Billie\Sdk\Model\Request\UpdateOrderRequestModel;
+use Billie\Sdk\Model\Response\GetBankDataResponseModel;
 use Billie\Sdk\Service\Request\CancelOrderRequest;
 use Billie\Sdk\Service\Request\ConfirmPaymentRequest;
 use Billie\Sdk\Service\Request\GetBankDataRequest;
@@ -182,6 +183,7 @@ class Api
             $this->modelManager->persist($orderAttribute);
         }
 
+        /** @var GetBankDataResponseModel $bankModel */
         $bankModel = $this->container->get(GetBankDataRequest::class)->execute(new GetBankDataRequestModel());
 
         $orderAttribute->setBillieBic($billieOrder->getBankAccount()->getBic());

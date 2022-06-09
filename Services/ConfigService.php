@@ -5,6 +5,7 @@ namespace BilliePayment\Services;
 use InvalidArgumentException;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\CachedConfigReader;
+use Shopware\Models\Shop\Repository as ShopRepository;
 use Shopware\Models\Shop\Shop;
 
 class ConfigService
@@ -78,7 +79,7 @@ class ConfigService
     }
 
     /**
-     * @param $key string
+     * @param string $key
      *
      * @return int|null
      */
@@ -88,21 +89,21 @@ class ConfigService
     }
 
     /**
-     * @param $configName
-     * @param null     $default
-     * @param Shop|int $shop
+     * @param string $configName
+     * @param null $default
+     * @param Shop|int|null $shop
      */
     protected function getConfig($configName, $default = null, $shop = null)
     {
         if ($shop === null) {
-            $shop = $this->modelManager->getRepository(Shop::class)->getActiveDefault();
+            /** @var ShopRepository $shopRepo */
+            $shopRepo = $this->modelManager->getRepository(Shop::class);
+            $shop = $shopRepo->getActiveDefault();
         } elseif (is_numeric($shop)) {
             $shop = $this->modelManager->find(Shop::class, $shop);
             if ($shop === null) {
                 throw new InvalidArgumentException('the given shop does not exist');
             }
-        } elseif ($shop instanceof Shop === false) {
-            throw new InvalidArgumentException('please provide a valid shop parameter (Shop-Model, Shop-Id or NULL for the default default)');
         }
         $config = $this->configReader->getByPluginName($this->pluginName, $shop);
 

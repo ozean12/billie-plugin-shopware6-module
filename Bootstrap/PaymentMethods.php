@@ -23,7 +23,7 @@ class PaymentMethods extends AbstractBootstrap
     {
         parent::setContainer($container);
         $this->paymentMethodInstaller = $this->container->get('shopware.plugin_payment_installer');
-        $this->paymentMethodRepo = $this->modelManager->getRepository(Payment::class);
+        $this->paymentMethodRepo = $this->modelManager->getRepository(Payment::class); // @phpstan-ignore-line
     }
 
     public function preInstall()
@@ -114,7 +114,7 @@ class PaymentMethods extends AbstractBootstrap
     }
 
     /**
-     * @param $flag bool
+     * @param bool $flag
      * @param bool $onlyFirst
      */
     private function setActiveFlag($flag, $onlyFirst = false)

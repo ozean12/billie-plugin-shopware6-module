@@ -66,7 +66,7 @@ class CheckoutSubscriber implements SubscriberInterface
             } else {
                 // required for Shopware 5.5.x backward compatibility
                 // we dont care about translations of the attribute, cause it is a global attribute (value)
-                /** @var PaymentAttribute $attribute */
+                /** @var PaymentAttribute|null $attribute */
                 $attribute = $this->modelManager->getRepository(PaymentAttribute::class)
                     ->findOneBy(['paymentId' => $item['id']]);
 

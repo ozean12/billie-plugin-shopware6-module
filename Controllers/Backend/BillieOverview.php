@@ -83,7 +83,7 @@ class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Act
         // Assign view data
         $this->View()->assign('errorCode', $this->Request()->getParam('errorCode'));
         $this->View()->assign([
-            'orders' => $paginator->getIterator()->getArrayCopy(),
+            'orders' => $paginator->getIterator()->getArrayCopy(), // @phpstan-ignore-line
             'total' => $paginator->count(),
             'totalPages' => ceil($paginator->count() / $maxPerPage),
             'page' => $currentPage,

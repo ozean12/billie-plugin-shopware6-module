@@ -7,6 +7,7 @@ use Shopware\Components\Routing\Context;
 use Shopware\Components\Routing\Router;
 use Shopware\Models\Order\Document\Document;
 use Shopware\Models\Order\Order;
+use Shopware\Models\Shop\Repository as ShopRepository;
 use Shopware\Models\Shop\Shop;
 
 class DocumentHelper
@@ -69,7 +70,9 @@ class DocumentHelper
 
     private function getInvoiceUrl(Document $document)
     {
-        $defaultShop = $this->modelManager->getRepository(Shop::class)->getDefault();
+        /** @var ShopRepository $shopRepo */
+        $shopRepo = $this->modelManager->getRepository(Shop::class);
+        $defaultShop = $shopRepo->getDefault();
 
         // fetch current context to restore it after generating url
         $oldContext = $this->router->getContext();
