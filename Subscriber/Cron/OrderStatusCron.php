@@ -6,15 +6,10 @@ use BilliePayment\Components\Api\Api;
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Helper\DocumentHelper;
 use BilliePayment\Services\ConfigService;
-use DateInterval;
-use DateTime;
 use Enlight\Event\SubscriberInterface;
-use Enlight_Components_Db_Adapter_Pdo_Mysql;
-use Exception;
 use Monolog\Logger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Order;
-use Shopware_Components_Cron_CronJob;
 
 class OrderStatusCron implements SubscriberInterface
 {
@@ -31,7 +26,7 @@ class OrderStatusCron implements SubscriberInterface
     protected $modelManager;
 
     /**
-     * @var Enlight_Components_Db_Adapter_Pdo_Mysql
+     * @var \Enlight_Components_Db_Adapter_Pdo_Mysql
      */
     protected $db;
 
@@ -52,7 +47,7 @@ class OrderStatusCron implements SubscriberInterface
 
     public function __construct(
         ModelManager $modelManager,
-        Enlight_Components_Db_Adapter_Pdo_Mysql $db,
+        \Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         ConfigService $configService,
         Api $api,
         Logger $logger,
@@ -76,7 +71,7 @@ class OrderStatusCron implements SubscriberInterface
         ];
     }
 
-    public function watchHistory(Shopware_Components_Cron_CronJob $job)
+    public function watchHistory(\Shopware_Components_Cron_CronJob $job)
     {
         if ($this->configService->isWatchHistoryChange() === false) {
             return 'watcher is not enabled in plugin config';
@@ -94,7 +89,7 @@ class OrderStatusCron implements SubscriberInterface
             }
 
             $this->logger->info(
-                sprintf('Order history watcher: Processing %d/%d order-id %d ...', ($key + 1), $totalOrders, $result['id']),
+                sprintf('Order history watcher: Processing %d/%d order-id %d ...', $key + 1, $totalOrders, $result['id']),
                 [
                     'order_id' => $order->getId(),
                     'order_number' => $order->getNumber(),
@@ -147,7 +142,7 @@ class OrderStatusCron implements SubscriberInterface
                         $this->logger->info('Nothing to do - invalid status.', $logContext);
                         continue 2;
                 }
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $logContext['trace'] = $e->getTraceAsString();
                 $this->logger->error('Error during processing order: ' . $e->getMessage(), array_merge($logContext));
             }
@@ -157,7 +152,7 @@ class OrderStatusCron implements SubscriberInterface
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      *
      * @return array
      */
@@ -202,11 +197,11 @@ class OrderStatusCron implements SubscriberInterface
 
         // calculate the last run of the cron
         if (isset($row['start'])) {
-            $date = new DateTime($row['start']);
+            $date = new \DateTime($row['start']);
         } else {
-            $date = new DateTime();
+            $date = new \DateTime();
         }
-        $date->sub(new DateInterval('PT' . $row['interval'] . 'S'));
+        $date->sub(new \DateInterval('PT' . $row['interval'] . 'S'));
 
         return $date->format('Y-m-d H:i:s');
     }

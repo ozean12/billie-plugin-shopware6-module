@@ -6,17 +6,14 @@ use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Services\ConfigService;
 use BilliePayment\Services\WidgetService;
 use Enlight\Event\SubscriberInterface;
-use Enlight_Components_Session_Namespace;
-use Enlight_Controller_ActionEventArgs;
 use Shopware\Bundle\StoreFrontBundle\Struct\Attribute;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Attribute\Payment as PaymentAttribute;
-use Shopware_Controllers_Frontend_Checkout;
 
 class CheckoutSubscriber implements SubscriberInterface
 {
     /**
-     * @var Enlight_Components_Session_Namespace
+     * @var \Enlight_Components_Session_Namespace
      */
     private $session;
 
@@ -36,7 +33,7 @@ class CheckoutSubscriber implements SubscriberInterface
     private $configService;
 
     public function __construct(
-        Enlight_Components_Session_Namespace $session,
+        \Enlight_Components_Session_Namespace $session,
         ModelManager $modelManager,
         ConfigService $configService,
         WidgetService $widgetService
@@ -79,9 +76,9 @@ class CheckoutSubscriber implements SubscriberInterface
         return $list;
     }
 
-    public function onCheckout(Enlight_Controller_ActionEventArgs $args)
+    public function onCheckout(\Enlight_Controller_ActionEventArgs $args)
     {
-        /** @var Shopware_Controllers_Frontend_Checkout $subject */
+        /** @var \Shopware_Controllers_Frontend_Checkout $subject */
         $subject = $args->getSubject();
         if ($subject->Request()->getActionName() === 'confirm') {
             $payment = $this->session->get('sOrderVariables')['sPayment'];

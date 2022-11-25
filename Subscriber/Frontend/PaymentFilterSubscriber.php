@@ -5,8 +5,6 @@ namespace BilliePayment\Subscriber\Frontend;
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Services\SessionService;
 use Enlight\Event\SubscriberInterface;
-use Enlight_Components_Db_Adapter_Pdo_Mysql;
-use Enlight_Event_EventArgs;
 use Shopware\Bundle\StoreFrontBundle\Struct\Attribute;
 use Shopware\Components\Model\ModelEntity;
 use Shopware\Components\Model\ModelManager;
@@ -20,7 +18,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
     private $modelManager;
 
     /**
-     * @var Enlight_Components_Db_Adapter_Pdo_Mysql
+     * @var \Enlight_Components_Db_Adapter_Pdo_Mysql
      */
     private $db;
 
@@ -31,7 +29,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
 
     public function __construct(
         ModelManager $modelManager,
-        Enlight_Components_Db_Adapter_Pdo_Mysql $db,
+        \Enlight_Components_Db_Adapter_Pdo_Mysql $db,
         SessionService $sessionService
     ) {
         $this->modelManager = $modelManager;
@@ -46,7 +44,7 @@ class PaymentFilterSubscriber implements SubscriberInterface
         ];
     }
 
-    public function onFilterPayments(Enlight_Event_EventArgs $args)
+    public function onFilterPayments(\Enlight_Event_EventArgs $args)
     {
         $paymentMethods = $args->getReturn();
 

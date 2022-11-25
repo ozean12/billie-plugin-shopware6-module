@@ -8,14 +8,7 @@ use BilliePayment\Components\Utils;
 use BilliePayment\Enum\PaymentMethods;
 use BilliePayment\Helper\DocumentHelper;
 use BilliePayment\Services\ConfigService;
-use DateInterval;
-use DateTime;
 use Enlight\Event\SubscriberInterface;
-use Enlight_Controller_Action;
-use Enlight_Controller_ActionEventArgs;
-use Enlight_Controller_Request_RequestHttp;
-use Enlight_Event_EventArgs;
-use Enlight_View_Default;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Order;
 use Shopware\Models\Order\Status;
@@ -93,7 +86,7 @@ class OrderSubscriber implements SubscriberInterface
         ];
     }
 
-    public function filterOrderMailVariables(Enlight_Event_EventArgs $args)
+    public function filterOrderMailVariables(\Enlight_Event_EventArgs $args)
     {
         $data = $args->getReturn();
         if (PaymentMethods::exists($data['additional']['payment']['name'])) {
@@ -109,9 +102,9 @@ class OrderSubscriber implements SubscriberInterface
      *
      * @return void
      */
-    public function onDocumentCreate(Enlight_Controller_ActionEventArgs $args)
+    public function onDocumentCreate(\Enlight_Controller_ActionEventArgs $args)
     {
-        /** @var Enlight_Controller_Action $controller */
+        /** @var \Enlight_Controller_Action $controller */
         $controller = $args->getSubject();
         $request = $controller->Request();
         $params = $request->getParams();
@@ -126,8 +119,8 @@ class OrderSubscriber implements SubscriberInterface
 
             $duration = $order->getPayment()->getAttribute()->getBillieDuration();
             $attrs = $order->getAttribute();
-            $date = array_key_exists('displayDate', $params) ? new DateTime($params['displayDate']) : new DateTime();
-            $date->add(new DateInterval('P' . $duration . 'D'));
+            $date = array_key_exists('displayDate', $params) ? new \DateTime($params['displayDate']) : new \DateTime();
+            $date->add(new \DateInterval('P' . $duration . 'D'));
 
             $attrs->setBillieDuration($duration);
             $attrs->setBillieDurationDate($date->format('d.m.Y'));
@@ -141,7 +134,7 @@ class OrderSubscriber implements SubscriberInterface
      *
      * @return void
      */
-    public function onSaveOrder(Enlight_Controller_ActionEventArgs $args)
+    public function onSaveOrder(\Enlight_Controller_ActionEventArgs $args)
     {
         $controller = $args->getSubject();
         $request = $controller->Request();
@@ -156,12 +149,12 @@ class OrderSubscriber implements SubscriberInterface
                 }
                 break;
 
-            // Process Single Order.
+                // Process Single Order.
             case 'save':
                 $this->processOrder($request, $params, $view);
                 break;
 
-            // Extend order details overview.
+                // Extend order details overview.
             case 'load':
                 $view->extendsTemplate('backend/billie_payment/view/detail/overview.js');
                 break;
@@ -173,7 +166,7 @@ class OrderSubscriber implements SubscriberInterface
      *
      * @return void
      */
-    protected function processOrder(Enlight_Controller_Request_RequestHttp $request, array $orderArray, Enlight_View_Default $view)
+    protected function processOrder(\Enlight_Controller_Request_RequestHttp $request, array $orderArray, \Enlight_View_Default $view)
     {
         /** @var Service $service */
         $service = Shopware()->Container()->get(Service::class);

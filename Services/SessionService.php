@@ -2,7 +2,6 @@
 
 namespace BilliePayment\Services;
 
-use ArrayObject;
 use Billie\Sdk\Exception\BillieException;
 use Billie\Sdk\Exception\GatewayException;
 use Billie\Sdk\Model\Address;
@@ -13,7 +12,6 @@ use Billie\Sdk\Service\Request\CreateSessionRequest;
 use Billie\Sdk\Util\AddressHelper;
 use BilliePayment\Components\Api\RequestServiceContainer;
 use BilliePayment\Helper\BasketHelper;
-use Enlight_Components_Session_Namespace;
 use Monolog\Logger;
 use Shopware\Bundle\StoreFrontBundle\Struct\Attribute;
 use Shopware\Components\Model\ModelManager;
@@ -25,7 +23,7 @@ use Shopware\Models\Customer\Customer;
 class SessionService
 {
     /**
-     * @var Enlight_Components_Session_Namespace
+     * @var \Enlight_Components_Session_Namespace
      */
     private $session;
 
@@ -46,7 +44,7 @@ class SessionService
 
     public function __construct(
         Logger $logger,
-        Enlight_Components_Session_Namespace $session,
+        \Enlight_Components_Session_Namespace $session,
         ModelManager $modelManager,
         RequestServiceContainer $container
     ) {
@@ -303,7 +301,7 @@ class SessionService
     }
 
     /**
-     * @return ArrayObject|null
+     * @return \ArrayObject|null
      */
     private function getOrderVariables()
     {

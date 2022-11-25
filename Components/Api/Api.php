@@ -17,7 +17,6 @@ use Billie\Sdk\Service\Request\GetBankDataRequest;
 use Billie\Sdk\Service\Request\GetOrderDetailsRequest;
 use Billie\Sdk\Service\Request\ShipOrderRequest;
 use Billie\Sdk\Service\Request\UpdateOrderRequest;
-use DateTime;
 use Monolog\Logger;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Models\Order\Order;
@@ -148,7 +147,7 @@ class Api
         }
 
         $newAmount = ($billieOrder->getAmount()->getGross() - $grossAmount);
-        $taxRate = (round(($billieOrder->getAmount()->getGross() / $billieOrder->getAmount()->getNet()), 2) - 1) * 100;
+        $taxRate = (round($billieOrder->getAmount()->getGross() / $billieOrder->getAmount()->getNet(), 2) - 1) * 100;
         try {
             $this->container->get(UpdateOrderRequest::class)->execute(
                 (new UpdateOrderRequestModel($shopwareOrder->getTransactionId()))
@@ -193,7 +192,7 @@ class Api
         $orderAttribute->setBillieState($billieOrder->getState());
         $orderAttribute->setBillieDuration($billieOrder->getDuration());
 
-        $date = new DateTime();
+        $date = new \DateTime();
         $date->modify('+' . $orderAttribute->getBillieDuration() . ' days');
         $orderAttribute->setBillieDurationDate($date->format('d.m.Y'));
         $this->modelManager->flush($orderAttribute);
@@ -206,7 +205,7 @@ class Api
     {
         try {
             $this->container->get(CancelOrderRequest::class)->execute(
-                (new OrderRequestModel($shopwareOrder->getTransactionId()))
+                new OrderRequestModel($shopwareOrder->getTransactionId())
             );
             $attribute = $shopwareOrder->getAttribute();
             /* @noinspection NullPointerExceptionInspection */

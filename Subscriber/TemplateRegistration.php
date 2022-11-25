@@ -3,7 +3,6 @@
 namespace BilliePayment\Subscriber;
 
 use Enlight\Event\SubscriberInterface;
-use Enlight_Controller_ActionEventArgs;
 
 /**
  * Subscriber to register the plugin template directory before dispatch.
@@ -42,7 +41,7 @@ class TemplateRegistration implements SubscriberInterface
     /**
      * Add Menu item sprite class.
      */
-    public function addMenuItem(Enlight_Controller_ActionEventArgs $args)
+    public function addMenuItem(\Enlight_Controller_ActionEventArgs $args)
     {
         $controller = $args->getSubject();
         $view = $controller->View();
@@ -55,7 +54,7 @@ class TemplateRegistration implements SubscriberInterface
     /**
      * Add template dir prior dispatching views.
      */
-    public function onPreDispatch(Enlight_Controller_ActionEventArgs $args)
+    public function onPreDispatch(\Enlight_Controller_ActionEventArgs $args)
     {
         $controller = $args->getSubject();
         $view = $controller->View();

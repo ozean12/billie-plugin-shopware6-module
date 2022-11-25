@@ -3,7 +3,6 @@
 namespace BilliePayment\Subscriber\Backend;
 
 use Enlight\Event\SubscriberInterface;
-use Enlight_Controller_ActionEventArgs;
 
 class BaseSubscriber implements SubscriberInterface
 {
@@ -27,7 +26,7 @@ class BaseSubscriber implements SubscriberInterface
     /**
      * Extend Attribute Form to make BIC/IBAN readonly.
      */
-    public function extendExtJS(Enlight_Controller_ActionEventArgs $args)
+    public function extendExtJS(\Enlight_Controller_ActionEventArgs $args)
     {
         /** @var \Enlight_Controller_Action $controller */
         $controller = $args->getSubject();

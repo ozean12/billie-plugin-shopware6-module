@@ -2,7 +2,6 @@
 
 namespace BilliePayment\Services;
 
-use InvalidArgumentException;
 use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin\CachedConfigReader;
 use Shopware\Models\Shop\Repository as ShopRepository;
@@ -102,7 +101,7 @@ class ConfigService
         } elseif (is_numeric($shop)) {
             $shop = $this->modelManager->find(Shop::class, $shop);
             if ($shop === null) {
-                throw new InvalidArgumentException('the given shop does not exist');
+                throw new \InvalidArgumentException('the given shop does not exist');
             }
         }
         $config = $this->configReader->getByPluginName($this->pluginName, $shop);
