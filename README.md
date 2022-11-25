@@ -17,9 +17,11 @@
 
 1. Open the CLI and navigation to the Shopware root
 2. Run the following Commands to install the extension via composer:
+
 ```bash 
 composer req billie/shopware5-payment-module
 ```
+
 3. Open the Plugin Manager in your store
 4. Search for the extension `Billie Payment After Delivery`
 5. Click Install
@@ -27,6 +29,7 @@ composer req billie/shopware5-payment-module
 7. Clear all Caches (you will be prompted for it)
 
 ## Displaying Attributes in Documents
+
 To display the billie in the invoice document etc, they can be accessed in the document template files like so:
 
 ~~~html
@@ -34,11 +37,17 @@ IBAN {$Order._order.attributes.billie_iban}
 ~~~
 
 Available Attributes are:
+
 * `billie_iban`
 * `billie_bic`
 * `billie_state`
 
 ## Release notes
+
+### Version 2.0.1 - WIP
+
+- remove filter attribute component which does not have any effect anymore (fixes an issue, that the
+  attributes-management does not load properly)
 
 ### Version 2.0.0 - Released on 2021-11-11
 
@@ -47,4 +56,5 @@ Available Attributes are:
 - Compatibility with PHP 8
 - Fixed a few bugs
 
-**Please note:** This is the first public release. There has been a few non-public releases before. You can safely update to this version.
+**Please note:** This is the first public release. There has been a few non-public releases before. You can safely
+update to this version.
