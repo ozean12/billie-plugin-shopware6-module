@@ -44,10 +44,14 @@ Available Attributes are:
 
 ## Release notes
 
-### Version 2.0.1 - WIP
+### Version 2.0.2 - Released on 2023-05-08
 
 - remove filter attribute component which does not have any effect anymore (fixes an issue, that the
   attributes-management does not load properly)
+
+### Version 2.0.1 - Released on 2022-06-09
+
+- fix response sending of ajax call on saving updated address (Widget)
 
 ### Version 2.0.0 - Released on 2021-11-11
 
