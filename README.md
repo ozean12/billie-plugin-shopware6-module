@@ -44,6 +44,10 @@ Available Attributes are:
 
 ## Release notes
 
+### Version 2.0.3 - WIP
+
+- prevent displaying payment method for B2C customer if they are not registered
+
 ### Version 2.0.2 - Released on 2023-05-08
 
 - remove filter attribute component which does not have any effect anymore (fixes an issue, that the

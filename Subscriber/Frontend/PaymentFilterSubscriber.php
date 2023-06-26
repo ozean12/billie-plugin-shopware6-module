@@ -50,30 +50,30 @@ class PaymentFilterSubscriber implements SubscriberInterface
 
         $debtorCompany = $this->sessionService->getDebtorCompany();
 
-        if ($debtorCompany) {
-            if (empty($debtorCompany->getName())) {
-                // remove all payment methods cause the customer is not a B2B customer.
-                foreach (PaymentMethods::getNames() as $name) {
-                    foreach ($paymentMethods as $i => $paymentMethod) {
-                        if ($name === $paymentMethod['name']) {
-                            unset($paymentMethods[$i]);
-                        }
+        if ($debtorCompany === null || empty($debtorCompany->getName())) {
+            // remove all payment methods cause the customer is not a B2B customer.
+            foreach (PaymentMethods::getNames() as $name) {
+                foreach ($paymentMethods as $i => $paymentMethod) {
+                    if ($name === $paymentMethod['name']) {
+                        unset($paymentMethods[$i]);
                     }
                 }
-            } else {
-                foreach ($paymentMethods as $i => $paymentMethod) {
-                    if ($billieMethod = PaymentMethods::getMethod($paymentMethod['name'])) {
-                        if (in_array($debtorCompany->getAddress()->getCountryCode(), $billieMethod['billie_config']['allowed_in_countries'], true) === false) {
-                            unset($paymentMethods[$i]);
-                        } else {
-                            // add backward compatibility
-                            if (!isset($paymentMethods[$i]['attributes'])) {
-                                $meta = $this->modelManager->getClassMetadata(Payment::class);
-                                $attributeData = $this->db->fetchRow('SELECT * FROM ' . $meta->getTableName() . ' WHERE paymentmeanID = ?', [$paymentMethod['id']]);
-                                /* @var ModelEntity $attributeModel */
-                                $paymentMethods[$i]['attributes']['core'] = new Attribute(is_array($attributeData) ? $attributeData : []);
-                            }
-                        }
+            }
+
+            return $paymentMethods;
+        }
+
+        foreach ($paymentMethods as $i => $paymentMethod) {
+            if ($billieMethod = PaymentMethods::getMethod($paymentMethod['name'])) {
+                if (in_array($debtorCompany->getAddress()->getCountryCode(), $billieMethod['billie_config']['allowed_in_countries'], true) === false) {
+                    unset($paymentMethods[$i]);
+                } else {
+                    // add backward compatibility
+                    if (!isset($paymentMethod['attributes'])) {
+                        $meta = $this->modelManager->getClassMetadata(Payment::class);
+                        $attributeData = $this->db->fetchRow('SELECT * FROM ' . $meta->getTableName() . ' WHERE paymentmeanID = ?', [$paymentMethod['id']]);
+                        /* @var ModelEntity $attributeModel */
+                        $paymentMethods[$i]['attributes']['core'] = new Attribute(is_array($attributeData) ? $attributeData : []);
                     }
                 }
             }
