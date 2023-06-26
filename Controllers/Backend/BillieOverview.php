@@ -14,8 +14,11 @@ use Shopware\Models\Order\Order;
  * Manages Billie Order Details and States.
  *
  * @phpcs:disable PSR1.Classes.ClassDeclaration
+ *
  * @phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
+ *
  * @phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+ *
  * @SuppressWarnings(PHPMD.CamelCaseClassName)
  */
 class Shopware_Controllers_Backend_BillieOverview extends Enlight_Controller_Action implements CSRFWhitelistAware

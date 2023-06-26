@@ -26,8 +26,11 @@ use Symfony\Component\HttpFoundation\Response;
  * Handles the Checkout process with billie.io API.
  *
  * @phpcs:disable PSR1.Classes.ClassDeclaration
+ *
  * @phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
+ *
  * @phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+ *
  * @SuppressWarnings(PHPMD.CamelCaseClassName)
  */
 class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_Frontend_Payment
