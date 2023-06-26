@@ -24,7 +24,8 @@ class PaymentMethodAttributes extends AbstractAttributes
         parent::install();
 
         foreach (PaymentMethodsEnum::PAYMENTS as $options) {
-            if ($payment = $this->paymentMethodRepo->findOneBy(['name' => $options['name']])) {
+            $payment = $this->paymentMethodRepo->findOneBy(['name' => $options['name']]);
+            if ($payment instanceof Payment) {
                 $this->modelManager->getConnection()->executeQuery(
                     'REPLACE INTO ' . $this->tableName . '(paymentmeanID, billie_duration) VALUES(:id, :duration);',
                     [
