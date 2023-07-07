@@ -44,6 +44,10 @@ Available Attributes are:
 
 ## Release notes
 
+### Version 2.0.4 - Released on 2023-07-07
+
+- replace Billie logo in checkout
+
 ### Version 2.0.3 - Released on 2023-07-07
 
 - prevent displaying payment method for B2C customer if they are not registered
