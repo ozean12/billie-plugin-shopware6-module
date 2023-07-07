@@ -49,7 +49,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          tools: php-cs-fixer
+          # can not use higher version than 3.21.0 cause in the next version php 8 is required
+          tools: php-cs-fixer:3.21.0
 
       - name: run PHP-CS
         run: php-cs-fixer fix --dry-run --verbose
