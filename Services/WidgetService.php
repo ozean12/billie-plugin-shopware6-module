@@ -47,7 +47,7 @@ class WidgetService
     public function getWidgetData(array $sOrderVariables)
     {
         $customer = $this->sessionService->getCustomer();
-        $shopwareBillingAddress = $this->sessionService->getShopwareBillingAddress();
+        $shopwareBillingAddress = $this->sessionService->getCustomersBillingAddress();
 
         $checkoutSessionId = $this->sessionService->getCheckoutSessionId(true);
 

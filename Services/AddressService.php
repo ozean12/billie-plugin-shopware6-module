@@ -39,7 +39,7 @@ class AddressService
      */
     public function updateBillingAddress(Order $billieOrder)
     {
-        $shopwareAddress = $this->sessionService->getShopwareBillingAddress();
+        $shopwareAddress = $this->sessionService->getCustomersBillingAddress();
         if ($shopwareAddress) {
             $shopwareAddress->setCompany($billieOrder->getCompany()->getName());
             $shopwareAddress = $this->updateAddress($shopwareAddress, $billieOrder->getBillingAddress());
@@ -55,7 +55,7 @@ class AddressService
      */
     public function updateShippingAddress(Address $billieAddress)
     {
-        $shopwareAddress = $this->sessionService->getShopwareShippingAddress();
+        $shopwareAddress = $this->sessionService->getCustomersShippingAddress();
         if ($shopwareAddress) {
             $shopwareAddress = $this->updateAddress($shopwareAddress, $billieAddress);
             $this->modelManager->flush([$shopwareAddress]);

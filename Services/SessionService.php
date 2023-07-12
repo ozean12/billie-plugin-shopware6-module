@@ -42,6 +42,21 @@ class SessionService
      */
     private $logger;
 
+    /**
+     * @var Customer|null
+     */
+    private $loadedCustomer;
+
+    /**
+     * @var ShopwareAddress|null
+     */
+    private $loadedBillingAddress;
+
+    /**
+     * @var ShopwareAddress|null
+     */
+    private $loadedShippingAddress;
+
     public function __construct(
         Logger $logger,
         \Enlight_Components_Session_Namespace $session,
@@ -118,33 +133,51 @@ class SessionService
     }
 
     /**
-     * @interal
+     * @internal
      */
-    public function getShopwareBillingAddress()
+    public function getCustomersBillingAddress(Customer $customer = null)
     {
-        $addressId = $this->session->get('checkoutBillingAddressId');
-        if ($addressId === null) {
-            $customer = $this->getCustomer();
-
-            return $customer ? $customer->getDefaultBillingAddress() : null;
+        if ($this->loadedBillingAddress) {
+            return $this->loadedBillingAddress;
         }
 
-        return $this->modelManager->find(ShopwareAddress::class, $addressId);
+        $addressId = $this->session['checkoutBillingAddressId'];
+        if ($addressId > 0) {
+            $this->loadedBillingAddress = $this->modelManager->find(ShopwareAddress::class, $addressId);
+        } elseif ($customer) {
+            $this->loadedBillingAddress = $customer->getDefaultBillingAddress();
+        } else {
+            $customer = $this->getCustomer();
+            if ($customer !== null) {
+                $this->loadedBillingAddress = $customer->getDefaultBillingAddress();
+            }
+        }
+
+        return $this->loadedBillingAddress;
     }
 
     /**
-     * @interal
+     * @internal
      */
-    public function getShopwareShippingAddress()
+    public function getCustomersShippingAddress(Customer $customer = null)
     {
-        $addressId = $this->session->get('checkoutShippingAddressId');
-        if ($addressId === null) {
-            $customer = $this->getCustomer();
-
-            return $customer ? $customer->getDefaultShippingAddress() : null;
+        if ($this->loadedShippingAddress) {
+            return $this->loadedShippingAddress;
         }
 
-        return $this->modelManager->find(ShopwareAddress::class, $addressId);
+        $addressId = $this->session['checkoutShippingAddressId'];
+        if ($addressId > 0) {
+            $this->loadedShippingAddress = $this->modelManager->find(ShopwareAddress::class, $addressId);
+        } elseif ($customer) {
+            $this->loadedShippingAddress = $customer->getDefaultShippingAddress();
+        } else {
+            $customer = $this->getCustomer();
+            if ($customer !== null) {
+                $this->loadedShippingAddress = $customer->getDefaultBillingAddress();
+            }
+        }
+
+        return $this->loadedShippingAddress;
     }
 
     /**
@@ -152,13 +185,13 @@ class SessionService
      */
     public function getDebtorCompany()
     {
-        $userData = $this->getUserData();
+        $billingAddress = $this->getCustomersBillingAddress();
 
-        if (isset($userData['billingaddress'])) {
+        if ($billingAddress instanceof ShopwareAddress && !empty($billingAddress->getCompany())) {
             return (new DebtorCompany())
                 ->setValidateOnSet(false)
-                ->setName($userData['billingaddress']['company'])
-                ->setAddress($this->getAddress($userData['billingaddress']));
+                ->setName($billingAddress->getCompany())
+                ->setAddress($this->getAddress($billingAddress));
         }
 
         return null;
@@ -169,10 +202,10 @@ class SessionService
      */
     public function getShippingAddress()
     {
-        $userData = $this->getUserData();
+        $shippingAddress = $this->getCustomersShippingAddress();
 
-        if (isset($userData['shippingaddress'])) {
-            return $this->getAddress($userData['shippingaddress']);
+        if ($shippingAddress instanceof ShopwareAddress) {
+            return $this->getAddress($shippingAddress);
         }
 
         return null;
@@ -180,9 +213,16 @@ class SessionService
 
     public function getCustomer()
     {
-        $userId = $this->session->get('sUserId');
+        if ($this->loadedCustomer) {
+            return $this->loadedCustomer;
+        }
 
-        return $userId ? $this->modelManager->find(Customer::class, $userId) : null;
+        $customerId = $this->session->get('sUserId');
+        if (empty($customerId)) {
+            return null;
+        }
+
+        return $this->loadedCustomer = $this->modelManager->find(Customer::class, $customerId);
     }
 
     public function clearData()
@@ -238,16 +278,16 @@ class SessionService
         $this->setUserData($userData);
     }
 
-    private function getAddress($addressDataFromSession)
+    private function getAddress(ShopwareAddress $customerAddress)
     {
         return (new Address())
             ->setValidateOnSet(false)
-            ->setStreet(AddressHelper::getStreetName($addressDataFromSession['street']))
-            ->setHouseNumber(AddressHelper::getHouseNumber($addressDataFromSession['street']))
-            ->setAddition($addressDataFromSession['additional_address_line1'])
-            ->setPostalCode($addressDataFromSession['zipcode'])
-            ->setCity($addressDataFromSession['city'])
-            ->setCountryCode($this->getCountry($addressDataFromSession['countryID'])->getIso() ?: 'DE');
+            ->setStreet(AddressHelper::getStreetName($customerAddress->getStreet()))
+            ->setHouseNumber(AddressHelper::getHouseNumber($customerAddress->getStreet()))
+            ->setAddition($customerAddress->getAdditionalAddressLine1())
+            ->setPostalCode($customerAddress->getZipcode())
+            ->setCity($customerAddress->getCity())
+            ->setCountryCode($customerAddress->getCountry()->getIso() ?: 'DE');
     }
 
     /**
