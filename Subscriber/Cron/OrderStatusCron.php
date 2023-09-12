@@ -128,7 +128,7 @@ class OrderStatusCron implements SubscriberInterface
                     case $this->configService->getOrderStatusForAutoProcessing('cancel'):
                         $this->logger->info(sprintf('Canceling order #%s', $order->getNumber()), array_merge($logContext));
                         if ($order->getAttribute()->getBillieState() !== \Billie\Sdk\Model\Order::STATE_CANCELLED) {
-                            $response = $this->api->cancelOrder($result['id']);
+                            $response = $this->api->cancelOrder($order);
                             if ($response === true) {
                                 $this->logger->info(sprintf('Order #%s has been canceled', $order->getNumber()), array_merge($logContext));
                             } else {
