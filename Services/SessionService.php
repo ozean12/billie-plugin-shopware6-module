@@ -256,24 +256,58 @@ class SessionService
     /**
      * Write the Billie shipping address to the shopware session (shipping address).
      */
-    public function updateShippingAddress(BillieAddress $address)
+    public function setAuthorizedShippingAddress(BillieAddress $address)
     {
         $userData = $this->getUserData();
 
         $userData['shippingaddress'] = $this->updateAddress($userData['shippingaddress'], $address);
+        $userData['billieAuthorized']['shippingAddress'] = $address->toArray();
 
         $this->setUserData($userData);
     }
 
     /**
+     * @return \Billie\Sdk\Model\Address|null
+     */
+    public function getAuthorizedShippingAddress()
+    {
+        $userData = $this->getUserData();
+
+        $authorizedAddress = isset($userData['billieAuthorized']['shippingAddress']) ? $userData['billieAuthorized']['shippingAddress'] : null;
+        if ($authorizedAddress) {
+            return new Address($authorizedAddress);
+        }
+
+        return null;
+    }
+
+    /**
+     * @return \Billie\Sdk\Model\DebtorCompany|null
+     */
+    public function getAuthorizedDebtorCompany()
+    {
+        $userData = $this->getUserData();
+
+        $authorizedData = isset($userData['billieAuthorized']['debtorCompany']) ? $userData['billieAuthorized']['debtorCompany'] : null;
+
+        if ($authorizedData) {
+            return new DebtorCompany($authorizedData);
+        }
+
+        return null;
+    }
+
+    /**
      * Write the Billie billing address to the shopware session (billing address).
      */
-    public function updateBillingAddress(DebtorCompany $debtorCompany)
+    public function setAuthorizedDebtorCompany(DebtorCompany $debtorCompany)
     {
         $userData = $this->getUserData();
 
         $userData['billingaddress']['company'] = $debtorCompany->getName();
         $userData['billingaddress'] = $this->updateAddress($userData['billingaddress'], $debtorCompany->getAddress());
+
+        $userData['billieAuthorized']['debtorCompany'] = $debtorCompany->toArray();
 
         $this->setUserData($userData);
     }

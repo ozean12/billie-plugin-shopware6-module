@@ -92,8 +92,8 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                 $sessionId = $this->sessionService->getCheckoutSessionId(false);
 
                 if ($sessionId !== null) {
-                    $sessionDebtorCompany = $this->sessionService->getDebtorCompany();
-                    $sessionShippingAddress = $this->sessionService->getShippingAddress();
+                    $sessionDebtorCompany = $this->sessionService->getAuthorizedDebtorCompany();
+                    $sessionShippingAddress = $this->sessionService->getAuthorizedShippingAddress();
                     $billieOrder = $this->requestServiceContainer->get(CheckoutSessionConfirmRequest::class)->execute(
                         (new CheckoutSessionConfirmRequestModel())
                             ->setSessionUuid($sessionId)
@@ -175,7 +175,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                 if ($country === null) {
                     $errorCode = '_SwCountryNotAvailable';
                 } else {
-                    $this->sessionService->updateBillingAddress(new DebtorCompany($params['debtor_company']));
+                    $this->sessionService->setAuthorizedDebtorCompany(new DebtorCompany($params['debtor_company']));
                 }
             } else {
                 $errorCode = '_UnknownError';
@@ -189,7 +189,7 @@ class Shopware_Controllers_Frontend_BilliePayment extends Shopware_Controllers_F
                 if ($country === null) {
                     $errorCode = '_SwCountryNotAvailable';
                 } else {
-                    $this->sessionService->updateShippingAddress(new Address($params['delivery_address']));
+                    $this->sessionService->setAuthorizedShippingAddress(new Address($params['delivery_address']));
                 }
             } else {
                 $errorCode = '_UnknownError';
