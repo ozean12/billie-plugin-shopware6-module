@@ -40,6 +40,19 @@
         </div>
     ]]></description>
 
+    <changelog version="2.0.6">
+        <changes lang="en"><![CDATA[
+            <ul>
+                <li>Fix saving/loading authorized debtor/shipping-address</li>
+            </ul>
+        ]]></changes>
+        <changes lang="de"><![CDATA[
+            <ul>
+                <li>Fehlerbehebung: Laden/Speichern der autorisierten Bestelldaten</li>
+            </ul>
+        ]]></changes>
+    </changelog>
+
     <changelog version="2.0.5">
         <changes lang="en"><![CDATA[
             <ul>
