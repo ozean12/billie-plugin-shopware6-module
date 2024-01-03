@@ -9,7 +9,7 @@
         <!-- Factory for BillieClient -->
         <service id="BilliePayment\Components\Api\BillieClientFactory" />
 
-        <service id="Billie\Sdk\HttpClient\BillieClient">
+        <service id="Billie\Sdk\HttpClient\BillieClient" autowire="false">
             <factory service="BilliePayment\Components\Api\BillieClientFactory" method="createBillieClient"/>
         </service>
 

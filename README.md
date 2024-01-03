@@ -44,6 +44,10 @@ Available Attributes are:
 
 ## Release notes
 
+### Version 2.0.7 - Released on 2024-01-03
+
+- fix issues with Klarna module (third-party)
+
 ### Version 2.0.6 - Released on 2023-09-10
 
 - Fix saving/loading authorized debtor/shipping-address
