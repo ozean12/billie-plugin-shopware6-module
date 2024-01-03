@@ -44,6 +44,15 @@ Available Attributes are:
 
 ## Release notes
 
+### Version 2.0.6 - Released on 2023-09-10
+
+- Fix saving/loading authorized debtor/shipping-address
+- Fix cancel-request, if order got cancelled
+
+### Version 2.0.5 - Released on 2023-07-19
+
+- Fix loading customer data from session
+
 ### Version 2.0.4 - Released on 2023-07-07
 
 - replace Billie logo in checkout
