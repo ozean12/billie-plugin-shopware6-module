@@ -173,7 +173,7 @@ class SessionService
         } else {
             $customer = $this->getCustomer();
             if ($customer !== null) {
-                $this->loadedShippingAddress = $customer->getDefaultBillingAddress();
+                $this->loadedShippingAddress = $customer->getDefaultShippingAddress();
             }
         }
 
